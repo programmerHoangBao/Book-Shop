@@ -1,4 +1,7 @@
-reviews_Books_5.json
-meta_Books.json
-ratings_Books.csv
-temp.log
+/data/reviews_Books_5.json
+/data/meta_Books.json
+/data/ratings_Books.csv
+/data/temp.log
+/.venv
+/data/temp.py
+/amazon_books_eda.ipynb
