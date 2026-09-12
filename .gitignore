@@ -5,3 +5,5 @@
 /.venv
 /data/temp.py
 /amazon_books_eda.ipynb
+/data_visualization.py
+/data_visualization.log
