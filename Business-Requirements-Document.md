@@ -8,6 +8,19 @@
 
 ---
 
+## Mục lục
+
+1. [Tổng quan dự án](#1-tổng-quan-dự-án)
+2. [Mục tiêu kinh doanh](#2-mục-tiêu-kinh-doanh)
+3. [Phạm vi và đối tượng sử dụng](#3-phạm-vi-và-đối-tượng-sử-dụng)
+4. [Sản phẩm, tìm kiếm và trải nghiệm mua hàng](#4-sản-phẩm-tìm-kiếm-và-trải-nghiệm-mua-hàng)
+5. [Tài khoản, giỏ hàng, đặt hàng và thanh toán](#5-tài-khoản-giỏ-hàng-đặt-hàng-và-thanh-toán)
+6. [Đơn hàng và chăm sóc khách hàng](#6-đơn-hàng-và-chăm-sóc-khách-hàng)
+7. [Tồn kho, cửa hàng và khuyến mãi](#7-tồn-kho-cửa-hàng-và-khuyến-mãi)
+8. [Đánh giá và chatbot](#8-đánh-giá-và-chatbot)
+9. [Quy tắc kinh doanh, báo cáo và bảo mật](#9-quy-tắc-kinh-doanh-báo-cáo-và-bảo-mật)
+10. [Tiêu chí thành công và nghiệm thu](#10-tiêu-chí-thành-công-và-nghiệm-thu)
+
 ## 1. TỔNG QUAN DỰ ÁN
 
 ### 1.1. Bối cảnh
