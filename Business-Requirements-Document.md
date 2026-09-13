@@ -45,25 +45,8 @@ Dự án hướng tới các mục tiêu:
 3.  Cải thiện trải nghiệm mua sách.
 4.  Quản lý sản phẩm và tồn kho chính xác.
 5.  Giảm thời gian xử lý đơn hàng.
-6.  Xây dựng chương trình khách hàng thành viên.
-7.  Cung cấp báo cáo hỗ trợ quản lý.
-8.  Tạo nền tảng có thể mở rộng trong tương lai.
-
-### Chỉ tiêu ban đầu
-
-Chỉ tiêu Mục tiêu
-
----
-
-Tốc độ tải các trang chính Dưới 2 giây
-Độ chính xác tồn kho ≥ 99%
-Tỷ lệ đơn hàng xử lý thành công ≥ 98%
-Tỷ lệ thanh toán thành công ≥ 95%
-Mức độ sẵn sàng ≥ 99.5%
-
-Các chỉ tiêu có thể được điều chỉnh theo dữ liệu vận hành thực tế.
-
----
+6.  Cung cấp báo cáo hỗ trợ quản lý.
+7.  Tạo nền tảng có thể mở rộng trong tương lai.
 
 ## 3. PHẠM VI VÀ ĐỐI TƯỢNG SỬ DỤNG
 
@@ -93,7 +76,7 @@ giá và quản lý tài khoản.
 **Khách vãng lai:** xem, tìm kiếm và khám phá sách nhưng không sử dụng
 các chức năng yêu cầu tài khoản.
 
-** Nhân viên:** Xác nhận đơn hàng vận chuyển, xác nhận giao hàng thành công (nhận thông báo từ bên thứ 3 và xác nhận trạng thái giao hàng thành công cho khách hàng).
+**Nhân viên:** Xác nhận đơn hàng vận chuyển, xác nhận giao hàng thành công (nhận thông báo từ bên thứ 3 và xác nhận trạng thái giao hàng thành công cho khách hàng).
 
 **Quản lý cửa hàng:** quản lý hàng hóa, đơn hàng và thông tin kinh doanh
 trong phạm vi cửa hàng được phân công.
@@ -107,7 +90,8 @@ trong phạm vi cửa hàng được phân công.
 - Cho thuê sách.
 - Hệ thống kế toán/ERP chuyên sâu.
 - Ứng dụng mobile riêng.
-- Quản lý việc vẫn chuyển đơn hàng (được giao cho bên thứ 3)
+- Quản lý việc vẫn chuyển đơn hàng (được giao cho bên thứ 3).
+- Thanh toán online thông qua ngân hàng hoặc các hình thức online khác.
 
 Các chức năng này có thể được xem xét ở giai đoạn sau.
 
@@ -207,37 +191,24 @@ Tìm sách
    ↓
 Chọn sách
    ↓
-Thêm vào giỏ
+Thêm vào giỏ (tùy chọn)
    ↓
 Nhập địa chỉ
    ↓
-Chọn thanh toán
+Chọn phương thức thanh toán (Phiên bản 1.0 chỉ có thanh toán khi nhận hàng)
    ↓
-Áp dụng khuyến mãi
+Áp dụng khuyến mãi (Tùy chọn)
    ↓
-Xác nhận đơn
+Xác nhận đơn (trạng thái đơn hàng là chờ xác nhận)
    ↓
-Book Shop xử lý
+Nhân viên giao hàng cho bên thứ 3 vận chuyển (trạng thái đơn hàng là đang vận chuyển)
    ↓
-Giao hàng
+Giao hàng (Phiên bản 1 là khách hàng thanh toán với bên thứ 3 vẫn chuyển)
    ↓
-Hoàn tất
+Hoàn tất (Book shop nhận được tiền từ bên thứ 3 và xác nhận trạng thái đơn hàng là hoàn tất)
 ```
 
-### 5.4. Thanh toán
-
-Hỗ trợ:
-
-- Thanh toán khi nhận hàng.
-- Thanh toán trực tuyến như VNPAY, MoMo hoặc phương thức được Book
-  Shop phê duyệt.
-
-Khách hàng phải biết chính xác số tiền cần thanh toán trước khi xác nhận
-đơn.
-
----
-
-## 6. ĐƠN HÀNG, GIAO HÀNG VÀ CHĂM SÓC KHÁCH HÀNG
+## 6. ĐƠN HÀNG VÀ CHĂM SÓC KHÁCH HÀNG
 
 ### 6.1. Quản lý đơn hàng
 
@@ -247,6 +218,7 @@ Khách hàng có thể:
 - Theo dõi trạng thái.
 - Xem sản phẩm và số tiền.
 - Hủy đơn nếu vẫn được phép.
+*Lưu ý:* Đơn hàng không được hủy khi trạng thái đơn hàng là đang vận chuyển.
 
 Nhân viên được phân quyền có thể:
 
@@ -256,19 +228,9 @@ Nhân viên được phân quyền có thể:
 - Hủy đơn theo chính sách.
 - Xử lý yêu cầu trả hàng và hoàn tiền.
 
-### 6.2. Giao hàng
+### 6.2. Trả hàng và hoàn tiền
 
-Book Shop có thể kết nối với các đơn vị giao hàng như:
-
-- GHN.
-- GHTK.
-- Viettel Post.
-- Các đơn vị khác được phê duyệt.
-
-Khách hàng có thể theo dõi trạng thái giao hàng.
-
-### 6.3. Trả hàng và hoàn tiền
-
+- Khi khách hàng đã nhận được hàng (trạng thái đơn hàng là Hoàn tất) và muốn trả hàng thì cần cung cấp các các thông tin minh chứng, tài khoảng ngân hàng.
 Quy trình:
 
 ```text
@@ -285,7 +247,7 @@ Hoàn tiền nếu đủ điều kiện
 Cập nhật đơn hàng và hàng hóa
 ```
 
-### 6.4. Thông báo
+### 6.3. Thông báo
 
 Khách hàng nhận thông báo về các sự kiện quan trọng như:
 
@@ -370,7 +332,6 @@ Chatbot hỗ trợ:
 - Tìm sách.
 - Gợi ý sách.
 - Giải đáp câu hỏi về sản phẩm.
-- Hỗ trợ khách hàng trong quá trình mua hàng.
 
 Trong tương lai có thể mở rộng thành hệ thống đề xuất sách cá nhân hóa.
 
@@ -411,6 +372,7 @@ việc phù hợp với trách nhiệm.
 
 BR-009 Tổng tiền phải được xác định rõ
 trước khi đặt hàng.
+
 BR-0010 Việc hủy đơn hàng không được diển ra khi trạng thái đang là đang vận chuyển..
 
 ---
