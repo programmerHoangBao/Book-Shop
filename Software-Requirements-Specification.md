@@ -287,6 +287,8 @@ Hệ thống phải cho phép Guest đăng ký tài khoản.
 5. Hệ thống yêu cầu xác minh tài khoản nếu cần.
 6. Hệ thống thông báo kết quả.
 
+Ngoài việc đang ký bằng cách nhập thông tin thì Guest còn có thể đang ký tài khoảng với google (Chức năng sign in google).
+
 ### Business Rules
 
 - Thông tin tài khoản phải hợp lệ.
@@ -307,17 +309,17 @@ Hệ thống phải cho phép Customer đăng nhập vào tài khoản.
 3. Nếu hợp lệ, hệ thống cho phép truy cập tài khoản.
 4. Nếu không hợp lệ, hệ thống thông báo lỗi.
 
+- Ngoài ra khách hàng còn có thể đang nhập bằng google mà không cần phải nhập thông tin.
 ---
 
 ## FR-ACC-003 — Xác minh tài khoản
 
-Hệ thống phải hỗ trợ xác minh tài khoản sau khi đăng ký.
-
+ - Hệ thống phải hỗ trợ xác minh tài khoản sau khi đăng ký. Ở đây hệ thông có thể xác minh tài khoản người dùng bằng mã OTP.
 ---
 
 ## FR-ACC-004 — Lấy lại mật khẩu
 
-Customer phải có khả năng thực hiện quy trình lấy lại mật khẩu.
+Customer phải có khả năng thực hiện quy trình lấy lại mật khẩu bằng cách xác thực email bằng mã otp và cung cấp mật khẩu mới.
 
 ---
 
@@ -352,7 +354,7 @@ Customer phải có khả năng xem lịch sử các đơn hàng đã thực hi�
 
 ## FR-PROD-001 — Thêm sách
 
-**Actor:** Administrator
+**Actor:** Administrator.
 
 Administrator có thể thêm sản phẩm mới.
 
@@ -565,8 +567,6 @@ Phiên bản 1.0 không bao gồm:
 - Thanh toán ngân hàng trực tuyến.
 - Các phương thức thanh toán online khác.
 
-
-
 ---
 
 # 5.8. Quản lý đơn hàng
@@ -595,7 +595,9 @@ Employee có thể tìm kiếm đơn hàng.
 
 ## FR-ORDER-009 — Nhân viên xác nhận đơn
 
-Employee có thể xác nhận đơn hàng.
+Employee có thể xác nhận đơn hàng. 
+Nhân viên xác nhận đơn hàng đã chuyển sang trạng thái đang vẫn chuyển. 
+Nhân viên xác nhận đơn hàng đã hoàn tắt khi nhận được tiền từ bên vận chuyển thứ 3.
 
 ## FR-ORDER-010 — Xử lý đơn
 
@@ -611,7 +613,7 @@ Employee có thể hủy đơn theo chính sách.
 
 ## FR-RETURN-001 — Tạo yêu cầu trả hàng
 
-Customer có thể yêu cầu trả hàng sau khi đã nhận hàng và đơn hàng ở trạng thái **Hoàn tất**.
+Customer có thể yêu cầu trả hàng sau khi đã nhận hàng và đơn hàng ở trạng thái **Hoàn tất**. Thời gian hoàn trả không quá 3 ngày sau khi nhận hàng.
 
 Customer phải cung cấp:
 
@@ -772,7 +774,7 @@ Book Shop có thể yêu cầu chỉ Customer đã mua sản phẩm mới đư�
 
 ## FR-REVIEW-004 — Kiểm duyệt
 
-Administrator có thể:
+Administrator, Store Manager, Employee có thể:
 
 - Xem đánh giá.
 - Kiểm duyệt.
@@ -797,9 +799,7 @@ Hệ thống phải hỗ trợ thông báo cho Customer về các sự kiện qu
 - Hoàn tiền.
 - Khuyến mãi.
 
-
-
-**Kênh thông báo cụ thể:** TBD.
+**Kênh thông báo cụ thể:** Trong hệ thống và Email.
 
 ---
 
@@ -839,6 +839,7 @@ Hệ thống phải cung cấp thông tin doanh thu theo:
 - Cửa hàng.
 - Sản phẩm.
 - Thể loại.
+- Có thể cuất bao cáo đơn hàng ra file csv và báo có qua mail hằng ngày vào 08:00 AM. Chỉ báo cáo cho người Administrator.
 
 ## FR-REPORT-002 — Báo cáo đơn hàng
 
@@ -899,13 +900,13 @@ BRD không đưa ra các chỉ số kỹ thuật cụ thể về hiệu năng, k
 
 Hệ thống phải đáp ứng thời gian phản hồi phù hợp với trải nghiệm mua sắm trực tuyến.
 
-**Target:** TBD.
+- Thời gian phản hồi của một API không quá **500 ms** đối với các request thông thường.
+- Hệ thống phải có khả năng xử lý tối thiểu **100 requests/giây (RPS)** trong điều kiện tải bình thường.
+- Hệ thống phải hỗ trợ tối thiểu **500 người dùng đồng thời** mà không làm hệ thống ngừng hoạt động hoặc suy giảm nghiêm trọng hiệu năng.
 
 ## NFR-002 — Availability
 
 Hệ thống phải đảm bảo khả năng truy cập phù hợp với hoạt động kinh doanh.
-
-**Availability target:** TBD.
 
 ## NFR-003 — Scalability
 
@@ -949,7 +950,7 @@ Hệ thống phải đảm bảo tính nhất quán của:
 
 Các thay đổi quan trọng đối với tồn kho và hoạt động quản trị cần có khả năng truy vết.
 
-Chi tiết audit log: **TBD**.
+Chi tiết audit log.
 
 ## NFR-008 — Usability
 
@@ -963,8 +964,6 @@ Hệ thống phải có khả năng bảo trì và mở rộng trong các giai �
 
 Nền tảng web phải hoạt động trên các trình duyệt được Book Shop hỗ trợ.
 
-Danh sách trình duyệt và phiên bản: **TBD**.
-
 ---
 
 # 8. YÊU CẦU DỮ LIỆU
@@ -975,7 +974,7 @@ Danh sách trình duyệt và phiên bản: **TBD**.
 |---|---|---|
 | Book ID | Định danh sách | Yes |
 | Book Name | Tên sách | Yes |
-| Author | Tác giả | Yes |
+| Author | Tác giả | No |
 | Publisher | Nhà xuất bản | Yes |
 | Category | Thể loại | Yes |
 | Description | Mô tả | No |
@@ -1216,11 +1215,7 @@ Payment method:
 
 ## 12.3. Notification Integration
 
-Hệ thống cần hỗ trợ gửi thông báo.
-
-Kênh:
-
-**TBD**
+Hổ trợ gửi thông báo qua email
 
 ## 12.4. Chatbot
 
@@ -1229,11 +1224,6 @@ Chatbot là một thành phần hỗ trợ Customer:
 - Tìm sách.
 - Gợi ý sách.
 - Trả lời câu hỏi sản phẩm.
-
-Công nghệ và kiến trúc chatbot:
-
-**TBD**
-
 ---
 
 # 13. YÊU CẦU BÁO CÁO
@@ -1387,125 +1377,7 @@ Các tiêu chí này được xây dựng từ tiêu chí nghiệm thu của BRD
 
 BRD hiện đã xác định khá đầy đủ phạm vi nghiệp vụ, nhưng trước khi chuyển sang thiết kế kỹ thuật cần làm rõ các vấn đề sau.
 
-## 16.1. Loyalty / Point
-
-BRD có:
-
-> BR-004: Không được sử dụng điểm vượt quá số điểm hiện có.
-
-Tuy nhiên phạm vi chức năng chưa mô tả:
-
-- Cách tích điểm.
-- Cách sử dụng điểm.
-- Tỷ lệ quy đổi.
-- Điểm hết hạn.
-- Điều kiện sử dụng.
-
-**Status: TBD**
-
-## 16.2. Payment
-
-Phiên bản 1.0 chỉ sử dụng COD.
-
-Cần xác định:
-
-- Khi nào payment status chuyển thành Paid?
-- Ai xác nhận Book Shop đã nhận tiền?
-- Có lưu bằng chứng thanh toán không?
-
-**Status: TBD**
-
-## 16.3. Shipping
-
-Bên thứ ba chịu trách nhiệm vận chuyển.
-
-Cần xác định:
-
-- Cách Book Shop gửi đơn cho bên thứ ba.
-- API hay thủ công?
-- Cách nhận tracking number.
-- Cách nhận delivery status.
-- Cách xử lý giao hàng thất bại.
-
-**Status: TBD**
-
-## 16.4. Notification
-
-Cần xác định kênh:
-
-- Email.
-- SMS.
-- Push notification.
-- In-app notification.
-
-**Status: TBD**
-
-## 16.5. Promotion
-
-Cần làm rõ:
-
-- Có cho phép cộng dồn nhiều promotion?
-- Ưu tiên promotion nào nếu nhiều promotion cùng hợp lệ?
-- Mức giảm tối đa?
-- Promotion có áp dụng cho sách đã giảm giá không?
-- Free shipping tính như thế nào?
-
-**Status: TBD**
-
-## 16.6. Return/Refund
-
-Cần xác định:
-
-- Thời hạn yêu cầu trả hàng.
-- Những lý do được chấp nhận.
-- Chi phí vận chuyển trả hàng.
-- Thời gian xử lý.
-- Điều kiện sản phẩm.
-- Phương thức hoàn tiền.
-- Thời gian hoàn tiền.
-
-**Status: TBD**
-
-## 16.7. Inventory
-
-Cần xác định chính xác:
-
-```text
-Available Quantity
-=
-On-hand Quantity
--
-Reserved Quantity
--
-Other Restricted Quantity
-```
-
-Công thức chính thức và cách xử lý đồng thời nhiều đơn hàng cần được thống nhất trong Technical Design.
-
-## 16.8. Product
-
-Cần xác định:
-
-- Một sách có nhiều ISBN/edition hay không?
-- Một sách có nhiều tác giả hay không?
-- Một sách có nhiều hình ảnh hay không?
-- Category có phân cấp hay không?
-- Giá bán có lịch sử thay đổi hay không?
-
-**Status: TBD**
-
-## 16.9. Review
-
-Cần xác định:
-
-- Mỗi Customer được review một lần hay nhiều lần?
-- Có cho phép sửa review không?
-- Có cho phép xóa review không?
-- Policy vi phạm cụ thể là gì?
-
-**Status: TBD**
-
-## 16.10. Chatbot
+## 16.1. Chatbot
 
 Cần xác định:
 
@@ -1513,20 +1385,6 @@ Cần xác định:
 - Chatbot có thể thực hiện thao tác đặt hàng không?
 - Có lưu lịch sử hội thoại không?
 - Có chuyển tiếp sang nhân viên CSKH không?
-
-**Status: TBD**
-
-## 16.11. Reporting
-
-Cần xác định:
-
-- Ai được xem từng loại báo cáo?
-- Có export Excel/CSV/PDF không?
-- Có dashboard realtime không?
-- Múi giờ báo cáo?
-- Công thức tính doanh thu?
-
-**Status: TBD**
 
 ---
 
