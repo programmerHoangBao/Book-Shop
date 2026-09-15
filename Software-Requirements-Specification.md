@@ -512,8 +512,6 @@ Chờ xác nhận
    ↓
 Đang vận chuyển
    ↓
-Giao hàng
-   ↓
 Hoàn tất
 ```
 
@@ -779,9 +777,6 @@ Administrator, Store Manager, Employee có thể:
 - Xem đánh giá.
 - Kiểm duyệt.
 - Ẩn đánh giá vi phạm.
-
-
-
 ---
 
 # 5.14. Thông báo
