@@ -8,3 +8,9 @@
 /data_visualization.py
 /data_visualization.log
 /data/extract_data.py
+/back-end/appsettings.Development.json
+/back-end/appsettings.json
+/back-end/bin
+/back-end/obj
+/back-end/.vs
+/.github
