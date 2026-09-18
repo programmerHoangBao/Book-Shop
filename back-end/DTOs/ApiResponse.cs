@@ -12,8 +12,8 @@ namespace back_end.DTOs
 
         public static ApiResponse<T> Response
         (
-            MessageRecord messageRecord = default,
-            ErrorRecord errorRecord = default,
+            MessageRecord? messageRecord = default,
+            ErrorRecord? errorRecord = default,
             T? data = default
         )
         {
