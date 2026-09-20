@@ -27,4 +27,3 @@ namespace back_end.Middleware
         }
     }
 }
-}
