@@ -1,5 +1,6 @@
 ﻿using back_end.DTOs;
 using back_end.DTOs.Auths.Requests;
+using back_end.DTOs.Auths.Responses;
 using back_end.Entities;
 using back_end.Exceptions;
 using back_end.Kafka.Messages;
@@ -20,19 +21,73 @@ namespace back_end.Services.Implements
         private readonly SecuritySetting _securitySetting;
         private readonly IRedisService _redisService;
         private readonly IKafkaProducer _kafkaProducer;
+        private readonly IJwtService _jwtService;
 
         public AuthService
         (
             IUserRepository userRepository, 
             IOptions<SecuritySetting> options,
             IRedisService redisService,
-            IKafkaProducer kafkaProducer
+            IKafkaProducer kafkaProducer,
+            IJwtService jwtService
         )
         {
             _userRepository = userRepository;
             _securitySetting = options.Value;
             _redisService = redisService;
             _kafkaProducer = kafkaProducer;
+            _jwtService = jwtService;
+        }
+
+        public async Task<ApiResponse<LoginResponse?>> LoginAsync(LoginRequest req)
+        {
+            // Case 1: Find user
+            UserEntity? user = await _userRepository.GetUserByEmailAsync(req.Email);
+            if (user == null || user.IsDeleted)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+            // Case 2: Do not log in locally!
+            if (string.IsNullOrEmpty(user.PasswordHash))
+            {
+                throw new BusinessException(ErrorRecord.LoginFailed);
+            }
+            // Case 3: Incorrect Password
+            bool validPassword = HashUtility.Verify(
+                input: req.Password,
+                hashedInput: user.PasswordHash,
+                isBCrypt: false,
+                shaSecrectKey: _securitySetting.SHASecrectKey
+            );
+            if (!validPassword)
+            {
+                throw new BusinessException(ErrorRecord.LoginFailed);
+            }
+            // Case 5: Login success
+            string accessToken = _jwtService.GenerateAccessToken(user);
+            string refreshToken = _jwtService.GenerateRefreshToken();
+            string refreshTokenHash = HashUtility.HashBySHA256(refreshToken, _securitySetting.SHASecrectKey);
+            var redisKey = $"refresh_token:{refreshTokenHash}";
+            RefreshTokenModel refreshTokenModel = new RefreshTokenModel
+            {
+                UserId = user.Id,
+                RefreshTokenHash = refreshTokenHash,
+            };
+            await _redisService.SaveAsync(
+                redisKey,
+                refreshTokenModel,
+                TimeSpan.FromDays(_securitySetting.RefreshTokenExpirationDays)
+            );
+            LoginResponse response = new LoginResponse
+            {
+                UserId = user.Id,
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+            };
+            return ApiResponse<LoginResponse?>.Response(
+                messageRecord: MessageRecord.Success,
+                data: response
+            );
         }
 
         public async Task<ApiResponse<object?>> RegisterAsync(RegisterRequest req)

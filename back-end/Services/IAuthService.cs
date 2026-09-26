@@ -1,10 +1,12 @@
 ﻿using back_end.DTOs;
 using back_end.DTOs.Auths.Requests;
+using back_end.DTOs.Auths.Responses;
 
 namespace back_end.Services
 {
     public interface IAuthService
     {
         Task<ApiResponse<object?>> RegisterAsync(RegisterRequest req);
+        Task<ApiResponse<LoginResponse?>> LoginAsync(LoginRequest req);
     }
 }

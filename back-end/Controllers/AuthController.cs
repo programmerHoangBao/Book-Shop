@@ -21,5 +21,12 @@ namespace back_end.Controllers
             var result = await _authService.RegisterAsync(req);
             return StatusCode(result.HttpStatus, result); // StatusCode is now accessible
         }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> LoginAsync([FromBody] LoginRequest req)
+        {
+            var result = await _authService.LoginAsync(req);
+            return StatusCode(result.HttpStatus, result);
+        }
     }
 }
