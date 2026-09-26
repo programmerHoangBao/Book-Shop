@@ -8,5 +8,7 @@
         public static readonly ErrorRecord UserExists = new("E004", "User is exists!", StatusCodes.Status409Conflict);
         public static readonly ErrorRecord NotFound = new("E005", "Not found data!", StatusCodes.Status404NotFound);
         public static readonly ErrorRecord LoginFailed = new("E006", "Login Failed!", StatusCodes.Status400BadRequest);
+        public static readonly ErrorRecord OtpExpiry = new("E007", "OTP has expired!", StatusCodes.Status403Forbidden);
+        public static readonly ErrorRecord Failed = new("E008", "Failed!", StatusCodes.Status400BadRequest);
     }
 }

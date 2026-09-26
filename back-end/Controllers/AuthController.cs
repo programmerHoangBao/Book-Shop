@@ -28,5 +28,12 @@ namespace back_end.Controllers
             var result = await _authService.LoginAsync(req);
             return StatusCode(result.HttpStatus, result);
         }
+
+        [HttpPost("verify")]
+        public async Task<IActionResult> VerifyAsync([FromBody] VerifyOtpRequest req)
+        {
+            var result = await _authService.VerifyOtpAsync(req);
+            return StatusCode(result.HttpStatus, result);
+        }
     }
 }
