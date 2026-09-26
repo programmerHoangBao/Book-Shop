@@ -11,6 +11,7 @@ using back_end.Redis.Models;
 using back_end.Repositories;
 using back_end.Settings;
 using back_end.Utilities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 
 namespace back_end.Services.Implements
@@ -99,12 +100,12 @@ namespace back_end.Services.Implements
             }
             string otp = OtpUtility.Generate(len: 6);
             //string hashedPassword = HashUtility.HashByBCrypt(req.Password, 12); // Chậm
-            string hashedPassword = HashUtility.HashBySHA256(req.Password, _securitySetting.SHASecrectKey); //Nhanh
+            string passwordHash = HashUtility.HashBySHA256(req.Password, _securitySetting.SHASecrectKey); //Nhanh
             PendingRegistrationModel pendingRegistration = new PendingRegistrationModel
             {
                 FullName = req.FullName,
                 Email = req.Email,
-                HashedPassword = hashedPassword,
+                PasswordHash = passwordHash,
                 Otp = otp,
             };
             var key = $"pending-registration:{pendingRegistration.Email}";
@@ -125,6 +126,44 @@ namespace back_end.Services.Implements
                 message
             );
             return ApiResponse<object?>.Response(MessageRecord.RegisterSuccessfully);
+        }
+
+        public async Task<ApiResponse<object?>> VerifyOtpAsync(VerifyOtpRequest req)
+        {
+            // Case: 1 User exists
+            UserEntity? exitsUser = await _userRepository.GetUserByEmailAsync(req.Email);
+            if (exitsUser != null)
+            {
+                throw new BusinessException(ErrorRecord.UserExists);
+            }
+            // Case 2: Otp is expired
+            var key = $"pending-registration:{req.Email}";
+            var pendingRegistration = await _redisService.GetAsync<PendingRegistrationModel>(key);
+            if (pendingRegistration == null)
+            {
+                throw new BusinessException(ErrorRecord.OtpExpiry);
+            }
+            // Case 3: Otp is invalid
+            if (req.Otp != pendingRegistration.Otp)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+            UserEntity newUser = new UserEntity
+            {
+                FullName = pendingRegistration.FullName,
+                Email = req.Email,
+                PasswordHash = pendingRegistration.PasswordHash
+            };
+            bool saveUser = await _userRepository.AddUserAsync(newUser);
+            if (!saveUser)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+            await _redisService.DeleteAsync(key);
+            // Case 4: Successfully
+            return ApiResponse<object?>.Response(
+                messageRecord: MessageRecord.Success    
+            );
         }
     }
 }
