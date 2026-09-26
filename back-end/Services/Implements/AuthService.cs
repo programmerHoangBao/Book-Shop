@@ -13,6 +13,7 @@ using back_end.Settings;
 using back_end.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 
 namespace back_end.Services.Implements
 {
@@ -86,6 +87,54 @@ namespace back_end.Services.Implements
                 RefreshToken = refreshToken,
             };
             return ApiResponse<LoginResponse?>.Response(
+                messageRecord: MessageRecord.Success,
+                data: response
+            );
+        }
+
+        public async Task<ApiResponse<object?>> RefreshTokenAsync(RefreshTokenRequest req)
+        {
+            // Case 1: RefreshToken expired
+            string refreshTokenHash = HashUtility.HashBySHA256(req.RefreshToken, _securitySetting.SHASecrectKey);
+            var redisKey = $"refresh_token:{refreshTokenHash}";
+            var refreshTokenModel = await _redisService.GetAsync<RefreshTokenModel>(redisKey);
+            if ( refreshTokenModel == null )
+            {
+                throw new BusinessException(ErrorRecord.RefreshTokenExpiry);
+            }
+            // Case 2: RefreshToken invalied
+            if (refreshTokenModel.RefreshTokenHash != refreshTokenHash)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+            // Case 3: Successful
+            await _redisService.DeleteAsync(redisKey);
+            UserEntity? user = await _userRepository.GetUserByIdAsync(refreshTokenModel.UserId);
+            if (user == null || user.IsDeleted)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+            string newAccessToken = _jwtService.GenerateAccessToken(user);
+            string newRefreshToken = _jwtService.GenerateRefreshToken();
+            string newRefreshTokenHash = HashUtility.HashBySHA256(newRefreshToken, _securitySetting.SHASecrectKey);
+            var newRedisKey = $"refresh_token:{newRefreshTokenHash}";
+            RefreshTokenModel newRefreshTokenModel = new RefreshTokenModel
+            {
+                UserId = user.Id,
+                RefreshTokenHash = newRefreshTokenHash,
+            };
+            await _redisService.SaveAsync(
+                newRedisKey,
+                newRefreshTokenModel,
+                TimeSpan.FromDays(_securitySetting.RefreshTokenExpirationDays)
+            );
+            LoginResponse response = new LoginResponse
+            {
+                UserId = user.Id,
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
+            };
+            return ApiResponse<object?>.Response(
                 messageRecord: MessageRecord.Success,
                 data: response
             );

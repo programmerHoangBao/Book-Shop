@@ -9,5 +9,6 @@ namespace back_end.Services
         Task<ApiResponse<object?>> RegisterAsync(RegisterRequest req);
         Task<ApiResponse<LoginResponse?>> LoginAsync(LoginRequest req);
         Task<ApiResponse<object?>> VerifyOtpAsync(VerifyOtpRequest req);
+        Task<ApiResponse<object?>> RefreshTokenAsync(RefreshTokenRequest req);
     }
 }
