@@ -10,5 +10,6 @@
         public static readonly ErrorRecord LoginFailed = new("E006", "Login Failed!", StatusCodes.Status400BadRequest);
         public static readonly ErrorRecord OtpExpiry = new("E007", "OTP has expired!", StatusCodes.Status403Forbidden);
         public static readonly ErrorRecord Failed = new("E008", "Failed!", StatusCodes.Status400BadRequest);
+        public static readonly ErrorRecord RefreshTokenExpiry = new("E009", "RefreshToken has expired!", StatusCodes.Status403Forbidden);
     }
 }

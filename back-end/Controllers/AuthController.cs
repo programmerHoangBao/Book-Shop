@@ -35,5 +35,12 @@ namespace back_end.Controllers
             var result = await _authService.VerifyOtpAsync(req);
             return StatusCode(result.HttpStatus, result);
         }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshTokenRequest req)
+        {
+            var result = await _authService.RefreshTokenAsync(req);
+            return StatusCode(result.HttpStatus, result);
+        }
     }
 }
