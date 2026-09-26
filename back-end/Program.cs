@@ -13,6 +13,7 @@ using back_end.Kafka.Consumers;
 using back_end.Repositories;
 using back_end.Repositories.Implements;
 using back_end.Profiles;
+using back_end.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,12 +64,19 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRedisService, RedisService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 // Background Service
 builder.Services.AddHostedService<OtpEmailConsumer>();
 
 // Auto mapper
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
+
+// Jwt setting
+var securitySetting = builder.Configuration
+    .GetSection("Security")
+    .Get<SecuritySetting>();
+builder.Services.AddJWTAuthentication(securitySetting!);
 
 var app = builder.Build();
 

@@ -6,5 +6,7 @@
         public static readonly ErrorRecord InternalServerError = new("E002", "Internal server error!", StatusCodes.Status500InternalServerError);
         public static readonly ErrorRecord RequestNotFound = new("E003", "Request not found!", StatusCodes.Status404NotFound);
         public static readonly ErrorRecord UserExists = new("E004", "User is exists!", StatusCodes.Status409Conflict);
+        public static readonly ErrorRecord NotFound = new("E005", "Not found data!", StatusCodes.Status404NotFound);
+        public static readonly ErrorRecord LoginFailed = new("E006", "Login Failed!", StatusCodes.Status400BadRequest);
     }
 }
