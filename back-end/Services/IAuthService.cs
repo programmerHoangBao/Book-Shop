@@ -10,5 +10,6 @@ namespace back_end.Services
         Task<ApiResponse<LoginResponse?>> LoginAsync(LoginRequest req);
         Task<ApiResponse<object?>> VerifyOtpAsync(VerifyOtpRequest req);
         Task<ApiResponse<object?>> RefreshTokenAsync(RefreshTokenRequest req);
+        Task<ApiResponse<LoginResponse?>> GoogleSignInAsync(string idToken);
     }
 }

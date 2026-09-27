@@ -11,9 +11,7 @@ using back_end.Redis.Models;
 using back_end.Repositories;
 using back_end.Settings;
 using back_end.Utilities;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using StackExchange.Redis;
 
 namespace back_end.Services.Implements
 {
@@ -24,6 +22,8 @@ namespace back_end.Services.Implements
         private readonly IRedisService _redisService;
         private readonly IKafkaProducer _kafkaProducer;
         private readonly IJwtService _jwtService;
+        private readonly IGoogleAuthService _googleAuthService;
+        private readonly ILogger<AuthService> _logger;
 
         public AuthService
         (
@@ -31,7 +31,9 @@ namespace back_end.Services.Implements
             IOptions<SecuritySetting> options,
             IRedisService redisService,
             IKafkaProducer kafkaProducer,
-            IJwtService jwtService
+            IJwtService jwtService,
+            IGoogleAuthService googleAuthService,
+            ILogger<AuthService> logger
         )
         {
             _userRepository = userRepository;
@@ -39,6 +41,69 @@ namespace back_end.Services.Implements
             _redisService = redisService;
             _kafkaProducer = kafkaProducer;
             _jwtService = jwtService;
+            _googleAuthService = googleAuthService;
+            _logger = logger;
+        }
+
+        public async Task<ApiResponse<LoginResponse?>> GoogleSignInAsync(string idToken)
+        {
+            GoogleUserInfoResponse? googleUser =
+                await _googleAuthService.VerifyTokenAsync(idToken);
+            // Case 1: Id token invalid!
+            if (googleUser == null)
+            {
+                _logger.LogError("id token invalid!");
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+            // Case 2: User not found
+            UserEntity? user = await _userRepository.GetUserByEmailAsync(googleUser.Email);
+            if (user == null)
+            {
+                user = new UserEntity
+                {
+                    Email = googleUser.Email,
+                    FullName = googleUser.Name,
+                    AvatarUrl = googleUser.AvatarUrl,
+                    AuthProvider = Enums.AuthProvider.Google,
+                };
+                bool createdUser = await _userRepository.AddUserAsync(user);
+                if (!createdUser)
+                {
+                    throw new BusinessException(ErrorRecord.Failed);
+                }
+            }
+            else if (user.IsDeleted)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+            else if (user.AuthProvider == Enums.AuthProvider.Local)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+            string accessToken = _jwtService.GenerateAccessToken(user);
+            string refreshToken = _jwtService.GenerateRefreshToken();
+            string refreshTokenHash = HashUtility.HashBySHA256(refreshToken, _securitySetting.SHASecrectKey);
+            var redisKey = $"refresh_token:{refreshTokenHash}";
+            RefreshTokenModel refreshTokenModel = new RefreshTokenModel
+            {
+                UserId = user.Id,
+                RefreshTokenHash = refreshTokenHash,
+            };
+            await _redisService.SaveAsync(
+                redisKey,
+                refreshTokenModel,
+                TimeSpan.FromDays(_securitySetting.RefreshTokenExpirationDays)
+            );
+            LoginResponse response = new LoginResponse
+            {
+                UserId = user.Id,
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+            };
+            return ApiResponse<LoginResponse?>.Response(
+                messageRecord: MessageRecord.Success,
+                data: response
+            );
         }
 
         public async Task<ApiResponse<LoginResponse?>> LoginAsync(LoginRequest req)
