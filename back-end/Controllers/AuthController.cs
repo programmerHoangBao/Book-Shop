@@ -42,5 +42,11 @@ namespace back_end.Controllers
             var result = await _authService.RefreshTokenAsync(req);
             return StatusCode(result.HttpStatus, result);
         }
+        [HttpPost("google-sign-in")]
+        public async Task<IActionResult> GoogleSignInAsync([FromQuery] string idToken)
+        {
+            var result = await _authService.GoogleSignInAsync(idToken);
+            return StatusCode(result.HttpStatus, result);
+        }
     }
 }

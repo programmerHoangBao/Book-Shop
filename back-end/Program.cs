@@ -38,6 +38,7 @@ builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
 builder.Services.Configure<SecuritySetting>(builder.Configuration.GetSection("Security"));
 builder.Services.Configure<EmailSetting>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<KafkaSetting>(builder.Configuration.GetSection("Kafka"));
+builder.Services.Configure<GoogleSetting>(builder.Configuration.GetSection("Authentication:Google"));
 
 // Connection redis
 var redisConnectionString =
@@ -65,6 +66,7 @@ builder.Services.AddScoped<IRedisService, RedisService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 
 // Background Service
 builder.Services.AddHostedService<OtpEmailConsumer>();
