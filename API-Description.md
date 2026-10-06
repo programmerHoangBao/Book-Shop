@@ -8,6 +8,8 @@
   - [1.3. Forgot Password](#13-forgot-password)
   - [1.4. Verify OTP](#14-verify-otp)
   - [1.5. Reset Password](#15-reset-password)
+  - [1.6. Google Login](#16-google-login)
+  - [1.7. Refresh Token](#17-refresh-token)
 
 ## 1. Auth
 ### 1.1. Login
