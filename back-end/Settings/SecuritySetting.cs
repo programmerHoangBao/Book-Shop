@@ -9,5 +9,7 @@
         public int AccessTokenExpirationMinutes { get; set; }
         public int RefreshTokenExpirationDays { get; set; }
         public int OtpExpirySeconds { get; set; }
+
+        public int ResetPasswordExpiryMinutes { get; set; }
     }
 }

@@ -283,20 +283,60 @@ namespace back_end.Services.Implements
 
         public async Task<ApiResponse<object?>> VerifyOtpAsync(VerifyOtpRequest req)
         {
-            // Case: 1 User exists
             UserEntity? exitsUser = await _userRepository.GetUserByEmailAsync(req.Email);
             if (exitsUser != null)
             {
-                throw new BusinessException(ErrorRecord.UserExists);
+                return await VerifyOtpForgotPassword(req);
             }
-            // Case 2: Otp is expired
+            return await VerifyOtpRegistrationAsync(req);
+        }
+        private async Task<ApiResponse<object?>> VerifyOtpForgotPassword(VerifyOtpRequest req)
+        {
+            var key = $"pending-forgot-password:{req.Email}";
+            var pendingForgotPassword = _redisService.GetAsync<PendingForgotPasswordModel>(key).Result;
+            // Case 1: Otp is expired
+            if (pendingForgotPassword == null)
+            {
+                throw new BusinessException(ErrorRecord.OtpExpiry);
+            }
+            // Case 2: Otp is invalid
+            if (req.Otp != pendingForgotPassword.Otp)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+            // Case 3: Successfully
+            VerifyOtpResponse response = new VerifyOtpResponse
+            {
+                ResetPasswordKey = Guid.NewGuid(),
+                Action = Enums.AuthAction.ForgotPassword
+            };
+            var resetPasswordKey = $"reset-password:{response.ResetPasswordKey}";
+            var resetPasswordModel = new ResetPasswordModel
+            {
+                ResetPasswordKey = response.ResetPasswordKey,
+                UserId = pendingForgotPassword.UserId
+            };
+            await _redisService.SaveAsync<ResetPasswordModel>(
+                resetPasswordKey,
+                resetPasswordModel,
+                TimeSpan.FromMinutes(_securitySetting.ResetPasswordExpiryMinutes)
+            );
+            await _redisService.DeleteAsync(key);
+            return ApiResponse<object?>.Response(
+                messageRecord: MessageRecord.Success,
+                data: response
+            );
+        }
+        private async Task<ApiResponse<object?>> VerifyOtpRegistrationAsync(VerifyOtpRequest req)
+        {
+            // Case 1: Otp is expired
             var key = $"pending-registration:{req.Email}";
             var pendingRegistration = await _redisService.GetAsync<PendingRegistrationModel>(key);
             if (pendingRegistration == null)
             {
                 throw new BusinessException(ErrorRecord.OtpExpiry);
             }
-            // Case 3: Otp is invalid
+            // Case 2: Otp is invalid
             if (req.Otp != pendingRegistration.Otp)
             {
                 throw new BusinessException(ErrorRecord.Failed);
@@ -313,9 +353,9 @@ namespace back_end.Services.Implements
                 throw new BusinessException(ErrorRecord.Failed);
             }
             await _redisService.DeleteAsync(key);
-            // Case 4: Successfully
+            // Case 3: Successfully
             return ApiResponse<object?>.Response(
-                messageRecord: MessageRecord.Success    
+                messageRecord: MessageRecord.Success
             );
         }
     }
