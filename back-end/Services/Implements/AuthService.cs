@@ -12,6 +12,7 @@ using back_end.Repositories;
 using back_end.Settings;
 using back_end.Utilities;
 using Microsoft.Extensions.Options;
+using static Google.Apis.Requests.BatchRequest;
 
 namespace back_end.Services.Implements
 {
@@ -279,6 +280,45 @@ namespace back_end.Services.Implements
                 message
             );
             return ApiResponse<object?>.Response(MessageRecord.RegisterSuccessfully);
+        }
+
+        public async Task<ApiResponse<object?>> ResetPasswordAsync(ResetPasswordRequest req)
+        {
+            var resetPasswordKey = $"reset-password:{req.ResetPasswordKey}";
+            var resetPasswordModel = await _redisService.GetAsync<ResetPasswordModel>(resetPasswordKey);
+            // Case 1: Reset password key is expired
+            if (resetPasswordModel == null)
+            {
+                throw new BusinessException(ErrorRecord.ResetPasswordKeyExpiry);
+            }
+            // Case 2: Reset password key is invalid
+            if (resetPasswordModel.ResetPasswordKey != req.ResetPasswordKey)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+            UserEntity? user = await _userRepository.GetUserByIdAsync(resetPasswordModel.UserId);
+            // Case 3: User not found
+            if (user == null || user.IsDeleted)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+            // Case 4: User not log in locally
+            if (user.AuthProvider != Enums.AuthProvider.Local)
+            {
+                throw new BusinessException(ErrorRecord.UserNotLoggedInLocally);
+            }
+            // Case 5: Reset password successfully
+            string newPasswordHash = HashUtility.HashBySHA256(req.NewPassword, _securitySetting.SHASecrectKey);
+            user.PasswordHash = newPasswordHash;
+            bool updateUser = await _userRepository.UpdateUserAsync(user);
+            if (!updateUser)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+            await _redisService.DeleteAsync(resetPasswordKey);
+            return ApiResponse<object?>.Response(
+                messageRecord: MessageRecord.Success
+            );
         }
 
         public async Task<ApiResponse<object?>> VerifyOtpAsync(VerifyOtpRequest req)

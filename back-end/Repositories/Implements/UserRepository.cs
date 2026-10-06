@@ -44,5 +44,28 @@ namespace back_end.Repositories.Implements
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
         }
+
+        public async Task<bool> UpdateUserAsync(UserEntity user)
+        {
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
+            try
+            {
+                _context.Users.Update(user);
+                var result = await _context.SaveChangesAsync();
+                if (result <= 0)
+                {
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
     }
 }

@@ -55,5 +55,12 @@ namespace back_end.Controllers
             var result = await _authService.ForgotPasswordAsync(req);
             return StatusCode(result.HttpStatus, result);
         }
+
+        [HttpPatch("reset-password")]
+        public async Task<IActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequest req)
+        {
+            var result = await _authService.ResetPasswordAsync(req);
+            return StatusCode(result.HttpStatus, result);
+        }
     }
 }
