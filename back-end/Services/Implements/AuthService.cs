@@ -6,8 +6,8 @@ using back_end.Exceptions;
 using back_end.Kafka.Messages;
 using back_end.Kafka.Producers;
 using back_end.Records;
-using back_end.Redis;
 using back_end.Redis.Models;
+using back_end.Redis.Services;
 using back_end.Repositories;
 using back_end.Settings;
 using back_end.Utilities;
@@ -43,6 +43,45 @@ namespace back_end.Services.Implements
             _jwtService = jwtService;
             _googleAuthService = googleAuthService;
             _logger = logger;
+        }
+
+        public async Task<ApiResponse<object?>> ForgotPasswordAsync(ForgotPasswordRequest req)
+        {
+            // Case 1: Find user
+            UserEntity? user = await _userRepository.GetUserByEmailAsync(req.Email);
+            if (user == null || user.IsDeleted)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+            // Case 2: User not log in locally
+            if (user.AuthProvider != Enums.AuthProvider.Local)
+            {
+                throw new BusinessException(ErrorRecord.UserNotLoggedInLocally);
+            }
+            string otp = OtpUtility.Generate(len: 6);
+            var key = $"pending-forgot-password:{user.Email}";
+            PendingForgotPasswordModel pendingForgotPassword = new PendingForgotPasswordModel
+            {
+                UserId = user.Id,
+                Otp = otp,
+            };
+            await _redisService.SaveAsync(
+                key,
+                pendingForgotPassword,
+                TimeSpan.FromSeconds(_securitySetting.OtpExpirySeconds)
+            );
+            var message = new SendOtpEmailMessage
+            {
+                ToEmail = user.Email,
+                Otp = otp,
+                Name = user.FullName,
+                OtpExpirySeconds = _securitySetting.OtpExpirySeconds,
+            };
+            await _kafkaProducer.ProduceAsync(
+                "send-otp-email",
+                message
+            );
+            return ApiResponse<object?>.Response(MessageRecord.Success);
         }
 
         public async Task<ApiResponse<LoginResponse?>> GoogleSignInAsync(string idToken)

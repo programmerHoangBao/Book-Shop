@@ -1,7 +1,8 @@
-﻿using StackExchange.Redis;
+﻿using back_end.Redis.Services;
+using StackExchange.Redis;
 using System.Text.Json;
 
-namespace back_end.Redis.Implements
+namespace back_end.Redis.Services.Implements
 {
     public class RedisService : IRedisService
     {

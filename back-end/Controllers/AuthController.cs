@@ -48,5 +48,12 @@ namespace back_end.Controllers
             var result = await _authService.GoogleSignInAsync(idToken);
             return StatusCode(result.HttpStatus, result);
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPasswordAsync([FromBody] ForgotPasswordRequest req)
+        {
+            var result = await _authService.ForgotPasswordAsync(req);
+            return StatusCode(result.HttpStatus, result);
+        }
     }
 }
