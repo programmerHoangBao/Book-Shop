@@ -2,7 +2,7 @@
 {
     public enum AuthAction
     {
-        Register = 1,
-        ForgotPassword = 2,
+        Register,
+        ForgotPassword
     }
 }

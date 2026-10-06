@@ -16,7 +16,5 @@ namespace back_end.DTOs.Auths.Requests
             ErrorMessage = "OTP must be exactly 6 digits."
         )]
         public string Otp { get; set; } = string.Empty;
-        [Required(ErrorMessage = "Action is required")]
-        public AuthAction Action { get; set; }
     }
 }
