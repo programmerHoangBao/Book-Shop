@@ -12,6 +12,7 @@
   - [1.7. Refresh Token](#17-refresh-token)
 
 ## 1. Auth
+
 ### 1.1. Login
 
 #### API Information
@@ -28,8 +29,8 @@ The API receives the user's email and password in the request body.
 
 ```json
 {
-    "email": "user@example.com",
-    "password": "Password@123"
+  "email": "user@example.com",
+  "password": "Password@123"
 }
 ```
 
@@ -61,15 +62,15 @@ When login is successful, the API returns HTTP `200 OK` with response code `S002
 
 ```json
 {
-    "isSuccess": true,
-    "responseCode": "S002",
-    "message": "Successful!",
-    "httpStatus": 200,
-    "data": {
-        "userId": "7f2c4a1e-5d2a-4d9a-b4f1-123456789abc",
-        "accessToken": "<access-token>",
-        "refreshToken": "<refresh-token>"
-    }
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": {
+    "userId": "7f2c4a1e-5d2a-4d9a-b4f1-123456789abc",
+    "accessToken": "<access-token>",
+    "refreshToken": "<refresh-token>"
+  }
 }
 ```
 
@@ -156,9 +157,9 @@ sequenceDiagram
 
 The Login API is responsible for authenticating a user and establishing an authenticated session. A successful login provides:
 
-* **Access Token**: used to access protected APIs.
-* **Refresh Token**: used to refresh authentication when the access token expires.
-* **Redis storage**: stores the hashed refresh token and its associated user information until the configured refresh-token expiration time.
+- **Access Token**: used to access protected APIs.
+- **Refresh Token**: used to refresh authentication when the access token expires.
+- **Redis storage**: stores the hashed refresh token and its associated user information until the configured refresh-token expiration time.
 
 ### 1.2. Register
 
@@ -176,9 +177,9 @@ The API receives the user's full name, email, and password in the request body.
 
 ```json
 {
-    "fullName": "Nguyen Van A",
-    "email": "user@example.com",
-    "password": "Password@123"
+  "fullName": "Nguyen Van A",
+  "email": "user@example.com",
+  "password": "Password@123"
 }
 ```
 
@@ -214,11 +215,13 @@ When the registration request is accepted successfully, the API returns HTTP `20
 
 ```json
 {
-    "isSuccess": true,
-    "responseCode": "S001",
-    "message": "Register is successfully!",
-    "httpStatus": 200,
-    "data": null
+  "isSuccess": true,
+  "responseCode": "S001",
+  "message": "Register is successfully!",
+  "httpStatus": 200,
+  "data": {
+    "OtpExpirySeconds": 120
+  }
 }
 ```
 
@@ -226,13 +229,14 @@ The API does not return user information or the OTP in the response. The OTP is 
 
 #### Output fields
 
-| Field          | Type            | Description                                                                              |
-| -------------- | --------------- | ---------------------------------------------------------------------------------------- |
-| `isSuccess`    | `boolean`       | Indicates whether the request was processed successfully.                                |
-| `responseCode` | `string`        | Application-specific response code. `S001` indicates successful registration initiation. |
-| `message`      | `string`        | Result message returned by the API.                                                      |
-| `httpStatus`   | `integer`       | HTTP status code of the response.                                                        |
-| `data`         | `object / null` | No additional data is returned for this API.                                             |
+| Field              | Type            | Description                                                                              |
+| ------------------ | --------------- | ---------------------------------------------------------------------------------------- |
+| `isSuccess`        | `boolean`       | Indicates whether the request was processed successfully.                                |
+| `responseCode`     | `string`        | Application-specific response code. `S001` indicates successful registration initiation. |
+| `message`          | `string`        | Result message returned by the API.                                                      |
+| `httpStatus`       | `integer`       | HTTP status code of the response.                                                        |
+| `data`             | `object / null` | No additional data is returned for this API.                                             |
+| `OtpExpirySeconds` | `int`           | Otp expiry seconds                                                                       |
 
 #### Error Responses
 
@@ -338,7 +342,7 @@ The API receives the user's email address in the request body.
 
 ```json
 {
-    "email": "user@example.com"
+  "email": "user@example.com"
 }
 ```
 
@@ -372,11 +376,13 @@ When the forgot-password request is processed successfully, the API returns HTTP
 
 ```json
 {
-    "isSuccess": true,
-    "responseCode": "S002",
-    "message": "Successful!",
-    "httpStatus": 200,
-    "data": null
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": {
+    "OtpExpirySeconds": 120
+  }
 }
 ```
 
@@ -384,13 +390,14 @@ The API does not return the OTP or any sensitive user information in the respons
 
 #### Output fields
 
-| Field          | Type            | Description                                                                 |
-| -------------- | --------------- | --------------------------------------------------------------------------- |
-| `isSuccess`    | `boolean`       | Indicates whether the request was processed successfully.                   |
-| `responseCode` | `string`        | Application-specific response code. `S002` indicates successful processing. |
-| `message`      | `string`        | Result message returned by the API.                                         |
-| `httpStatus`   | `integer`       | HTTP status code of the response.                                           |
-| `data`         | `object / null` | No additional data is returned for this API.                                |
+| Field              | Type            | Description                                                                 |
+| ------------------ | --------------- | --------------------------------------------------------------------------- |
+| `isSuccess`        | `boolean`       | Indicates whether the request was processed successfully.                   |
+| `responseCode`     | `string`        | Application-specific response code. `S002` indicates successful processing. |
+| `message`          | `string`        | Result message returned by the API.                                         |
+| `httpStatus`       | `integer`       | HTTP status code of the response.                                           |
+| `data`             | `object / null` | No additional data is returned for this API.                                |
+| `OtpExpirySeconds` | `int`           | Otp expiry seconds                                                          |
 
 #### Error Responses
 
@@ -501,8 +508,8 @@ The OTP generated by this API is intended to be verified by the subsequent **Ver
 
 The Verify OTP API is used to verify a user's 6-digit OTP code sent to their email. The API supports two flows:
 
-* **Registration:** verifies the OTP stored in the pending registration data in Redis and creates a new user account.
-* **Forgot Password:** verifies the OTP stored in Redis and generates a temporary `ResetPasswordKey` that is used to access the Reset Password API.
+- **Registration:** verifies the OTP stored in the pending registration data in Redis and creates a new user account.
+- **Forgot Password:** verifies the OTP stored in Redis and generates a temporary `ResetPasswordKey` that is used to access the Reset Password API.
 
 The API determines which flow to execute based on whether the email already belongs to an existing user.
 
@@ -524,11 +531,11 @@ The API determines which flow to execute based on whether the email already belo
 
 **Validation rules:**
 
-* `Email` is required.
-* `Email` must be in a valid email format.
-* `Email` must not exceed 255 characters.
-* `Otp` is required.
-* `Otp` must contain exactly 6 digits.
+- `Email` is required.
+- `Email` must be in a valid email format.
+- `Email` must not exceed 255 characters.
+- `Otp` is required.
+- `Otp` must contain exactly 6 digits.
 
 #### Output
 
@@ -702,12 +709,12 @@ The API receives a temporary `ResetPasswordKey` generated by the Verify OTP API 
 
 **Password validation rules:**
 
-* Must contain between **6 and 15 characters**.
-* Must contain at least **one uppercase letter**.
-* Must contain at least **one lowercase letter**.
-* Must contain at least **one digit**.
-* Must contain at least **one special character**.
-* Must not contain spaces.
+- Must contain between **6 and 15 characters**.
+- Must contain at least **one uppercase letter**.
+- Must contain at least **one lowercase letter**.
+- Must contain at least **one digit**.
+- Must contain at least **one special character**.
+- Must not contain spaces.
 
 #### Output
 
@@ -874,6 +881,7 @@ Reset Password API
       ▼
 Password Reset Successfully
 ```
+
 ### 1.6. Google Login
 
 **API format:** `POST https://<host>:<port>/api/auth/google-sign-in?idToken=<google-id-token>`
@@ -937,10 +945,10 @@ When Google authentication is successful, the API returns the user's ID, access 
 
 When the Google email does not exist in the database, the API automatically creates a new user with:
 
-* `Email` = Google account email
-* `FullName` = Google account name
-* `AvatarUrl` = Google account avatar
-* `AuthProvider` = `Google`
+- `Email` = Google account email
+- `FullName` = Google account name
+- `AvatarUrl` = Google account avatar
+- `AuthProvider` = `Google`
 
 The newly created user is then authenticated normally and receives an access token and refresh token.
 
@@ -951,7 +959,7 @@ The newly created user is then authenticated normally and receives an access tok
 | `E001`        |         400 | Request is invalid.                                                                  |
 | `E002`        |         500 | Internal server error.                                                               |
 | `E008`        |         400 | Google login failed or an operation failed.                                          |
-| `E009`        |         403 | Refresh token has expired. *(Used by refresh-token flow, not directly by this API.)* |
+| `E009`        |         403 | Refresh token has expired. _(Used by refresh-token flow, not directly by this API.)_ |
 
 ##### Example: Invalid Google ID Token
 
@@ -1308,4 +1316,3 @@ sequenceDiagram
         end
     end
 ```
-

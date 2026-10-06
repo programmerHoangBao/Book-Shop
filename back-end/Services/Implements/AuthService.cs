@@ -82,7 +82,14 @@ namespace back_end.Services.Implements
                 "send-otp-email",
                 message
             );
-            return ApiResponse<object?>.Response(MessageRecord.Success);
+            ForgotPasswordResponse response = new ForgotPasswordResponse
+            {
+                OtpExpirySeconds = _securitySetting.OtpExpirySeconds
+            };
+            return ApiResponse<object?>.Response(
+                MessageRecord.Success,
+                data: response
+            );
         }
 
         public async Task<ApiResponse<LoginResponse?>> GoogleSignInAsync(string idToken)
@@ -279,7 +286,14 @@ namespace back_end.Services.Implements
                 "send-otp-email",
                 message
             );
-            return ApiResponse<object?>.Response(MessageRecord.RegisterSuccessfully);
+            RegisterResponse response = new RegisterResponse
+            {
+                OtpExpirySeconds = _securitySetting.OtpExpirySeconds
+            };
+            return ApiResponse<object?>.Response(
+                MessageRecord.RegisterSuccessfully,
+                data: response
+            );
         }
 
         public async Task<ApiResponse<object?>> ResetPasswordAsync(ResetPasswordRequest req)
