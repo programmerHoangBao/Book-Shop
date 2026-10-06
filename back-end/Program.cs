@@ -1,7 +1,5 @@
 ﻿using back_end.Data;
 using back_end.Middleware;
-using back_end.Redis.Implements;
-using back_end.Redis;
 using back_end.Settings;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
@@ -14,6 +12,8 @@ using back_end.Repositories;
 using back_end.Repositories.Implements;
 using back_end.Profiles;
 using back_end.Configurations;
+using back_end.Redis.Services;
+using back_end.Redis.Services.Implements;
 
 var builder = WebApplication.CreateBuilder(args);
 

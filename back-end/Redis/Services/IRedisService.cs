@@ -1,4 +1,4 @@
-﻿namespace back_end.Redis
+﻿namespace back_end.Redis.Services
 {
     public interface IRedisService
     {
