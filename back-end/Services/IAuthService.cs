@@ -12,5 +12,6 @@ namespace back_end.Services
         Task<ApiResponse<object?>> RefreshTokenAsync(RefreshTokenRequest req);
         Task<ApiResponse<LoginResponse?>> GoogleSignInAsync(string idToken);
         Task<ApiResponse<object?>> ForgotPasswordAsync(ForgotPasswordRequest req);
+        Task<ApiResponse<object?>> ResetPasswordAsync(ResetPasswordRequest req);
     }
 }

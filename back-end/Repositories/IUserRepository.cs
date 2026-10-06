@@ -7,5 +7,6 @@ namespace back_end.Repositories
         Task<UserEntity?> GetUserByEmailAsync(string email);
         Task<bool> AddUserAsync(UserEntity user);
         Task<UserEntity?> GetUserByIdAsync(Guid userId);
+        Task<bool> UpdateUserAsync(UserEntity user);
     }
 }
