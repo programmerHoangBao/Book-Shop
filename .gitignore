@@ -15,3 +15,5 @@
 /back-end/.vs
 /.github
 /back-end/Migrations
+/back-end/appsettings.Production.json
+/.env
