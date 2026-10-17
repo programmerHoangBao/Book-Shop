@@ -122,6 +122,52 @@
     # Redis
     REDIS_PASSWORD=......................
     ```
+  - File back-end/appsettings.json có nội dung như sau:
+    ```json
+    {
+      "Logging": {
+        "LogLevel": {
+          "Default": "Information",
+          "Microsoft.AspNetCore": "Warning"
+        }
+      },
+      "AllowedHosts": "*",
+      "ConnectionStrings": {
+        "DefaultConnection": "Server=localhost;Port=5432;Database=<database-name>;Username=<username-postgresql>;Password=<password-postgresql>"
+      },
+      "Security": {
+        "SHASecrectKey": "<sha-secrect-key>",
+        "JwtSecretKey": "<jwt-secrect-key>",
+        "JwtIssuer": "BookShop-BackEnd",
+        "JwtAudience": "BookShop-FrontEnd",
+        "AccessTokenExpirationMinutes": <Access-Token-Expiration-Minutes>,
+        "RefreshTokenExpirationDays": <Refresh-Token-Expiration-Days>,
+        "OtpExpirySeconds": <Otp-Expiry-Seconds>,
+        "ResetPasswordExpiryMinutes": <Reset-Password-Expiry-Minutes>
+      },
+      "Redis": {
+        "ConnectionString": "localhost:6379,password=<redis-password>"
+      },
+      "Email": {
+        "Host": "smtp.gmail.com",
+        "Port": 587,
+        "Username": "<username-app-email>",
+        "Password": "<password-app-email>",
+        "FromEmail": "<from-email>",
+        "EnableSsl": true,
+        "AppName": "Book Shop"
+      },
+      "Kafka": {
+        "BootstrapServers": "localhost:9092"
+      },
+      "Authentication": {
+        "Google": {
+          "ClientId": "<google-client-id>"
+        }
+      }
+    }
+    ```
+    
   - File back-end/appsettings.Production.json có nội dung như sau:
     ```json
     {
@@ -280,7 +326,8 @@ $ cd back-end
 $ dotnet ef database update
 ```
 
-Kết quả nhận được `Build succeeded.` nghĩa là việc Miragtion đã thành công.
+Kết quả nhận được `Build succeeded.` và `done` nghĩa là việc Miragtion đã thành công.
   
-<img width="1265" height="220" alt="image" src="https://github.com/user-attachments/assets/2fdfa40b-a603-485d-a373-aeffd05b44cc" />
+<img width="1227" height="404" alt="Screenshot 2026-10-18 014251" src="https://github.com/user-attachments/assets/2a0ef7f1-8b04-4580-b504-fcaff84e708a" />
+
 
