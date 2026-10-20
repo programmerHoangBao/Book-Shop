@@ -16,7 +16,7 @@ namespace back_end.Entities
         [Column(TypeName = "varchar(11)")]
         public string PhoneNumber { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
 
         public ICollection<StoreStaffEntity> StoreStaffs { get; set; } = new List<StoreStaffEntity>();

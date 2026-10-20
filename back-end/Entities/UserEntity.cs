@@ -35,7 +35,7 @@ namespace back_end.Entities
         public bool Enabled { get; set; } = true;
 
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
 
         public ICollection<AddressEntity> Addresses { get; set; } = new List<AddressEntity>();

@@ -24,7 +24,7 @@ namespace back_end.Entities
         public BookStatus Status { get; set; } = BookStatus.Available;
         public long Rank { get; set; } = -1;
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
 
         public ICollection<BookImageEntity> Images { get; set; } = new List<BookImageEntity>();

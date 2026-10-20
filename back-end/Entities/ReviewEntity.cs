@@ -19,7 +19,7 @@ namespace back_end.Entities
         public int Ratting { get; set; } = 0;
         public string? Comment { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
 
         public UserEntity? User { get; set; }

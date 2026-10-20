@@ -18,7 +18,7 @@ namespace back_end.Entities
         [Required]
         public Guid OrderId { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
 
         public PromotionEntity? Promotion { get; set; }

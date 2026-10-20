@@ -17,7 +17,7 @@ namespace back_end.Entities
         public int Quantity { get; set; } = 0;
 
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
         public CartEntity? Cart { get; set; }
         public BookEntity? Book { get; set; }

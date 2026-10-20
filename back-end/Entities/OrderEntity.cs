@@ -53,7 +53,7 @@ namespace back_end.Entities
 
 
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
 
         public UserEntity? User { get; set; }

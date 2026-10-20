@@ -26,6 +26,7 @@ namespace back_end.Middleware
             Exception exception
         )
         {
+            string? message = null;
             ErrorRecord errorRecord = exception switch
             {
                 BusinessException businessException =>
@@ -37,7 +38,11 @@ namespace back_end.Middleware
                 _ =>
                     ErrorRecord.InternalServerError
             };
-            var response = ApiResponse<object?>.Response(errorRecord: errorRecord);
+            if (exception is ArgumentException || exception is KeyNotFoundException)
+            {
+                message = exception.Message;
+            }
+            var response = ApiResponse<object?>.Response(errorRecord: errorRecord, data:message);
             context.Response.StatusCode = errorRecord.HttpStatus;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsync(JsonSerializer.Serialize(response));
