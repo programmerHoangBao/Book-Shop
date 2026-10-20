@@ -80,6 +80,9 @@ var securitySetting = builder.Configuration
     .Get<SecuritySetting>();
 builder.Services.AddJWTAuthentication(securitySetting!);
 
+// Rate Limiting Configuration
+builder.Services.AddRateLimitingConfiguration(securitySetting!);
+
 var app = builder.Build();
 
 // Add Middleware
@@ -90,6 +93,10 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+// Add Rate Limiting Middleware
+app.UseRouting();
+app.UseRateLimiter();
 
 app.UseHttpsRedirection();
 
