@@ -13,19 +13,35 @@
 
 ## 1. Auth
 
-### 1.1. Login
+### 1.1 Login
 
 #### API Information
 
-| Item             | Description                                                                                                            |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **API**          | `POST https://<host>:<port>/api/auth/login`                                                                            |
-| **Content-Type** | `application/json`                                                                                                     |
-| **Purpose**      | Authenticate a user using email and password, then issue an access token and refresh token for authenticated requests. |
+- **Method:** `POST`
+- **URL:** `http://<host>:<port>/api/auth/login`
+- **Content-Type:** `application/json`
+- **Rate Limiting Policy:** `LoginPolicy`
+
+The `<host>` and `<port>` depend on the deployment environment. For example, when running the backend locally, the URL may be `http://localhost:5070/api/auth/login`.
+
+#### Description
+
+This API authenticates a user using their email address and password. If the credentials are valid, the system generates an access token and a refresh token, stores the refresh token's hash in Redis with a configured expiration time, and returns the authentication information to the client.
+
+The API does not allow users who are deleted or users who do not have a local password to log in using this method.
 
 #### Request
 
-The API receives the user's email and password in the request body.
+The client sends a JSON object containing the user's email address and password.
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `Email` | String | Yes | The user's email address. Must be a valid email address and must not exceed 255 characters. |
+| `Password` | String | Yes | The user's password. Must contain 6–15 non-whitespace characters, including at least one uppercase letter, one lowercase letter, one digit, and one special character. Spaces are not allowed. |
+
+**Example Request:**
 
 ```json
 {
@@ -34,31 +50,13 @@ The API receives the user's email and password in the request body.
 }
 ```
 
-**Input fields:**
-
-| Field      | Type     | Required | Description                                                                                                                                                               |
-| ---------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `email`    | `string` | Yes      | User's email address. Maximum 255 characters and must have a valid email format.                                                                                          |
-| `password` | `string` | Yes      | User's password. Must be 6–15 characters, contain at least one uppercase letter, one lowercase letter, one digit, and one special character, and must not contain spaces. |
-
-The request is validated before the controller processes the login operation. If validation fails, the API returns `E001 - Request is invalid!`.
-
-#### Processing
-
-After successful request validation, the API performs the following operations:
-
-1. Find the user by email.
-2. Check whether the user exists and is not deleted.
-3. Check whether the user has a local password.
-4. Verify the provided password against the stored password hash.
-5. Generate an access token.
-6. Generate a refresh token.
-7. Hash the refresh token and store its information in Redis with an expiration time.
-8. Return the user's ID together with the access token and refresh token.
-
 #### Response
 
-When login is successful, the API returns HTTP `200 OK` with response code `S002`.
+The API returns a standardized `ApiResponse<T>` JSON object. The response includes the operation status, response code, message, HTTP status code, and response data.
+
+**1. Successful Login — HTTP 200 OK**
+
+Returned when the user exists, is not deleted, has a local password, and provides the correct password.
 
 ```json
 {
@@ -67,695 +65,36 @@ When login is successful, the API returns HTTP `200 OK` with response code `S002
   "message": "Successful!",
   "httpStatus": 200,
   "data": {
-    "userId": "7f2c4a1e-5d2a-4d9a-b4f1-123456789abc",
+    "userId": "00000000-0000-0000-0000-000000000000",
     "accessToken": "<access-token>",
     "refreshToken": "<refresh-token>"
   }
 }
 ```
 
-**Output fields:**
+The `userId` is the user's unique identifier. The `accessToken` is used to authenticate subsequent requests, while the `refreshToken` is used to obtain a new access token according to the refresh-token workflow.
 
-| Field          | Type     | Description                                                                    |
-| -------------- | -------- | ------------------------------------------------------------------------------ |
-| `userId`       | `Guid`   | Unique identifier of the authenticated user.                                   |
-| `accessToken`  | `string` | JWT access token used to authenticate protected API requests.                  |
-| `refreshToken` | `string` | Refresh token used to obtain a new access token when the access token expires. |
+**2. Invalid Request — HTTP 400 Bad Request**
 
-#### Error Responses
-
-| Response Code | HTTP Status | Condition                                                         |
-| ------------- | ----------: | ----------------------------------------------------------------- |
-| `E001`        |       `400` | Request validation fails.                                         |
-| `E005`        |       `404` | User does not exist or the user has been deleted.                 |
-| `E006`        |       `400` | Password is incorrect or the user does not have a local password. |
-| `E002`        |       `500` | An unexpected internal server error occurs.                       |
-
-#### Sequence Diagram
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    actor Client
-    participant Controller as AuthController
-    participant Service as AuthService
-    participant Repository as UserRepository
-    participant Hash as HashUtility
-    participant JWT as JwtService
-    participant Redis as RedisService
-    participant Middleware as ExceptionHandlingMiddleware
-
-    Client->>Controller: POST /api/auth/login\n{email, password}
-
-    alt Request validation fails
-        Controller-->>Client: 400 Bad Request\nE001 Request is invalid!
-    else Request is valid
-        Controller->>Service: LoginAsync(req)
-
-        Service->>Repository: GetUserByEmailAsync(email)
-        Repository-->>Service: UserEntity / null
-
-        alt User not found or deleted
-            Service-->>Middleware: BusinessException(E005)
-            Middleware-->>Client: 404 Not Found\nE005 Not found data!
-        else User exists
-            alt User has no local password
-                Service-->>Middleware: BusinessException(E006)
-                Middleware-->>Client: 400 Bad Request\nE006 Login Failed!
-            else User has local password
-                Service->>Hash: Verify(password, passwordHash)
-                Hash-->>Service: true / false
-
-                alt Password is invalid
-                    Service-->>Middleware: BusinessException(E006)
-                    Middleware-->>Client: 400 Bad Request\nE006 Login Failed!
-                else Password is valid
-                    Service->>JWT: GenerateAccessToken(user)
-                    JWT-->>Service: Access Token
-
-                    Service->>JWT: GenerateRefreshToken()
-                    JWT-->>Service: Refresh Token
-
-                    Service->>Hash: HashBySHA256(refreshToken)
-                    Hash-->>Service: Refresh Token Hash
-
-                    Service->>Redis: SaveAsync(refresh_token:{hash},\nRefreshTokenModel, expiration)
-                    Redis-->>Service: Saved
-
-                    Service-->>Controller: ApiResponse<LoginResponse>
-                    Controller-->>Client: 200 OK\nS002 Successful!\n{userId, accessToken, refreshToken}
-                end
-            end
-        end
-    end
-
-    Note over Middleware: Handles BusinessException\nand unexpected exceptions
-```
-
-#### Purpose
-
-The Login API is responsible for authenticating a user and establishing an authenticated session. A successful login provides:
-
-- **Access Token**: used to access protected APIs.
-- **Refresh Token**: used to refresh authentication when the access token expires.
-- **Redis storage**: stores the hashed refresh token and its associated user information until the configured refresh-token expiration time.
-
-### 1.2. Register
-
-#### API Information
-
-| Item             | Description                                                                                                                                                        |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **API**          | `POST https://<host>:<port>/api/auth/register`                                                                                                                     |
-| **Content-Type** | `application/json`                                                                                                                                                 |
-| **Purpose**      | Register a new user by validating the registration information, creating a temporary registration record, and sending an OTP to the user's email for verification. |
-
-#### Request
-
-The API receives the user's full name, email, and password in the request body.
-
-```json
-{
-  "fullName": "Nguyen Van A",
-  "email": "user@example.com",
-  "password": "Password@123"
-}
-```
-
-**Input fields:**
-
-| Field      | Type     | Required | Description                                                                                                                                                               |
-| ---------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `fullName` | `string` | Yes      | User's full name. Maximum 255 characters.                                                                                                                                 |
-| `email`    | `string` | Yes      | User's email address. Maximum 255 characters and must have a valid email format.                                                                                          |
-| `password` | `string` | Yes      | User's password. Must be 6–15 characters, contain at least one uppercase letter, one lowercase letter, one digit, and one special character, and must not contain spaces. |
-
-The request is validated before the controller processes the registration operation. If validation fails, the API returns `E001 - Request is invalid!`.
-
-#### Processing
-
-After successful request validation, the API performs the following operations:
-
-1. Check whether the email already exists in the database.
-2. If the email already exists, return `E004 - User is exists!`.
-3. Generate a 6-digit OTP.
-4. Hash the user's password using SHA-256 with the configured secret key.
-5. Create a temporary `PendingRegistrationModel` containing the full name, email, password hash, and OTP.
-6. Store the pending registration information in Redis using the key:
-   `pending-registration:{email}`.
-7. Set the Redis expiration time according to `OtpExpirySeconds`.
-8. Publish a `SendOtpEmailMessage` to the Kafka topic `send-otp-email`.
-9. The email consumer can then process the message and send the OTP to the user.
-10. Return a successful registration response.
-
-#### Response
-
-When the registration request is accepted successfully, the API returns HTTP `200 OK` with response code `S001`.
-
-```json
-{
-  "isSuccess": true,
-  "responseCode": "S001",
-  "message": "Register is successfully!",
-  "httpStatus": 200,
-  "data": {
-    "OtpExpirySeconds": 120
-  }
-}
-```
-
-The API does not return user information or the OTP in the response. The OTP is sent to the user's email through the asynchronous Kafka-based email process.
-
-#### Output fields
-
-| Field              | Type            | Description                                                                              |
-| ------------------ | --------------- | ---------------------------------------------------------------------------------------- |
-| `isSuccess`        | `boolean`       | Indicates whether the request was processed successfully.                                |
-| `responseCode`     | `string`        | Application-specific response code. `S001` indicates successful registration initiation. |
-| `message`          | `string`        | Result message returned by the API.                                                      |
-| `httpStatus`       | `integer`       | HTTP status code of the response.                                                        |
-| `data`             | `object / null` | No additional data is returned for this API.                                             |
-| `OtpExpirySeconds` | `int`           | Otp expiry seconds                                                                       |
-
-#### Error Responses
-
-| Response Code | HTTP Status | Condition                                   |
-| ------------- | ----------: | ------------------------------------------- |
-| `E001`        |       `400` | Request validation fails.                   |
-| `E004`        |       `409` | The email is already registered.            |
-| `E002`        |       `500` | An unexpected internal server error occurs. |
-
-#### Sequence Diagram
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    actor Client
-    participant Controller as AuthController
-    participant Service as AuthService
-    participant Repository as UserRepository
-    participant Hash as HashUtility
-    participant Redis as RedisService
-    participant Kafka as KafkaProducer
-    participant Consumer as OTP Email Consumer
-    participant Email as Email Service
-
-    Client->>Controller: POST /api/auth/register\n{fullName, email, password}
-
-    alt Request validation fails
-        Controller-->>Client: 400 Bad Request\nE001 Request is invalid!
-    else Request is valid
-        Controller->>Service: RegisterAsync(req)
-
-        Service->>Repository: GetUserByEmailAsync(email)
-        Repository-->>Service: UserEntity / null
-
-        alt Email already exists
-            Service-->>Controller: BusinessException(E004)
-            Controller-->>Client: 409 Conflict\nE004 User is exists!
-        else Email does not exist
-            Service->>Service: Generate 6-digit OTP
-            Service->>Hash: HashBySHA256(password, secretKey)
-            Hash-->>Service: Password Hash
-
-            Service->>Service: Create PendingRegistrationModel
-
-            Service->>Redis: SaveAsync(\npending-registration:{email},\nPendingRegistrationModel,\nOTP expiration)
-            Redis-->>Service: Saved
-
-            Service->>Kafka: ProduceAsync(\nsend-otp-email,\nSendOtpEmailMessage)
-            Kafka-->>Service: Message published
-
-            Service-->>Controller: ApiResponse<object>\nS001 Register is successfully!
-            Controller-->>Client: 200 OK\nS001 Register is successfully!
-
-            Kafka->>Consumer: Consume SendOtpEmailMessage
-            Consumer->>Email: Send OTP email\n(ToEmail, OTP, Name)
-            Email-->>Consumer: Email sent
-        end
-    end
-```
-
-#### Purpose
-
-The Register API starts the user registration process without immediately creating the user as a verified account.
-
-The API uses **Redis** to temporarily store the registration information and OTP with an expiration time. **Kafka** is used to publish an email-sending message asynchronously, allowing the API to return the registration result without waiting for the email to be sent.
-
-The registration flow can therefore be summarized as:
-
-```text
-Client
-  ↓
-Register API
-  ↓
-Check existing email
-  ↓
-Generate OTP + Hash password
-  ↓
-Store pending registration in Redis
-  ↓
-Publish OTP email message to Kafka
-  ↓
-Return success response
-  ↓
-Kafka Consumer
-  ↓
-Send OTP email
-```
-
-### 1.3. Forgot Password
-
-#### API Information
-
-| Item             | Description                                                                                                                                                                 |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **API**          | `POST https://<host>:<port>/api/auth/forgot-password`                                                                                                                       |
-| **Content-Type** | `application/json`                                                                                                                                                          |
-| **Purpose**      | Start the password recovery process by generating an OTP, temporarily storing the OTP and user information in Redis, and sending the OTP to the user's email through Kafka. |
-
-#### Request
-
-The API receives the user's email address in the request body.
-
-```json
-{
-  "email": "user@example.com"
-}
-```
-
-**Input fields:**
-
-| Field   | Type     | Required | Description                                                                      |
-| ------- | -------- | -------- | -------------------------------------------------------------------------------- |
-| `email` | `string` | Yes      | User's email address. Maximum 255 characters and must have a valid email format. |
-
-The request is validated before the controller processes the forgot-password operation. If validation fails, the API returns `E001 - Request is invalid!`.
-
-#### Processing
-
-After successful request validation, the API performs the following operations:
-
-1. Find the user by email.
-2. Check whether the user exists and is not deleted.
-3. Check whether the user's authentication provider is `Local`.
-4. Generate a 6-digit OTP.
-5. Create a temporary `PendingForgotPasswordModel` containing the user's ID and OTP.
-6. Store the pending forgot-password information in Redis using the key:
-   `pending-forgot-password:{email}`.
-7. Set the Redis expiration time according to `OtpExpirySeconds`.
-8. Publish a `SendOtpEmailMessage` to the Kafka topic `send-otp-email`.
-9. The OTP email consumer processes the message and sends the OTP to the user's email.
-10. Return a successful response to the client.
-
-#### Response
-
-When the forgot-password request is processed successfully, the API returns HTTP `200 OK` with response code `S002`.
-
-```json
-{
-  "isSuccess": true,
-  "responseCode": "S002",
-  "message": "Successful!",
-  "httpStatus": 200,
-  "data": {
-    "OtpExpirySeconds": 120
-  }
-}
-```
-
-The API does not return the OTP or any sensitive user information in the response. The OTP is sent to the user's email through the asynchronous email-processing flow.
-
-#### Output fields
-
-| Field              | Type            | Description                                                                 |
-| ------------------ | --------------- | --------------------------------------------------------------------------- |
-| `isSuccess`        | `boolean`       | Indicates whether the request was processed successfully.                   |
-| `responseCode`     | `string`        | Application-specific response code. `S002` indicates successful processing. |
-| `message`          | `string`        | Result message returned by the API.                                         |
-| `httpStatus`       | `integer`       | HTTP status code of the response.                                           |
-| `data`             | `object / null` | No additional data is returned for this API.                                |
-| `OtpExpirySeconds` | `int`           | Otp expiry seconds                                                          |
-
-#### Error Responses
-
-| Response Code | HTTP Status | Condition                                                                                                |
-| ------------- | ----------: | -------------------------------------------------------------------------------------------------------- |
-| `E001`        |       `400` | Request validation fails.                                                                                |
-| `E005`        |       `404` | User does not exist or the user has been deleted.                                                        |
-| `E010`        |       `403` | The user is not registered as a local account and therefore cannot reset the password through this flow. |
-| `E002`        |       `500` | An unexpected internal server error occurs.                                                              |
-
-#### Sequence Diagram
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    actor Client
-    participant Controller as AuthController
-    participant Service as AuthService
-    participant Repository as UserRepository
-    participant OTP as OtpUtility
-    participant Redis as RedisService
-    participant Kafka as KafkaProducer
-    participant Consumer as OTP Email Consumer
-    participant Email as Email Service
-
-    Client->>Controller: POST /api/auth/forgot-password\n{email}
-
-    alt Request validation fails
-        Controller-->>Client: 400 Bad Request\nE001 Request is invalid!
-    else Request is valid
-        Controller->>Service: ForgotPasswordAsync(req)
-
-        Service->>Repository: GetUserByEmailAsync(email)
-        Repository-->>Service: UserEntity / null
-
-        alt User not found or deleted
-            Service-->>Controller: BusinessException(E005)
-            Controller-->>Client: 404 Not Found\nE005 Not found data!
-        else User exists
-            alt User is not a local account
-                Service-->>Controller: BusinessException(E010)
-                Controller-->>Client: 403 Forbidden\nE010 User not log in locally
-            else User is a local account
-                Service->>OTP: Generate(6)
-                OTP-->>Service: 6-digit OTP
-
-                Service->>Service: Create PendingForgotPasswordModel
-
-                Service->>Redis: SaveAsync(\npending-forgot-password:{email},\nPendingForgotPasswordModel,\nOTP expiration)
-                Redis-->>Service: Saved
-
-                Service->>Kafka: ProduceAsync(\nsend-otp-email,\nSendOtpEmailMessage)
-                Kafka-->>Service: Message published
-
-                Service-->>Controller: ApiResponse<object>\nS002 Successful!
-                Controller-->>Client: 200 OK\nS002 Successful!
-
-                Kafka->>Consumer: Consume SendOtpEmailMessage
-                Consumer->>Email: Send OTP email\n(ToEmail, OTP, Name)
-                Email-->>Consumer: Email sent
-            end
-        end
-    end
-```
-
-#### Purpose
-
-The Forgot Password API starts the password reset process for users with a local account.
-
-The API uses **Redis** as temporary storage for the OTP and user ID. The stored information expires automatically according to the configured OTP expiration time. **Kafka** is used to send the email request asynchronously so that the API does not need to wait for the email service to finish sending the OTP.
-
-The forgot-password flow can be summarized as:
-
-```text
-Client
-  ↓
-Forgot Password API
-  ↓
-Find user by email
-  ↓
-Check local account
-  ↓
-Generate OTP
-  ↓
-Store OTP + UserId in Redis
-  ↓
-Publish OTP email message to Kafka
-  ↓
-Return success response
-  ↓
-Kafka Consumer
-  ↓
-Send OTP email
-  ↓
-User receives OTP
-```
-
-The OTP generated by this API is intended to be verified by the subsequent **Verify OTP** API before the user is allowed to reset the password.
-
-### 1.4. Verify OTP
-
-**API format:** `POST https://<host>:<port>/api/auth/verify`
-
-**Content-Type:** `application/json`
-
-#### Description
-
-The Verify OTP API is used to verify a user's 6-digit OTP code sent to their email. The API supports two flows:
-
-- **Registration:** verifies the OTP stored in the pending registration data in Redis and creates a new user account.
-- **Forgot Password:** verifies the OTP stored in Redis and generates a temporary `ResetPasswordKey` that is used to access the Reset Password API.
-
-The API determines which flow to execute based on whether the email already belongs to an existing user.
-
-#### Input
-
-**Request body:**
-
-```json
-{
-  "email": "user@example.com",
-  "otp": "123456"
-}
-```
-
-| Field   | Type   | Required | Description                                                                     |
-| ------- | ------ | -------- | ------------------------------------------------------------------------------- |
-| `email` | string | Yes      | User's email address. Must be a valid email and must not exceed 255 characters. |
-| `otp`   | string | Yes      | OTP code. Must contain exactly 6 digits.                                        |
-
-**Validation rules:**
-
-- `Email` is required.
-- `Email` must be in a valid email format.
-- `Email` must not exceed 255 characters.
-- `Otp` is required.
-- `Otp` must contain exactly 6 digits.
-
-#### Output
-
-##### Registration flow
-
-When the email does not belong to an existing user and the OTP is valid, the system creates the user successfully.
-
-```json
-{
-  "isSuccess": true,
-  "responseCode": "S002",
-  "message": "Successful!",
-  "httpStatus": 200,
-  "data": null
-}
-```
-
-##### Forgot Password flow
-
-When the email belongs to an existing user and the OTP is valid, the system generates a `ResetPasswordKey`.
-
-```json
-{
-  "isSuccess": true,
-  "responseCode": "S002",
-  "message": "Successful!",
-  "httpStatus": 200,
-  "data": {
-    "resetPasswordKey": "7f3b2c1e-8f42-4e6a-9e9f-123456789abc",
-    "action": "ForgotPassword"
-  }
-}
-```
-
-The generated `ResetPasswordKey` is temporarily stored in Redis and must be used by the Reset Password API before it expires.
-
-#### Error Responses
-
-| Response Code | HTTP Status | Description                                                |
-| ------------- | ----------: | ---------------------------------------------------------- |
-| `E001`        |         400 | Request validation failed.                                 |
-| `E007`        |         403 | OTP has expired or the OTP data no longer exists in Redis. |
-| `E008`        |         400 | OTP is invalid or the verification process failed.         |
-| `E002`        |         500 | Internal server error.                                     |
-
-##### Example: Invalid OTP
+Returned when the request fails model validation, such as when the email is missing or invalid, or the password does not satisfy the validation rules.
 
 ```json
 {
   "isSuccess": false,
-  "responseCode": "E008",
-  "message": "Failed!",
+  "responseCode": "E001",
+  "message": "Request is invalid!",
   "httpStatus": 400,
-  "data": null
+  "data": [
+    "The Password field must contain at least one uppercase letter."
+  ]
 }
 ```
 
-##### Example: Expired OTP
+The `data` array contains validation error messages. The exact messages depend on the validation errors encountered.
 
-```json
-{
-  "isSuccess": false,
-  "responseCode": "E007",
-  "message": "OTP has expired!",
-  "httpStatus": 403,
-  "data": null
-}
-```
+**3. User Not Found or Deleted — HTTP 404 Not Found**
 
-#### Purpose
-
-The purpose of this API is to:
-
-1. Verify that the OTP entered by the user matches the OTP stored in Redis.
-2. Complete the account registration process after successful OTP verification.
-3. Authorize the password reset process by generating a temporary `ResetPasswordKey`.
-4. Remove the OTP-related data from Redis after successful verification.
-
-#### Sequence Diagram
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant C as Client
-    participant API as Auth Controller
-    participant S as Auth Service
-    participant DB as User Repository / Database
-    participant R as Redis
-
-    C->>API: POST /api/auth/verify<br/>Email + OTP
-    API->>S: VerifyOtpAsync(request)
-
-    S->>DB: GetUserByEmailAsync(email)
-    DB-->>S: User / null
-
-    alt User exists
-        Note over S: Forgot Password flow
-
-        S->>R: Get pending-forgot-password:{email}
-        R-->>S: PendingForgotPasswordModel / null
-
-        alt OTP expired
-            S-->>API: BusinessException(E007)
-            API-->>C: 403 OTP has expired
-        else OTP invalid
-            S-->>API: BusinessException(E008)
-            API-->>C: 400 Failed
-        else OTP valid
-            S->>S: Generate ResetPasswordKey
-            S->>R: Save reset-password:{key}<br/>ResetPasswordModel + expiry
-            S->>R: Delete pending-forgot-password:{email}
-            S-->>API: VerifyOtpResponse
-            API-->>C: 200 Success + ResetPasswordKey
-        end
-
-    else User does not exist
-        Note over S: Registration flow
-
-        S->>R: Get pending-registration:{email}
-        R-->>S: PendingRegistrationModel / null
-
-        alt OTP expired
-            S-->>API: BusinessException(E007)
-            API-->>C: 403 OTP has expired
-        else OTP invalid
-            S-->>API: BusinessException(E008)
-            API-->>C: 400 Failed
-        else OTP valid
-            S->>DB: Add new User
-            DB-->>S: Save result
-
-            alt Save failed
-                S-->>API: BusinessException(E008)
-                API-->>C: 400 Failed
-            else Save successful
-                S->>R: Delete pending-registration:{email}
-                S-->>API: Success
-                API-->>C: 200 Success
-            end
-        end
-    end
-```
-
-### 1.5. Reset Password
-
-**API format:** `PATCH https://<host>:<port>/api/auth/reset-password`
-
-**Content-Type:** `application/json`
-
-#### Description
-
-The Reset Password API is used to change the password of a user after the Forgot Password process has been successfully verified through OTP.
-
-The API receives a temporary `ResetPasswordKey` generated by the Verify OTP API together with the user's new password. The system verifies the key stored in Redis, retrieves the corresponding user, checks that the user uses local authentication, updates the password, and removes the reset password key from Redis after a successful password change.
-
-#### Input
-
-**Request body:**
-
-```json
-{
-  "resetPasswordKey": "7f3b2c1e-8f42-4e6a-9e9f-123456789abc",
-  "newPassword": "NewPass@123"
-}
-```
-
-| Field              | Type   | Required | Description                                                |
-| ------------------ | ------ | -------- | ---------------------------------------------------------- |
-| `resetPasswordKey` | GUID   | Yes      | Temporary key generated after successful OTP verification. |
-| `newPassword`      | string | Yes      | New password of the user.                                  |
-
-**Password validation rules:**
-
-- Must contain between **6 and 15 characters**.
-- Must contain at least **one uppercase letter**.
-- Must contain at least **one lowercase letter**.
-- Must contain at least **one digit**.
-- Must contain at least **one special character**.
-- Must not contain spaces.
-
-#### Output
-
-When the password is changed successfully, the API returns:
-
-```json
-{
-  "isSuccess": true,
-  "responseCode": "S002",
-  "message": "Successful!",
-  "httpStatus": 200,
-  "data": null
-}
-```
-
-The `data` field is `null` because the API does not return any additional data after the password has been successfully updated.
-
-#### Error Responses
-
-| Response Code | HTTP Status | Description                                                   |
-| ------------- | ----------: | ------------------------------------------------------------- |
-| `E001`        |         400 | Request validation failed.                                    |
-| `E002`        |         500 | Internal server error.                                        |
-| `E005`        |         404 | User was not found or has been deleted.                       |
-| `E008`        |         400 | Reset password operation failed.                              |
-| `E010`        |         403 | The user does not use local authentication.                   |
-| `E011`        |         403 | The reset password key has expired or is no longer available. |
-
-##### Example: Reset Password Key Expired
-
-```json
-{
-  "isSuccess": false,
-  "responseCode": "E011",
-  "message": "Your time to change the password has expired!",
-  "httpStatus": 403,
-  "data": null
-}
-```
-
-##### Example: User Not Found
+Returned when the email does not correspond to an existing user or the user has been deleted.
 
 ```json
 {
@@ -767,7 +106,421 @@ The `data` field is `null` because the API does not return any additional data a
 }
 ```
 
-##### Example: User Does Not Use Local Authentication
+**4. Login Failed — HTTP 400 Bad Request**
+
+Returned when the password is incorrect or the user does not have a local password, such as an account registered through an external authentication provider.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E006",
+  "message": "Login Failed!",
+  "httpStatus": 400,
+  "data": null
+}
+```
+
+**5. Too Many Requests — HTTP 429 Too Many Requests**
+
+Returned when the client exceeds the request limit configured by `LoginPolicy`.
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+This response is generated by the ASP.NET Core Rate Limiting middleware and has a different structure from the standard `ApiResponse<T>` format.
+
+**6. Internal Server Error — HTTP 500 Internal Server Error**
+
+Returned when an unexpected server-side exception occurs, such as an unhandled infrastructure or service error.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E002",
+  "message": "Internal server error!",
+  "httpStatus": 500,
+  "data": null
+}
+```
+
+#### Sequence Diagram
+
+The following sequence diagram illustrates the login workflow, including request validation, rate limiting, user verification, password verification, token generation, and refresh-token storage in Redis.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Controller as Auth Controller
+    participant RateLimiter as Rate Limiting Middleware
+    participant Validator as Request Validation
+    participant Service as Auth Service
+    participant Repository as User Repository
+    participant Hash as Hash Utility
+    participant JWT as JWT Service
+    participant Redis
+
+    Client->>Controller: POST /api/auth/login
+    Note over Client,Controller: Content-Type: application/json
+
+    Controller->>RateLimiter: Apply LoginPolicy
+
+    alt Rate limit exceeded
+        RateLimiter-->>Client: 429 Too Many Requests
+    else Request allowed
+        RateLimiter->>Validator: Validate LoginRequest
+
+        alt Invalid request
+            Validator-->>Client: 400 Request Invalid (E001)
+        else Valid request
+            Validator->>Controller: Validation passed
+            Controller->>Service: LoginAsync(request)
+            Service->>Repository: GetUserByEmailAsync(email)
+            Repository-->>Service: User or null
+
+            alt User not found or deleted
+                Service-->>Controller: BusinessException (E005)
+                Controller-->>Client: 404 Not Found
+            else User exists and is active
+                alt No local password
+                    Service-->>Controller: BusinessException (E006)
+                    Controller-->>Client: 400 Login Failed
+                else Local password exists
+                    Service->>Hash: Verify password
+
+                    alt Password incorrect
+                        Hash-->>Service: false
+                        Service-->>Controller: BusinessException (E006)
+                        Controller-->>Client: 400 Login Failed
+                    else Password correct
+                        Hash-->>Service: true
+                        Service->>JWT: GenerateAccessToken(user)
+                        JWT-->>Service: Access token
+                        Service->>JWT: GenerateRefreshToken()
+                        JWT-->>Service: Refresh token
+                        Service->>Hash: HashBySHA256(refresh token)
+                        Hash-->>Service: Refresh token hash
+                        Service->>Redis: Save refresh token hash and user ID with TTL
+                        Redis-->>Service: Save result
+                        Service-->>Controller: ApiResponse with tokens (S002)
+                        Controller-->>Client: 200 OK + LoginResponse
+                    end
+                end
+            end
+        end
+    end
+```
+
+#### Notes
+
+- The refresh token is stored in Redis using the key format `refresh_token:{refreshTokenHash}`. The raw refresh token is returned to the client, while its hash is used as the Redis key and stored value.
+- The Redis entry expires after the number of days configured by `RefreshTokenExpirationDays`.
+- The `LoginPolicy` rate limit is enforced before the login action executes. When the limit is exceeded, the client receives HTTP 429.
+- The exception-handling middleware maps `BusinessException` instances to their corresponding `ErrorRecord` responses and maps unexpected exceptions to HTTP 500.
+- The HTTP status codes and response bodies documented above reflect the supplied implementation. The exact limits, expiration values, and validation messages depend on the application configuration and validation rules.
+
+### 1.2. Register
+
+#### API Information
+
+- **Method:** `POST`
+- **URL:** `http://<host>:<port>/api/auth/register`
+- **Content-Type:** `application/json`
+- **Rate Limiting Policy:** `OtpPolicy`
+
+The `<host>` and `<port>` depend on the deployment environment. For example, when running the backend locally, the URL may be `http://localhost:5070/api/auth/register`.
+
+The `OtpPolicy` rate limiting policy controls the number of registration requests a client can send within a configured period. If the request limit is exceeded, the API returns HTTP `429 Too Many Requests`.
+
+#### Description
+
+This API initiates the user registration process by accepting the user's full name, email address, and password. It checks whether the email address is already registered, generates a six-digit One-Time Password (OTP), hashes the password, and temporarily stores the registration information in Redis.
+
+The API then publishes an OTP email message to the Kafka topic `send-otp-email` for asynchronous email delivery. The client receives the OTP expiration duration and must complete the OTP verification process to continue registration.
+
+**Note:** This API initiates registration but does not create the user account directly. The registration information is temporarily stored in Redis until it expires or is processed by the subsequent verification workflow.
+
+#### Request
+
+The client sends a JSON object containing the user's full name, email address, and password.
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `FullName` | String | Yes | The user's full name. Must not exceed 255 characters. |
+| `Email` | String | Yes | The user's email address. Must be a valid email address and must not exceed 255 characters. |
+| `Password` | String | Yes | The user's password. Must contain 6–15 non-whitespace characters, including at least one uppercase letter, one lowercase letter, one digit, and one special character. Spaces are not allowed. |
+
+**Example Request:**
+
+```json
+{
+  "fullName": "Nguyen Van A",
+  "email": "user@example.com",
+  "password": "Password@123"
+}
+```
+
+#### Response
+
+The API returns a standardized `ApiResponse<T>` JSON object for successful operations and application-level errors. The response includes `IsSuccess`, `ResponseCode`, `Message`, `HttpStatus`, and `Data`, except for the rate-limiting response, which uses a different format.
+
+**1. Registration Initiated Successfully — HTTP 200 OK**
+
+Returned when the email address is not already registered, the pending registration information is saved in Redis, and the OTP email message is successfully published to Kafka.
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S001",
+  "message": "Register is successfully!",
+  "httpStatus": 200,
+  "data": {
+    "otpExpirySeconds": 120
+  }
+}
+```
+
+The `otpExpirySeconds` field specifies how long the OTP remains valid, in seconds. The example uses `120` seconds; the actual value depends on the `OtpExpirySeconds` configuration.
+
+**2. Invalid Request — HTTP 400 Bad Request**
+
+Returned when the request fails model validation, such as when a required field is missing, the email address is invalid, a field exceeds its maximum length, or the password does not satisfy the specified requirements.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E001",
+  "message": "Request is invalid!",
+  "httpStatus": 400,
+  "data": [
+    "The Email field is required."
+  ]
+}
+```
+
+The `data` array contains validation error messages. The exact messages depend on the validation errors encountered.
+
+**3. Email Already Registered — HTTP 409 Conflict**
+
+Returned when the supplied email address already belongs to an existing user.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E004",
+  "message": "User is exists!",
+  "httpStatus": 409,
+  "data": null
+}
+```
+
+**4. Too Many Requests — HTTP 429 Too Many Requests**
+
+Returned when the client exceeds the request limit configured by `OtpPolicy`.
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+This response is generated by the ASP.NET Core Rate Limiting middleware and does not follow the standard `ApiResponse<T>` structure.
+
+**5. Internal Server Error — HTTP 500 Internal Server Error**
+
+Returned when an unexpected exception occurs during registration, such as a Redis failure, a Kafka publishing failure, or another unhandled server-side error.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E002",
+  "message": "Internal server error!",
+  "httpStatus": 500,
+  "data": null
+}
+```
+
+The API's exception-handling middleware maps unexpected exceptions to this response. The exact cause should be investigated using server-side logs.
+
+#### Sequence Diagram
+
+The following sequence diagram illustrates the registration workflow, including rate limiting, request validation, checking for an existing user, OTP generation, password hashing, temporary storage in Redis, and publishing the OTP email message to Kafka.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Controller as Auth Controller
+    participant RateLimiter as Rate Limiting Middleware
+    participant Validator as Request Validation
+    participant Service as Auth Service
+    participant Repository as User Repository
+    participant OTP as OTP Utility
+    participant Hash as Hash Utility
+    participant Redis
+    participant Kafka as Kafka Producer
+    participant Consumer as OTP Email Consumer
+    participant Email as Email Service
+
+    Client->>Controller: POST /api/auth/register
+    Note over Client,Controller: Content-Type: application/json
+
+    Controller->>RateLimiter: Apply OtpPolicy
+
+    alt Rate limit exceeded
+        RateLimiter-->>Client: 429 Too Many Requests
+    else Request allowed
+        RateLimiter->>Validator: Validate RegisterRequest
+
+        alt Invalid request
+            Validator-->>Client: 400 Request Invalid (E001)
+        else Valid request
+            Validator->>Controller: Validation passed
+            Controller->>Service: RegisterAsync(request)
+            Service->>Repository: GetUserByEmailAsync(email)
+            Repository-->>Service: User or null
+
+            alt Email already exists
+                Service-->>Controller: BusinessException (E004)
+                Controller-->>Client: 409 Conflict
+            else Email available
+                Service->>OTP: Generate 6-digit OTP
+                OTP-->>Service: OTP
+                Service->>Hash: HashBySHA256(password, secretKey)
+                Hash-->>Service: Password hash
+
+                Service->>Redis: Save pending registration with TTL
+                Redis-->>Service: Save result
+
+                Service->>Kafka: Publish OTP message to send-otp-email
+                Kafka-->>Service: Publish result
+
+                Service-->>Controller: Registration initiated (S001)
+                Controller-->>Client: 200 OK + OTP expiration duration
+
+                Note over Kafka,Email: Asynchronous email delivery
+                Kafka-->>Consumer: Consume OTP email message
+                Consumer->>Email: Send OTP email
+                Email-->>Consumer: Email delivery result
+            end
+        end
+    end
+```
+
+#### Notes
+
+- The OTP is generated using `OtpUtility.Generate(len: 6)`.
+- The password is hashed using SHA-256 with the configured secret key before it is stored in the pending registration model.
+- Pending registration information is stored in Redis using the key format `pending-registration:{email}` and expires after `OtpExpirySeconds`.
+- The OTP email message is published to the Kafka topic `send-otp-email`. An email consumer processes the message asynchronously, so email delivery does not need to occur within the registration HTTP request.
+- The rate limit is enforced by `OtpPolicy`. The exact request limit and time window depend on the rate-limiting configuration.
+- The documented success response is returned only after the service completes the Redis save and Kafka publish operations without throwing an exception.
+- If Redis or Kafka throws an exception, the exception-handling middleware maps the unexpected exception to HTTP 500. However, if Redis succeeds and Kafka publishing subsequently fails, pending registration data may remain in Redis until its TTL expires.
+- The sample response values and validation messages are illustrative. Actual values depend on the application configuration and validation framework.
+
+### 1.3. Forgot Password
+
+#### API Information
+
+- **Method:** `POST`
+- **URL:** `http://<host>:<port>/api/auth/forgot-password`
+- **Content-Type:** `application/json`
+- **Rate Limiting Policy:** `OtpPolicy`
+
+The `<host>` and `<port>` depend on the deployment environment. For example, when running the backend locally, the URL may be `http://localhost:5070/api/auth/forgot-password`.
+
+The `OtpPolicy` rate limiting policy limits the number of requests a client can send within a configured time window. If the request limit is exceeded, the API returns HTTP `429 Too Many Requests`.
+
+#### Description
+
+This API initiates the password recovery process for an existing user with a local authentication account. It verifies that the user exists and has not been deleted, generates a six-digit One-Time Password (OTP), and temporarily stores the OTP and user ID in Redis.
+
+The API then publishes an OTP email message to the Kafka topic `send-otp-email` for asynchronous delivery. Upon successful processing, the client receives the OTP expiration duration and can use the OTP in the subsequent password-reset verification workflow.
+
+Users who authenticate through an external provider, such as Google, cannot use this local password recovery process.
+
+#### Request
+
+The client sends a JSON object containing the email address associated with the account.
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `Email` | String | Yes | The user's email address. Must be a valid email address and must not exceed 255 characters. |
+
+**Example Request:**
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+#### Response
+
+The API returns a standardized `ApiResponse<T>` JSON object for successful operations and application-level errors. The response includes `IsSuccess`, `ResponseCode`, `Message`, `HttpStatus`, and `Data`, except for the rate-limiting response, which uses a different format.
+
+**1. Forgot Password Request Successful — HTTP 200 OK**
+
+Returned when the user exists, is not deleted, uses local authentication, and the pending password-recovery information is saved in Redis and the OTP email message is successfully published to Kafka.
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": {
+    "otpExpirySeconds": 120
+  }
+}
+```
+
+The `otpExpirySeconds` field specifies how long the OTP remains valid, in seconds. The example uses `120` seconds; the actual value depends on the `OtpExpirySeconds` configuration.
+
+**2. Invalid Request — HTTP 400 Bad Request**
+
+Returned when the request fails model validation, such as when the email is missing, has an invalid format, or exceeds 255 characters.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E001",
+  "message": "Request is invalid!",
+  "httpStatus": 400,
+  "data": [
+    "Invalid email format"
+  ]
+}
+```
+
+The `data` array contains validation error messages. The exact messages depend on the validation errors encountered.
+
+**3. User Not Found or Deleted — HTTP 404 Not Found**
+
+Returned when the email address does not correspond to an existing user or the user has been deleted.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E005",
+  "message": "Not found data!",
+  "httpStatus": 404,
+  "data": null
+}
+```
+
+**4. User Does Not Use Local Authentication — HTTP 403 Forbidden**
+
+Returned when the account uses an authentication provider other than `Local`, such as Google authentication.
 
 ```json
 {
@@ -779,71 +532,358 @@ The `data` field is `null` because the API does not return any additional data a
 }
 ```
 
-#### Purpose
+**5. Too Many Requests — HTTP 429 Too Many Requests**
 
-The purpose of this API is to:
+Returned when the client exceeds the request limit configured by `OtpPolicy`.
 
-1. Verify that the `ResetPasswordKey` is valid and has not expired.
-2. Identify the user associated with the reset password request.
-3. Ensure that the user uses local authentication before allowing the password to be changed.
-4. Hash and update the user's new password.
-5. Delete the used `ResetPasswordKey` from Redis to prevent it from being reused.
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+This response is generated by the ASP.NET Core Rate Limiting middleware and does not follow the standard `ApiResponse<T>` structure.
+
+**6. Internal Server Error — HTTP 500 Internal Server Error**
+
+Returned when an unexpected exception occurs during password recovery, such as a Redis failure, a Kafka publishing failure, or another unhandled server-side error.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E002",
+  "message": "Internal server error!",
+  "httpStatus": 500,
+  "data": null
+}
+```
+
+The exception-handling middleware logs the exception and maps unexpected errors to this response. The underlying cause should be investigated using server-side logs.
 
 #### Sequence Diagram
+
+The following sequence diagram illustrates the password recovery workflow, including rate limiting, request validation, user verification, authentication-provider checking, OTP generation, temporary storage in Redis, and asynchronous email delivery through Kafka.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant C as Client
-    participant API as Auth Controller
-    participant S as Auth Service
-    participant R as Redis
-    participant DB as User Repository / Database
+    actor Client
+    participant Controller as Auth Controller
+    participant RateLimiter as Rate Limiting Middleware
+    participant Validator as Request Validation
+    participant Service as Auth Service
+    participant Repository as User Repository
+    participant OTP as OTP Utility
+    participant Redis
+    participant Kafka as Kafka Producer
+    participant Consumer as OTP Email Consumer
+    participant Email as Email Service
 
-    C->>API: PATCH /api/auth/reset-password<br/>ResetPasswordKey + NewPassword
-    API->>S: ResetPasswordAsync(request)
+    Client->>Controller: POST /api/auth/forgot-password
+    Note over Client,Controller: Content-Type: application/json
 
-    S->>R: Get reset-password:{ResetPasswordKey}
-    R-->>S: ResetPasswordModel / null
+    Controller->>RateLimiter: Apply OtpPolicy
 
-    alt Reset Password Key expired or not found
-        S-->>API: BusinessException(E011)
-        API-->>C: 403 Reset password key expired
-    else Reset Password Key exists
+    alt Rate limit exceeded
+        RateLimiter-->>Client: 429 Too Many Requests
+    else Request allowed
+        RateLimiter->>Validator: Validate ForgotPasswordRequest
 
-        S->>S: Validate ResetPasswordKey
-
-        alt Reset Password Key invalid
-            S-->>API: BusinessException(E008)
-            API-->>C: 400 Failed
-        else Reset Password Key valid
-
-            S->>DB: GetUserByIdAsync(UserId)
-            DB-->>S: User / null
+        alt Invalid request
+            Validator-->>Client: 400 Request Invalid (E001)
+        else Valid request
+            Validator->>Controller: Validation passed
+            Controller->>Service: ForgotPasswordAsync(request)
+            Service->>Repository: GetUserByEmailAsync(email)
+            Repository-->>Service: User or null
 
             alt User not found or deleted
-                S-->>API: BusinessException(E005)
-                API-->>C: 404 Not found data
-            else User exists
+                Service-->>Controller: BusinessException (E005)
+                Controller-->>Client: 404 Not Found
+            else User exists and is active
+                alt Authentication provider is not Local
+                    Service-->>Controller: BusinessException (E010)
+                    Controller-->>Client: 403 Forbidden
+                else Local authentication
+                    Service->>OTP: Generate 6-digit OTP
+                    OTP-->>Service: OTP
 
-                S->>S: Check AuthProvider
+                    Service->>Redis: Save user ID and OTP with TTL
+                    Redis-->>Service: Save result
 
-                alt AuthProvider != Local
-                    S-->>API: BusinessException(E010)
-                    API-->>C: 403 User not logged in locally
-                else AuthProvider = Local
+                    Service->>Kafka: Publish OTP email to send-otp-email
+                    Kafka-->>Service: Publish result
 
-                    S->>S: Hash NewPassword
-                    S->>DB: UpdateUserAsync(User)
-                    DB-->>S: Update result
+                    Service-->>Controller: Success (S002) + OTP expiry
+                    Controller-->>Client: 200 OK
 
-                    alt Update failed
-                        S-->>API: BusinessException(E008)
-                        API-->>C: 400 Failed
-                    else Update successful
-                        S->>R: Delete reset-password:{ResetPasswordKey}
-                        S-->>API: ApiResponse.Success
-                        API-->>C: 200 Successful
+                    Note over Kafka,Email: Asynchronous email delivery
+                    Kafka-->>Consumer: Consume OTP email message
+                    Consumer->>Email: Send OTP email
+                    Email-->>Consumer: Email delivery result
+                end
+            end
+        end
+    end
+```
+
+#### Notes
+
+- The OTP is generated using `OtpUtility.Generate(len: 6)`.
+- Pending password-recovery information is stored in Redis using the key format `pending-forgot-password:{email}`.
+- The Redis entry contains the user's ID and OTP and expires after `OtpExpirySeconds`.
+- The OTP email message is published to the Kafka topic `send-otp-email`. The email consumer processes the message asynchronously.
+- The rate limit is enforced by `OtpPolicy`. The exact request limit and time window depend on the rate-limiting configuration.
+- The API initiates password recovery but does not change the user's password. The client must complete the subsequent OTP verification and password-reset steps.
+- If Redis or Kafka throws an exception, the exception-handling middleware maps an unexpected exception to HTTP 500. If the Redis save succeeds but Kafka publishing fails, the pending recovery record may remain until it expires.
+- The documented status codes and response structures reflect the supplied implementation. Actual OTP expiration values and validation messages depend on the application configuration and validation framework.
+
+### 1.4. Verify OTP
+
+#### API Information
+
+- **Method:** `POST`
+- **URL:** `http://<host>:<port>/api/auth/verify`
+- **Content-Type:** `application/json`
+- **Rate Limiting Policy:** `OtpPolicy`
+
+The `<host>` and `<port>` depend on the deployment environment. For example, when running the backend locally, the URL may be `http://localhost:5070/api/auth/verify`.
+
+The `OtpPolicy` rate limiting policy limits the number of requests a client can send within a configured time window. If the request limit is exceeded, the API returns HTTP `429 Too Many Requests`.
+
+#### Description
+
+This API verifies a six-digit One-Time Password (OTP) submitted by the client. It supports two workflows: completing a new user registration and verifying a password recovery request.
+
+The service first checks whether the submitted email address belongs to an existing user:
+
+- **Registration verification:** If the user does not exist, the service retrieves the pending registration information from Redis, validates the OTP, creates the user account, and deletes the pending registration data.
+- **Forgot password verification:** If the user already exists, the service retrieves the pending password recovery information from Redis, validates the OTP, generates a reset password key, stores the reset information in Redis, and deletes the pending recovery data.
+
+The response identifies the next action through the `Action` field. For password recovery, the client uses the returned `ResetPasswordKey` in the subsequent password-reset workflow.
+
+#### Request
+
+The client sends a JSON object containing the email address and OTP.
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `Email` | String | Yes | The email address associated with the registration or password recovery request. Must be a valid email address and must not exceed 255 characters. |
+| `Otp` | String | Yes | The OTP to verify. Must contain exactly six numeric digits. |
+
+**Example Request:**
+
+```json
+{
+  "email": "user@example.com",
+  "otp": "123456"
+}
+```
+
+#### Response
+
+The API returns a standardized `ApiResponse<T>` JSON object for successful operations and application-level errors. The response includes `IsSuccess`, `ResponseCode`, `Message`, `HttpStatus`, and `Data`.
+
+**1. Registration Verified Successfully — HTTP 200 OK**
+
+Returned when the OTP matches the pending registration OTP and the new user account is successfully created.
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": null
+}
+```
+
+The `Data` field is `null` because the registration verification workflow returns a successful response without additional data.
+
+**2. Password Recovery OTP Verified Successfully — HTTP 200 OK**
+
+Returned when the OTP matches the pending password recovery OTP. The service generates a reset password key, stores the associated user ID and key in Redis, and removes the pending password recovery record.
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": {
+    "resetPasswordKey": "00000000-0000-0000-0000-000000000000",
+    "action": "ForgotPassword"
+  }
+}
+```
+
+- `resetPasswordKey`: A newly generated GUID used to authorize the subsequent password-reset operation.
+- `action`: Identifies the next workflow. For password recovery, the value is `ForgotPassword`. The exact JSON representation depends on the `AuthAction` enum serialization configuration.
+
+The reset password key expires after the configured `ResetPasswordExpiryMinutes` duration.
+
+**3. Invalid Request — HTTP 400 Bad Request**
+
+Returned when the request fails model validation, such as when the email is missing or invalid, or the OTP does not contain exactly six digits.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E001",
+  "message": "Request is invalid!",
+  "httpStatus": 400,
+  "data": [
+    "OTP must be exactly 6 digits."
+  ]
+}
+```
+
+The `data` array contains validation error messages. The exact messages depend on the validation errors encountered.
+
+**4. OTP Expired or Not Found — HTTP 403 Forbidden**
+
+Returned when the corresponding pending registration or password recovery record cannot be found in Redis, typically because the OTP has expired or the pending record no longer exists.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E007",
+  "message": "OTP has expired!",
+  "httpStatus": 403,
+  "data": null
+}
+```
+
+**5. Invalid OTP or Registration Failure — HTTP 400 Bad Request**
+
+Returned when the submitted OTP does not match the stored OTP. The same error is also returned when creating the user account fails in the registration workflow.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E008",
+  "message": "Failed!",
+  "httpStatus": 400,
+  "data": null
+}
+```
+
+**6. Too Many Requests — HTTP 429 Too Many Requests**
+
+Returned when the client exceeds the request limit configured by `OtpPolicy`.
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+This response is generated by the ASP.NET Core Rate Limiting middleware and does not follow the standard `ApiResponse<T>` structure.
+
+**7. Internal Server Error — HTTP 500 Internal Server Error**
+
+Returned when an unexpected exception occurs during OTP verification, such as a Redis or database failure.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E002",
+  "message": "Internal server error!",
+  "httpStatus": 500,
+  "data": null
+}
+```
+
+The exception-handling middleware logs unexpected exceptions and maps them to this response.
+
+#### Sequence Diagram
+
+The following sequence diagram illustrates both OTP verification workflows: registration verification and password recovery verification.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Controller as Auth Controller
+    participant RateLimiter as Rate Limiting Middleware
+    participant Validator as Request Validation
+    participant Service as Auth Service
+    participant Repository as User Repository
+    participant Redis
+    participant OTP as OTP Verification
+
+    Client->>Controller: POST /api/auth/verify
+    Note over Client,Controller: Content-Type: application/json
+
+    Controller->>RateLimiter: Apply OtpPolicy
+
+    alt Rate limit exceeded
+        RateLimiter-->>Client: 429 Too Many Requests
+    else Request allowed
+        RateLimiter->>Validator: Validate VerifyOtpRequest
+
+        alt Invalid request
+            Validator-->>Client: 400 Request Invalid (E001)
+        else Valid request
+            Validator->>Controller: Validation passed
+            Controller->>Service: VerifyOtpAsync(request)
+            Service->>Repository: GetUserByEmailAsync(email)
+            Repository-->>Service: User or null
+
+            alt User exists
+                Note over Service,Redis: Password recovery workflow
+                Service->>Redis: Get pending-forgot-password:{email}
+                Redis-->>Service: Pending recovery data or null
+
+                alt Pending recovery data missing
+                    Service-->>Controller: BusinessException (E007)
+                    Controller-->>Client: 403 OTP Expired
+                else Pending recovery data found
+                    Service->>OTP: Compare submitted OTP
+                    OTP-->>Service: Match result
+
+                    alt OTP invalid
+                        Service-->>Controller: BusinessException (E008)
+                        Controller-->>Client: 400 Failed
+                    else OTP valid
+                        Service->>Redis: Save reset-password key and user ID with TTL
+                        Service->>Redis: Delete pending recovery data
+                        Service-->>Controller: Success + ResetPasswordKey + Action
+                        Controller-->>Client: 200 OK
+                    end
+                end
+
+            else User does not exist
+                Note over Service,Redis: Registration verification workflow
+                Service->>Redis: Get pending-registration:{email}
+                Redis-->>Service: Pending registration data or null
+
+                alt Pending registration data missing
+                    Service-->>Controller: BusinessException (E007)
+                    Controller-->>Client: 403 OTP Expired
+                else Pending registration data found
+                    Service->>OTP: Compare submitted OTP
+                    OTP-->>Service: Match result
+
+                    alt OTP invalid
+                        Service-->>Controller: BusinessException (E008)
+                        Controller-->>Client: 400 Failed
+                    else OTP valid
+                        Service->>Repository: AddUserAsync(new user)
+                        Repository-->>Service: Save result
+
+                        alt User creation failed
+                            Service-->>Controller: BusinessException (E008)
+                            Controller-->>Client: 400 Failed
+                        else User created successfully
+                            Service->>Redis: Delete pending registration data
+                            Service-->>Controller: Success (S002)
+                            Controller-->>Client: 200 OK
+                        end
                     end
                 end
             end
@@ -851,468 +891,698 @@ sequenceDiagram
     end
 ```
 
-#### Reset Password Flow
+#### Notes
 
-```text
-Forgot Password
-      │
-      ▼
-Enter Email
-      │
-      ▼
-Receive OTP
-      │
-      ▼
-Verify OTP
-      │
-      ▼
-Generate ResetPasswordKey
-      │
-      ▼
-Reset Password API
-      │
-      ├── Validate ResetPasswordKey
-      ├── Find User
-      ├── Check Local Authentication
-      ├── Hash New Password
-      ├── Update Password
-      └── Delete ResetPasswordKey
-      │
-      ▼
-Password Reset Successfully
+- The API uses `OtpPolicy` for rate limiting. The exact request limit and time window depend on the rate-limiting configuration.
+- The service selects the verification workflow based on whether `GetUserByEmailAsync` returns an existing user.
+- Registration pending data is stored under `pending-registration:{email}`. Password recovery data is stored under `pending-forgot-password:{email}`.
+- A missing pending record is treated as an expired OTP and returns error code `E007`.
+- An incorrect OTP returns error code `E008`.
+- On successful registration verification, the user is created using the full name, email, and password hash stored in Redis. The pending registration record is then deleted.
+- On successful password recovery verification, a reset password key is generated and stored in Redis under `reset-password:{resetPasswordKey}`. The stored record contains the reset key and user ID and expires after `ResetPasswordExpiryMinutes`.
+- The API does not change the password directly. Password recovery continues through the subsequent password-reset endpoint.
+- The documented status codes and response bodies reflect the supplied implementation. Actual enum serialization and validation error messages depend on the application configuration.
+
+### 1.5. Reset Password
+
+#### API Information
+
+- **API URL:** `http://<host>:<port>/api/auth/reset-password`
+- **HTTP Method:** `PATCH`
+- **Content-Type:** `application/json`
+- **Rate Limiting Policy:** Global Rate Limiter (default policy)
+
+#### Description
+
+This API allows users to reset their password using a valid `ResetPasswordKey` obtained from the password recovery process. The API validates the reset key, verifies that it has not expired, checks whether the associated user exists and is not deleted, and ensures that the user's authentication provider is `Local`.
+
+If all checks pass, the API hashes the new password using SHA-256 with the configured security secret key, updates the user's password in the database, and deletes the reset key from Redis to prevent it from being reused.
+
+#### Request
+
+**Request Body:**
+
+| Field | Data Type | Required | Description |
+|---|---|---|---|
+| `ResetPasswordKey` | `Guid` | Yes | The reset password key obtained from the password recovery process. |
+| `NewPassword` | `string` | Yes | The new password that must satisfy the password complexity requirements. |
+
+**Password Requirements:**
+
+- Must contain between 6 and 15 characters.
+- Must contain at least one uppercase letter (`A–Z`).
+- Must contain at least one lowercase letter (`a–z`).
+- Must contain at least one digit (`0–9`).
+- Must contain at least one special character.
+- Must not contain whitespace.
+
+**Example Request:**
+
+```json
+{
+  "ResetPasswordKey": "550e8400-e29b-41d4-a716-446655440000",
+  "NewPassword": "NewPass@123"
+}
+```
+
+#### Response
+
+**1. Successful Password Reset — HTTP 200 OK**
+
+Returned when the reset key is valid, the key has not expired, the user meets all requirements, and the password is successfully updated.
+
+```json
+{
+  "IsSuccess": true,
+  "ResponseCode": "S002",
+  "Message": "Successful!",
+  "HttpStatus": 200,
+  "Data": null
+}
+```
+
+**2. Invalid Request — HTTP 400 Bad Request**
+
+Returned when the request body fails model validation, such as when `ResetPasswordKey` is missing or `NewPassword` does not satisfy the password requirements.
+
+```json
+{
+  "IsSuccess": false,
+  "ResponseCode": "E001",
+  "Message": "Request is invalid!",
+  "HttpStatus": 400,
+  "Data": [
+    "The password must be between 6 and 15 characters long, contain at least one uppercase letter, one lowercase letter, one digit, and one special character, and must not contain any spaces."
+  ]
+}
+```
+
+The `Data` array contains the applicable validation error messages. The example above illustrates a password validation failure.
+
+**3. Password Reset Failed — HTTP 400 Bad Request**
+
+Returned when the reset key does not match the key stored in the retrieved reset model, or when the password update operation fails.
+
+```json
+{
+  "IsSuccess": false,
+  "ResponseCode": "E008",
+  "Message": "Failed!",
+  "HttpStatus": 400,
+  "Data": null
+}
+```
+
+**4. User Not Found — HTTP 404 Not Found**
+
+Returned when the user associated with the reset key does not exist or has been deleted.
+
+```json
+{
+  "IsSuccess": false,
+  "ResponseCode": "E005",
+  "Message": "Not found data!",
+  "HttpStatus": 404,
+  "Data": null
+}
+```
+
+**5. Reset Password Key Expired or Invalidated — HTTP 403 Forbidden**
+
+Returned when the reset password key cannot be found in Redis, typically because it has expired or has already been deleted.
+
+```json
+{
+  "IsSuccess": false,
+  "ResponseCode": "E011",
+  "Message": "Your time to change the password has expired!",
+  "HttpStatus": 403,
+  "Data": null
+}
+```
+
+**6. User Does Not Use Local Authentication — HTTP 403 Forbidden**
+
+Returned when the associated user's authentication provider is not `Local`. Users authenticated through external providers cannot reset their password through this API.
+
+```json
+{
+  "IsSuccess": false,
+  "ResponseCode": "E010",
+  "Message": "User not log in locally",
+  "HttpStatus": 403,
+  "Data": null
+}
+```
+
+**7. Internal Server Error — HTTP 500 Internal Server Error**
+
+Returned when an unexpected exception occurs during request processing, such as an unhandled database or Redis error.
+
+```json
+{
+  "IsSuccess": false,
+  "ResponseCode": "E002",
+  "Message": "Internal server error!",
+  "HttpStatus": 500,
+  "Data": null
+}
+```
+
+**8. Rate Limit Exceeded — HTTP 429 Too Many Requests**
+
+Returned when the client exceeds the configured global rate limit. The client should wait before sending additional requests.
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+**Notes:**
+
+- Responses for business errors and unexpected exceptions follow the `ApiResponse<T>` format.
+- Validation failures use `ValidationErrorResponse`, which returns the validation messages in the `Data` array.
+- Rate-limit responses use the configured rate-limiting rejection format and may differ from the standard `ApiResponse<T>` structure.
+- The exact request threshold and time window depend on the global rate-limiting configuration.
+
+#### Sequence Diagram
+
+The following sequence diagram illustrates the password reset workflow, including request validation, reset-key verification, user verification, password updating, and possible error responses.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant API as AuthController
+    participant Validation as Model Validation
+    participant Service as AuthService
+    participant Redis
+    participant UserRepo as User Repository
+    participant DB as Database
+    participant Middleware as Exception Middleware
+
+    Client->>API: PATCH /api/auth/reset-password
+    Note over Client,API: Content-Type: application/json
+
+    API->>Validation: Validate request body
+
+    alt Invalid request or password
+        Validation-->>Client: 400 Bad Request (E001)
+    else Request is valid
+        API->>Service: ResetPasswordAsync(request)
+        Service->>Redis: Get reset-password:{ResetPasswordKey}
+        Redis-->>Service: ResetPasswordModel or null
+
+        alt Reset key missing or expired
+            Service-->>Middleware: BusinessException (E011)
+            Middleware-->>Client: 403 Forbidden
+        else Reset model retrieved
+            Service->>Service: Compare reset keys
+
+            alt Reset key does not match
+                Service-->>Middleware: BusinessException (E008)
+                Middleware-->>Client: 400 Bad Request
+            else Reset key matches
+                Service->>UserRepo: GetUserByIdAsync(UserId)
+                UserRepo->>DB: Query user
+                DB-->>UserRepo: User record or null
+                UserRepo-->>Service: User record or null
+
+                alt User not found or deleted
+                    Service-->>Middleware: BusinessException (E005)
+                    Middleware-->>Client: 404 Not Found
+                else User exists
+                    Service->>Service: Check AuthProvider
+
+                    alt AuthProvider is not Local
+                        Service-->>Middleware: BusinessException (E010)
+                        Middleware-->>Client: 403 Forbidden
+                    else Local authentication
+                        Service->>Service: Hash new password
+                        Service->>UserRepo: UpdateUserAsync(user)
+                        UserRepo->>DB: Update password hash
+                        DB-->>UserRepo: Update result
+                        UserRepo-->>Service: Success or failure
+
+                        alt Update failed
+                            Service-->>Middleware: BusinessException (E008)
+                            Middleware-->>Client: 400 Bad Request
+                        else Update succeeded
+                            Service->>Redis: Delete reset password key
+                            Redis-->>Service: Delete result
+                            Service-->>API: Success response (S002)
+                            API-->>Client: 200 OK
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    Note over API,Middleware: Unexpected exceptions are handled by the exception middleware (E002, HTTP 500).
+    Note over Client,API: Requests exceeding the global rate limit receive HTTP 429.
 ```
 
 ### 1.6. Google Login
 
-**API format:** `POST https://<host>:<port>/api/auth/google-sign-in?idToken=<google-id-token>`
+#### API Information
 
-**Content-Type:** `application/json`
-
-> The `idToken` is currently passed as a query parameter through `[FromQuery]`, so the request does not contain a JSON request body.
+- **API URL:** `http://<host>:<port>/api/auth/google-sign-in?idToken=<google-id-token>`
+- **HTTP Method:** `POST`
+- **Content-Type:** `application/json`
+- **Rate Limiting Policy:** `LoginPolicy`
 
 #### Description
 
-The Google Login API allows users to authenticate using their Google account. The API receives a Google ID token, verifies the token with the Google authentication service, and retrieves the user's Google account information.
+This API allows users to authenticate using their Google account. The API verifies the Google ID token, retrieves the user's information from Google, and checks whether the user can sign in.
 
-If the email associated with the Google account does not exist in the system, a new user is automatically created with `Google` as the authentication provider.
+If the user does not exist in the system, the API automatically creates a new account using the Google account information. If the user already exists and is eligible to sign in, the API generates an access token and a refresh token. The refresh token is stored in Redis as a hashed value with a configured expiration period.
 
-After successful authentication, the API generates an access token and a refresh token. The refresh token is hashed and stored in Redis for subsequent token refresh operations.
+The API returns the user's ID, access token, and refresh token upon successful authentication.
 
-#### Input
+#### Request
 
-**Query parameter:**
+**Request Parameter:**
 
-```text
-idToken=<Google ID Token>
-```
+| Parameter | Data Type | Required | Description |
+|---|---|---|---|
+| `idToken` | `string` | Yes | The Google ID token obtained from the Google authentication process. It is passed as a query parameter. |
 
-| Parameter | Type   | Required | Description                                                                      |
-| --------- | ------ | -------- | -------------------------------------------------------------------------------- |
-| `idToken` | string | Yes      | Google ID token obtained from the client after successful Google authentication. |
-
-**Example request:**
+**Example Request:**
 
 ```http
-POST https://localhost:7064/api/auth/google-sign-in?idToken=eyJhbGciOiJSUzI1NiIs...
+POST /api/auth/google-sign-in?idToken=<google-id-token> HTTP/1.1
+Host: <host>:<port>
 Content-Type: application/json
 ```
 
-#### Output
+**Notes:**
+- Replace `<google-id-token>` with a valid Google ID token.
+- The `idToken` is supplied through the URL query string, not the request body.
+- No JSON request body is required.
+- Although the endpoint specifies `application/json`, the request does not contain a JSON body because the input is supplied through the query string.
 
-When Google authentication is successful, the API returns the user's ID, access token, and refresh token.
+#### Response
 
-```json id="s8f4v2"
+**1. Successful Google Login — HTTP 200 OK**
+
+Returned when the Google ID token is valid and the user is successfully authenticated. If the user does not already exist, a new Google account is created before the tokens are generated.
+
+```json
 {
-  "isSuccess": true,
-  "responseCode": "S002",
-  "message": "Successful!",
-  "httpStatus": 200,
-  "data": {
-    "userId": "7f3b2c1e-8f42-4e6a-9e9f-123456789abc",
-    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-    "refreshToken": "X3hK9mL2pQ7v..."
+  "IsSuccess": true,
+  "ResponseCode": "S002",
+  "Message": "Successful!",
+  "HttpStatus": 200,
+  "Data": {
+    "UserId": "550e8400-e29b-41d4-a716-446655440000",
+    "AccessToken": "<access-token>",
+    "RefreshToken": "<refresh-token>"
   }
 }
 ```
 
-| Field          | Type   | Description                                                                    |
-| -------------- | ------ | ------------------------------------------------------------------------------ |
-| `userId`       | GUID   | Unique identifier of the authenticated user.                                   |
-| `accessToken`  | string | JWT access token used to access protected APIs.                                |
-| `refreshToken` | string | Refresh token used to obtain a new access token when the access token expires. |
+The `Data` object contains:
 
-#### User Creation
+- `UserId`: The unique identifier of the authenticated user.
+- `AccessToken`: The JWT access token used to access protected APIs.
+- `RefreshToken`: The refresh token used to obtain a new access token according to the refresh-token workflow.
 
-When the Google email does not exist in the database, the API automatically creates a new user with:
+**2. Google Authentication Failed — HTTP 400 Bad Request**
 
-- `Email` = Google account email
-- `FullName` = Google account name
-- `AvatarUrl` = Google account avatar
-- `AuthProvider` = `Google`
+Returned when the Google ID token is invalid, the user account has been deleted, the user already has a local authentication account, or the user creation operation fails.
 
-The newly created user is then authenticated normally and receives an access token and refresh token.
-
-#### Error Responses
-
-| Response Code | HTTP Status | Description                                                                          |
-| ------------- | ----------: | ------------------------------------------------------------------------------------ |
-| `E001`        |         400 | Request is invalid.                                                                  |
-| `E002`        |         500 | Internal server error.                                                               |
-| `E008`        |         400 | Google login failed or an operation failed.                                          |
-| `E009`        |         403 | Refresh token has expired. _(Used by refresh-token flow, not directly by this API.)_ |
-
-##### Example: Invalid Google ID Token
-
-```json id="9m2w7k"
+```json
 {
-  "isSuccess": false,
-  "responseCode": "E008",
-  "message": "Failed!",
-  "httpStatus": 400,
-  "data": null
+  "IsSuccess": false,
+  "ResponseCode": "E008",
+  "Message": "Failed!",
+  "HttpStatus": 400,
+  "Data": null
 }
 ```
 
-##### Example: Deleted User
+All these cases use the `ErrorRecord.Failed` error response in the current service implementation.
 
-```json id="4j7p1c"
+**3. Invalid Request — HTTP 400 Bad Request**
+
+Returned when the request cannot be bound or validated correctly, such as when the required `idToken` parameter is missing and the application's model-binding or validation configuration rejects the request.
+
+```json
 {
-  "isSuccess": false,
-  "responseCode": "E008",
-  "message": "Failed!",
-  "httpStatus": 400,
-  "data": null
+  "IsSuccess": false,
+  "ResponseCode": "E001",
+  "Message": "Request is invalid!",
+  "HttpStatus": 400,
+  "Data": [
+    "Invalid request!."
+  ]
 }
 ```
 
-##### Example: Local Account Uses the Same Email
+The `Data` array contains the applicable validation error messages. The example is illustrative; the actual message depends on the model-binding and validation configuration.
 
-```json id="q2v8nd"
+**4. Internal Server Error — HTTP 500 Internal Server Error**
+
+Returned when an unexpected exception occurs during Google token verification, database operations, token generation, or Redis operations.
+
+```json
 {
-  "isSuccess": false,
-  "responseCode": "E008",
-  "message": "Failed!",
-  "httpStatus": 400,
-  "data": null
+  "IsSuccess": false,
+  "ResponseCode": "E002",
+  "Message": "Internal server error!",
+  "HttpStatus": 500,
+  "Data": null
 }
 ```
 
-#### Purpose
+**5. Rate Limit Exceeded — HTTP 429 Too Many Requests**
 
-The purpose of this API is to:
+Returned when the client exceeds the request limit configured by `LoginPolicy`.
 
-1. Authenticate users through their Google account.
-2. Verify the authenticity of the Google ID token.
-3. Automatically create a new Google-authenticated user when the email does not exist.
-4. Prevent deleted users from signing in.
-5. Prevent a local-authentication account from signing in through Google.
-6. Generate an access token and refresh token after successful authentication.
-7. Store the hashed refresh token in Redis for secure token management.
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+The client should wait before retrying the request. The exact request threshold and time window depend on the `LoginPolicy` configuration.
 
 #### Sequence Diagram
+
+The following sequence diagram illustrates the Google login workflow, including token verification, account lookup or creation, authentication checks, token generation, and possible error responses.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant C as Client
-    participant API as Auth Controller
-    participant S as Auth Service
-    participant G as Google Auth Service
-    participant DB as User Repository / Database
-    participant J as JWT Service
-    participant R as Redis
+    actor Client
+    participant API as AuthController
+    participant Limiter as LoginPolicy
+    participant Service as AuthService
+    participant Google as Google Auth Service
+    participant UserRepo as User Repository
+    participant DB as Database
+    participant JWT as JWT Service
+    participant Redis
+    participant Middleware as Exception Middleware
 
-    C->>API: POST /api/auth/google-sign-in<br/>idToken
-    API->>S: GoogleSignInAsync(idToken)
+    Client->>API: POST /api/auth/google-sign-in?idToken=...
+    API->>Limiter: Check LoginPolicy
 
-    S->>G: VerifyTokenAsync(idToken)
-    G-->>S: GoogleUserInfoResponse / null
+    alt Rate limit exceeded
+        Limiter-->>Client: 429 Too Many Requests
+    else Request allowed
+        API->>Service: GoogleSignInAsync(idToken)
+        Service->>Google: VerifyTokenAsync(idToken)
+        Google-->>Service: Google user info or null
 
-    alt Google ID Token invalid
-        S->>S: Log error
-        S-->>API: BusinessException(E008)
-        API-->>C: 400 Failed
-    else Google ID Token valid
+        alt Invalid Google ID token
+            Service-->>Middleware: BusinessException (E008)
+            Middleware-->>Client: 400 Bad Request
+        else Token valid
+            Service->>UserRepo: GetUserByEmailAsync(email)
+            UserRepo->>DB: Find user by email
+            DB-->>UserRepo: User record or null
+            UserRepo-->>Service: User record or null
 
-        S->>DB: GetUserByEmailAsync(googleUser.Email)
-        DB-->>S: User / null
+            alt User does not exist
+                Service->>UserRepo: AddUserAsync(new Google user)
+                UserRepo->>DB: Insert new user
+                DB-->>UserRepo: Creation result
+                UserRepo-->>Service: Success or failure
 
-        alt User not found
-            S->>S: Create new Google User
-            S->>DB: AddUserAsync(User)
-            DB-->>S: Create result
-
-            alt User creation failed
-                S-->>API: BusinessException(E008)
-                API-->>C: 400 Failed
-            else User created successfully
-                Note over S: Continue login
+                alt User creation failed
+                    Service-->>Middleware: BusinessException (E008)
+                    Middleware-->>Client: 400 Bad Request
+                end
+            else User is deleted
+                Service-->>Middleware: BusinessException (E008)
+                Middleware-->>Client: 400 Bad Request
+            else User uses Local authentication
+                Service-->>Middleware: BusinessException (E008)
+                Middleware-->>Client: 400 Bad Request
             end
 
-        else User exists
-
-            alt User is deleted
-                S-->>API: BusinessException(E008)
-                API-->>C: 400 Failed
-            else User uses Local authentication
-                S-->>API: BusinessException(E008)
-                API-->>C: 400 Failed
-            else User is a Google user
-                Note over S: Continue login
+            opt User can continue authentication
+                Service->>JWT: Generate access token
+                JWT-->>Service: Access token
+                Service->>JWT: Generate refresh token
+                JWT-->>Service: Refresh token
+                Service->>Service: Hash refresh token
+                Service->>Redis: Save hashed refresh token with expiry
+                Redis-->>Service: Save result
+                Service-->>API: LoginResponse (S002)
+                API-->>Client: 200 OK + user ID and tokens
             end
         end
-
-        S->>J: GenerateAccessToken(user)
-        J-->>S: AccessToken
-
-        S->>J: GenerateRefreshToken()
-        J-->>S: RefreshToken
-
-        S->>S: Hash RefreshToken
-        S->>R: Save refresh_token:{hash}<br/>RefreshTokenModel + expiration
-        R-->>S: Saved
-
-        S-->>API: LoginResponse
-        API-->>C: 200 Successful<br/>UserId + AccessToken + RefreshToken
     end
-```
 
-#### Authentication Flow
-
-```text
-Google Account
-      │
-      ▼
-Google Authentication
-      │
-      ▼
-Receive Google ID Token
-      │
-      ▼
-POST /api/auth/google-sign-in
-      │
-      ▼
-Verify Google ID Token
-      │
-      ├── Invalid → Return E008
-      │
-      ▼
-Find User by Email
-      │
-      ├── Not found → Create Google User
-      │
-      ├── Deleted → Return E008
-      │
-      ├── Local account → Return E008
-      │
-      ▼
-Generate Access Token
-      │
-      ▼
-Generate Refresh Token
-      │
-      ▼
-Hash Refresh Token
-      │
-      ▼
-Store Refresh Token in Redis
-      │
-      ▼
-Return LoginResponse
+    Note over API,Middleware: Unexpected exceptions are handled by the exception middleware (E002, HTTP 500).
 ```
 
 ### 1.7. Refresh Token
 
-**API format:** `POST https://<host>:<port>/api/auth/refresh-token`
+#### API Information
 
-**Content-Type:** `application/json`
+- **API URL:** `http://<host>:<port>/api/auth/refresh-token`
+- **HTTP Method:** `POST`
+- **Content-Type:** `application/json`
+- **Rate Limiting Policy:** `LoginPolicy`
 
 #### Description
 
-The Refresh Token API is used to obtain a new access token when the current access token has expired or is about to expire.
+This API allows authenticated users to obtain a new access token and refresh token using a valid refresh token. It verifies the submitted refresh token by hashing it with the configured security secret key and checking the corresponding record in Redis.
 
-The client sends a valid refresh token to the API. The system hashes the received refresh token and uses the hash to locate the corresponding refresh token record in Redis.
+If the refresh token is valid and has not expired, the API deletes the old refresh token record, verifies that the associated user exists and is not deleted, generates a new access token and refresh token, and stores the hash of the new refresh token in Redis with the configured expiration period.
 
-If the refresh token is valid, the existing refresh token is deleted and a new access token and refresh token are generated. The new refresh token is hashed and stored in Redis with a new expiration time.
+This process implements **refresh token rotation**, meaning the old refresh token is invalidated when it is exchanged for a new pair of tokens.
 
-This implementation uses **refresh token rotation**, meaning that each successful refresh invalidates the old refresh token and replaces it with a new one.
+#### Request
 
-#### Input
+**Request Body:**
 
-**Request body:**
+| Field | Data Type | Required | Description |
+|---|---|---|---|
+| `RefreshToken` | `string` | Yes | The refresh token previously issued by the authentication API. It is used to obtain a new access token and refresh token. |
+
+**Example Request:**
+
+```http
+POST /api/auth/refresh-token HTTP/1.1
+Host: <host>:<port>
+Content-Type: application/json
+```
 
 ```json
 {
-  "refreshToken": "X3hK9mL2pQ7v..."
+  "RefreshToken": "<refresh-token>"
 }
 ```
 
-| Field          | Type   | Required | Description                                                       |
-| -------------- | ------ | -------- | ----------------------------------------------------------------- |
-| `refreshToken` | string | Yes      | Refresh token previously issued by the Login or Google Login API. |
+**Validation Rules:**
 
-#### Output
+- `RefreshToken` is required.
+- The submitted refresh token must correspond to a valid, unexpired refresh token record in Redis.
+- The associated user must exist and must not be deleted.
 
-When the refresh token is valid, the API returns a new access token and a new refresh token.
+#### Response
+
+**1. Successful Token Refresh — HTTP 200 OK**
+
+Returned when the refresh token is valid and the associated user exists and is not deleted. The API invalidates the old refresh token and returns a new access token and refresh token.
 
 ```json
 {
-  "isSuccess": true,
-  "responseCode": "S002",
-  "message": "Successful!",
-  "httpStatus": 200,
-  "data": {
-    "userId": "7f3b2c1e-8f42-4e6a-9e9f-123456789abc",
-    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-    "refreshToken": "Y8mP2kL7qR4x..."
+  "IsSuccess": true,
+  "ResponseCode": "S002",
+  "Message": "Successful!",
+  "HttpStatus": 200,
+  "Data": {
+    "UserId": "550e8400-e29b-41d4-a716-446655440000",
+    "AccessToken": "<new-access-token>",
+    "RefreshToken": "<new-refresh-token>"
   }
 }
 ```
 
-| Field          | Type   | Description                                                        |
-| -------------- | ------ | ------------------------------------------------------------------ |
-| `userId`       | GUID   | Unique identifier of the authenticated user.                       |
-| `accessToken`  | string | Newly generated JWT access token.                                  |
-| `refreshToken` | string | Newly generated refresh token that replaces the old refresh token. |
+The `Data` object contains:
 
-#### Error Responses
+- `UserId`: The unique identifier of the user.
+- `AccessToken`: The newly generated JWT access token.
+- `RefreshToken`: The newly generated refresh token, which replaces the previous one.
 
-| Response Code | HTTP Status | Description                                               |
-| ------------- | ----------: | --------------------------------------------------------- |
-| `E001`        |         400 | Request validation failed.                                |
-| `E002`        |         500 | Internal server error.                                    |
-| `E008`        |         400 | Refresh token is invalid or the refresh operation failed. |
-| `E009`        |         403 | Refresh token has expired or is no longer available.      |
+**2. Invalid Request — HTTP 400 Bad Request**
 
-##### Example: Refresh Token Expired
+Returned when the request fails model validation, such as when the required `RefreshToken` field is missing or empty.
 
 ```json
 {
-  "isSuccess": false,
-  "responseCode": "E009",
-  "message": "RefreshToken has expired!",
-  "httpStatus": 403,
-  "data": null
+  "IsSuccess": false,
+  "ResponseCode": "E001",
+  "Message": "Request is invalid!",
+  "HttpStatus": 400,
+  "Data": [
+    "Refresh token is required!"
+  ]
 }
 ```
 
-##### Example: Invalid Refresh Token
+The `Data` array contains the applicable validation error messages.
+
+**3. Refresh Token Invalid — HTTP 400 Bad Request**
+
+Returned when a refresh token record is retrieved from Redis, but its stored hash does not match the hash calculated from the submitted token.
 
 ```json
 {
-  "isSuccess": false,
-  "responseCode": "E008",
-  "message": "Failed!",
-  "httpStatus": 400,
-  "data": null
+  "IsSuccess": false,
+  "ResponseCode": "E008",
+  "Message": "Failed!",
+  "HttpStatus": 400,
+  "Data": null
 }
 ```
 
-#### Purpose
+**4. Refresh Token Expired or Not Found — HTTP 403 Forbidden**
 
-The purpose of this API is to:
+Returned when the refresh token cannot be found in Redis. This typically occurs because the token has expired, has already been used, or has been invalidated.
 
-1. Validate the refresh token submitted by the client.
-2. Retrieve the associated user from Redis and the database.
-3. Generate a new access token without requiring the user to log in again.
-4. Generate a new refresh token for continued authentication.
-5. Rotate the refresh token by deleting the old token.
-6. Store the new refresh token hash in Redis with its expiration time.
-
-#### Refresh Token Rotation
-
-The refresh process follows a token rotation mechanism:
-
-```text
-Old Refresh Token
-        │
-        ▼
-Hash Refresh Token
-        │
-        ▼
-Find Token Hash in Redis
-        │
-        ├── Not found → E009 RefreshToken Expired
-        │
-        ▼
-Delete Old Refresh Token
-        │
-        ▼
-Find User
-        │
-        ├── User invalid/deleted → E008 Failed
-        │
-        ▼
-Generate New Access Token
-        │
-        ▼
-Generate New Refresh Token
-        │
-        ▼
-Hash New Refresh Token
-        │
-        ▼
-Store New Refresh Token in Redis
-        │
-        ▼
-Return New Tokens
+```json
+{
+  "IsSuccess": false,
+  "ResponseCode": "E009",
+  "Message": "RefreshToken has expired!",
+  "HttpStatus": 403,
+  "Data": null
+}
 ```
+
+**5. User Not Found or Deleted — HTTP 400 Bad Request**
+
+Returned when the refresh token record exists, but the associated user cannot be found or has been deleted.
+
+```json
+{
+  "IsSuccess": false,
+  "ResponseCode": "E008",
+  "Message": "Failed!",
+  "HttpStatus": 400,
+  "Data": null
+}
+```
+
+**6. Internal Server Error — HTTP 500 Internal Server Error**
+
+Returned when an unexpected exception occurs during Redis operations, database access, or token generation.
+
+```json
+{
+  "IsSuccess": false,
+  "ResponseCode": "E002",
+  "Message": "Internal server error!",
+  "HttpStatus": 500,
+  "Data": null
+}
+```
+
+**7. Rate Limit Exceeded — HTTP 429 Too Many Requests**
+
+Returned when the client exceeds the request limit configured by `LoginPolicy`.
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+The client should wait before retrying. The exact request threshold and time window depend on the `LoginPolicy` configuration.
+
+#### Important Notes
+
+- The old refresh token is deleted from Redis before the user is retrieved from the database. Consequently, if the user is missing or deleted, or a later operation fails, the old token may already be invalidated.
+- Each successful refresh generates a new token pair. Clients should replace both stored tokens with the newly returned values.
+- Refresh tokens should be stored securely and should not be exposed in URLs or logs.
+- The endpoint uses `LoginPolicy` because its controller action is decorated with `[EnableRateLimiting("LoginPolicy")]`.
 
 #### Sequence Diagram
+
+The following sequence diagram illustrates the refresh-token workflow, including request validation, token verification, user lookup, token rotation, and error handling.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant C as Client
-    participant API as Auth Controller
-    participant S as Auth Service
-    participant R as Redis
-    participant DB as User Repository / Database
-    participant J as JWT Service
+    actor Client
+    participant API as AuthController
+    participant Limiter as LoginPolicy
+    participant Service as AuthService
+    participant Redis
+    participant UserRepo as User Repository
+    participant DB as Database
+    participant JWT as JWT Service
+    participant Middleware as Exception Middleware
 
-    C->>API: POST /api/auth/refresh-token<br/>RefreshToken
-    API->>S: RefreshTokenAsync(request)
+    Client->>API: POST /api/auth/refresh-token
+    Note over Client,API: Content-Type: application/json
+    Client->>API: RefreshToken
 
-    S->>S: Hash RefreshToken
-    S->>R: Get refresh_token:{hash}
-    R-->>S: RefreshTokenModel / null
+    API->>Limiter: Check rate limit
 
-    alt Refresh Token expired or not found
-        S-->>API: BusinessException(E009)
-        API-->>C: 403 RefreshToken has expired
-    else Refresh Token exists
+    alt Rate limit exceeded
+        Limiter-->>Client: 429 Too Many Requests
+    else Request allowed
+        API->>API: Validate request body
 
-        S->>S: Compare RefreshTokenHash
+        alt RefreshToken missing or empty
+            API-->>Client: 400 Bad Request (E001)
+        else Request is valid
+            API->>Service: RefreshTokenAsync(request)
+            Service->>Service: Hash submitted refresh token
+            Service->>Redis: Get refresh_token:{hash}
+            Redis-->>Service: RefreshTokenModel or null
 
-        alt Refresh Token invalid
-            S-->>API: BusinessException(E008)
-            API-->>C: 400 Failed
-        else Refresh Token valid
+            alt Token record not found
+                Service-->>Middleware: BusinessException (E009)
+                Middleware-->>Client: 403 Forbidden
+            else Token record found
+                Service->>Service: Compare stored hash
 
-            S->>R: Delete refresh_token:{oldHash}
+                alt Hash mismatch
+                    Service-->>Middleware: BusinessException (E008)
+                    Middleware-->>Client: 400 Bad Request
+                else Hash matches
+                    Service->>Redis: Delete old refresh token
+                    Redis-->>Service: Delete result
 
-            S->>DB: GetUserByIdAsync(UserId)
-            DB-->>S: User / null
+                    Service->>UserRepo: GetUserByIdAsync(UserId)
+                    UserRepo->>DB: Find user by ID
+                    DB-->>UserRepo: User record or null
+                    UserRepo-->>Service: User record or null
 
-            alt User not found or deleted
-                S-->>API: BusinessException(E008)
-                API-->>C: 400 Failed
-            else User valid
+                    alt User missing or deleted
+                        Service-->>Middleware: BusinessException (E008)
+                        Middleware-->>Client: 400 Bad Request
+                    else User exists
+                        Service->>JWT: GenerateAccessToken(user)
+                        JWT-->>Service: New access token
+                        Service->>JWT: GenerateRefreshToken()
+                        JWT-->>Service: New refresh token
 
-                S->>J: GenerateAccessToken(user)
-                J-->>S: New AccessToken
+                        Service->>Service: Hash new refresh token
+                        Service->>Redis: Save new token hash with expiry
+                        Redis-->>Service: Save result
 
-                S->>J: GenerateRefreshToken()
-                J-->>S: New RefreshToken
-
-                S->>S: Hash NewRefreshToken
-
-                S->>R: Save refresh_token:{newHash}<br/>RefreshTokenModel + expiration
-                R-->>S: Saved
-
-                S-->>API: LoginResponse
-                API-->>C: 200 Successful<br/>UserId + New AccessToken + New RefreshToken
+                        Service-->>API: LoginResponse (S002)
+                        API-->>Client: 200 OK + user ID and new tokens
+                    end
+                end
             end
         end
     end
+
+    Note over API,Middleware: Unexpected exceptions return E002 (HTTP 500).
 ```
+
