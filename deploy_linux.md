@@ -149,7 +149,10 @@
         "AccessTokenExpirationMinutes": <Access-Token-Expiration-Minutes>,
         "RefreshTokenExpirationDays": <Refresh-Token-Expiration-Days>,
         "OtpExpirySeconds": <Otp-Expiry-Seconds>,
-        "ResetPasswordExpiryMinutes": <Reset-Password-Expiry-Minutes>
+        "ResetPasswordExpiryMinutes": <Reset-Password-Expiry-Minutes>,
+        "GlobalRateLimitPermitLimit": 10,
+        "LoginRateLimitPermitLimit": 5,
+        "OtpRateLimitPermitLimit": 3
       },
       "Redis": {
         "ConnectionString": "localhost:6379,password=<redis-password>"
@@ -194,7 +197,10 @@
         "AccessTokenExpirationMinutes": <Access-Token-Expiration-Minutes>,
         "RefreshTokenExpirationDays": <Refresh-Token-Expiration-Days>,
         "OtpExpirySeconds": <Otp-Expiry-Seconds>,
-        "ResetPasswordExpiryMinutes": <Reset-Password-Expiry-Minutes>
+        "ResetPasswordExpiryMinutes": <Reset-Password-Expiry-Minutes>,
+        "GlobalRateLimitPermitLimit": 10,
+        "LoginRateLimitPermitLimit": 5,
+        "OtpRateLimitPermitLimit": 3
       },
       "Redis": {
         "ConnectionString": "redis:6379,password=<redis-password>"
