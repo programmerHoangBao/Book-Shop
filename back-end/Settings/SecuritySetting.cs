@@ -11,5 +11,9 @@
         public int OtpExpirySeconds { get; set; }
 
         public int ResetPasswordExpiryMinutes { get; set; }
+
+        public int GlobalRateLimitPermitLimit { get; set; }
+        public int LoginRateLimitPermitLimit { get; set; }
+        public int OtpRateLimitPermitLimit { get; set; }
     }
 }

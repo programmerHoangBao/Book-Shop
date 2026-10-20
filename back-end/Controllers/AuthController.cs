@@ -1,6 +1,7 @@
 ﻿using back_end.DTOs.Auths.Requests;
 using back_end.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace back_end.Controllers
 {
@@ -15,6 +16,7 @@ namespace back_end.Controllers
             _authService = authService;
         }
 
+        [EnableRateLimiting("OtpPolicy")]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest req)
         {
@@ -22,6 +24,7 @@ namespace back_end.Controllers
             return StatusCode(result.HttpStatus, result); // StatusCode is now accessible
         }
 
+        [EnableRateLimiting("LoginPolicy")]
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginRequest req)
         {
@@ -29,6 +32,7 @@ namespace back_end.Controllers
             return StatusCode(result.HttpStatus, result);
         }
 
+        [EnableRateLimiting("OtpPolicy")]
         [HttpPost("verify")]
         public async Task<IActionResult> VerifyAsync([FromBody] VerifyOtpRequest req)
         {
@@ -36,12 +40,15 @@ namespace back_end.Controllers
             return StatusCode(result.HttpStatus, result);
         }
 
+        [EnableRateLimiting("LoginPolicy")]
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshTokenRequest req)
         {
             var result = await _authService.RefreshTokenAsync(req);
             return StatusCode(result.HttpStatus, result);
         }
+
+        [EnableRateLimiting("LoginPolicy")]
         [HttpPost("google-sign-in")]
         public async Task<IActionResult> GoogleSignInAsync([FromQuery] string idToken)
         {
@@ -49,6 +56,7 @@ namespace back_end.Controllers
             return StatusCode(result.HttpStatus, result);
         }
 
+        [EnableRateLimiting("OtpPolicy")]
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPasswordAsync([FromBody] ForgotPasswordRequest req)
         {
