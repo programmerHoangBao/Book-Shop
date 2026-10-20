@@ -9,7 +9,7 @@ namespace back_end.Entities
         public Guid PromotionId { get; set; } = Guid.CreateVersion7();
         public Guid BookId { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
 
         public PromotionEntity? Promotion { get; set; }

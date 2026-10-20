@@ -1,4 +1,4 @@
-﻿namespace back_end.DTOs.Auths.Responses
+﻿namespace back_end.DTOs.Google.Responses
 {
     public class GoogleUserInfoResponse
     {

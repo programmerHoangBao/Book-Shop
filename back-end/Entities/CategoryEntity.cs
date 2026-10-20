@@ -14,7 +14,7 @@ namespace back_end.Entities
         public bool IsActive { get; set; } = true;
         public bool IsDefault { get; set; } = true;
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
         public CategoryEntity? Parent { get; set; }
         public ICollection<CategoryEntity> Children { get; set; }  = new List<CategoryEntity>();

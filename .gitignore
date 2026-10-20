@@ -16,3 +16,4 @@
 /.github
 /back-end/appsettings.Production.json
 /.env
+/back-end/Credentials

@@ -25,7 +25,7 @@ namespace back_end.Entities
         [Required]
         public int IncomingQuantity { get; set; } = 0;
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
 
         public StoreEntity? Store { get; set; }

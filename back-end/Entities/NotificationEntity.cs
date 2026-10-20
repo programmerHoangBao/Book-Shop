@@ -29,7 +29,7 @@ namespace back_end.Entities
         public bool IsRead { get; set; } = false;
         public DateTime? SentAt { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
         public UserEntity? User { get; set; }
     }

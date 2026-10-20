@@ -2,7 +2,9 @@
 {
     public sealed record MessageRecord(string ResponseCode, string Message, int HttpStatus)
     {
-        public static readonly MessageRecord RegisterSuccessfully = new ("S001", "Register is successfully!", StatusCodes.Status200OK);
-        public static readonly MessageRecord Success = new("S002", "Successful!", StatusCodes.Status200OK);
+        public static readonly MessageRecord RegisterSuccessfully = 
+            new ("S001", "Register is successfully!", StatusCodes.Status200OK);
+        public static readonly MessageRecord Success = 
+            new("S002", "Successful!", StatusCodes.Status200OK);
     }
 }

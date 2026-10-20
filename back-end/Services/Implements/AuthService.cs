@@ -1,6 +1,7 @@
 ﻿using back_end.DTOs;
 using back_end.DTOs.Auths.Requests;
 using back_end.DTOs.Auths.Responses;
+using back_end.DTOs.Google.Responses;
 using back_end.Entities;
 using back_end.Exceptions;
 using back_end.Kafka.Messages;
@@ -23,7 +24,7 @@ namespace back_end.Services.Implements
         private readonly IRedisService _redisService;
         private readonly IKafkaProducer _kafkaProducer;
         private readonly IJwtService _jwtService;
-        private readonly IGoogleAuthService _googleAuthService;
+        private readonly IGoogleService _googleService;
         private readonly ILogger<AuthService> _logger;
 
         public AuthService
@@ -33,7 +34,7 @@ namespace back_end.Services.Implements
             IRedisService redisService,
             IKafkaProducer kafkaProducer,
             IJwtService jwtService,
-            IGoogleAuthService googleAuthService,
+            IGoogleService googleService,
             ILogger<AuthService> logger
         )
         {
@@ -42,7 +43,7 @@ namespace back_end.Services.Implements
             _redisService = redisService;
             _kafkaProducer = kafkaProducer;
             _jwtService = jwtService;
-            _googleAuthService = googleAuthService;
+            _googleService = googleService;
             _logger = logger;
         }
 
@@ -95,7 +96,7 @@ namespace back_end.Services.Implements
         public async Task<ApiResponse<LoginResponse?>> GoogleSignInAsync(string idToken)
         {
             GoogleUserInfoResponse? googleUser =
-                await _googleAuthService.VerifyTokenAsync(idToken);
+                await _googleService.VerifyTokenAsync(idToken);
             // Case 1: Id token invalid!
             if (googleUser == null)
             {

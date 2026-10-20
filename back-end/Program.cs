@@ -14,6 +14,9 @@ using back_end.Profiles;
 using back_end.Configurations;
 using back_end.Redis.Services;
 using back_end.Redis.Services.Implements;
+using Google.Apis.Drive.v3;
+using Google.Apis.Services;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,7 +69,9 @@ builder.Services.AddScoped<IRedisService, RedisService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+builder.Services.AddScoped<IGoogleService, GoogleService>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // Background Service
 builder.Services.AddHostedService<OtpEmailConsumer>();
@@ -82,6 +87,18 @@ builder.Services.AddJWTAuthentication(securitySetting!);
 
 // Rate Limiting Configuration
 builder.Services.AddRateLimitingConfiguration(securitySetting!);
+
+// Register IHttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+
+var googleSetting = builder.Configuration
+    .GetSection("Authentication:Google")
+    .Get<GoogleSetting>();
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = (googleSetting!.MaxFileSizeMB + 5) * 1024L * 1024L;
+});
 
 var app = builder.Build();
 
@@ -100,6 +117,7 @@ app.UseRateLimiter();
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
