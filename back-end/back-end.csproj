@@ -11,6 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Credentials\**" />
+    <Content Remove="Credentials\**" />
+    <EmbeddedResource Remove="Credentials\**" />
+    <None Remove="Credentials\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="Templates/*.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -25,7 +32,6 @@
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
     <PackageReference Include="Epam.Kafka" Version="2.5.260" />
     <PackageReference Include="Google.Apis.Auth" Version="1.76.0" />
-    <PackageReference Include="Google.Apis.Drive.v3" Version="1.76.0.4273" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.18" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.19" />
@@ -37,10 +43,6 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="StackExchange.Redis" Version="3.3.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.18.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Credentials\" />
   </ItemGroup>
 
 </Project>

@@ -14,8 +14,6 @@ using back_end.Profiles;
 using back_end.Configurations;
 using back_end.Redis.Services;
 using back_end.Redis.Services.Implements;
-using Google.Apis.Drive.v3;
-using Google.Apis.Services;
 using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
