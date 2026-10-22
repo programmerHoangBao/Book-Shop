@@ -6,13 +6,5 @@ namespace back_end.Services
     public interface IGoogleService
     {
         Task<GoogleUserInfoResponse?> VerifyTokenAsync(string idToken);
-        Task<ApiResponse<GoogleDriveFileResponse?>> UploadImageAsync(
-            IFormFile file,
-            CancellationToken cancellationToken = default
-        );
-        Task<bool> DeleteImageAsync(
-            string uploadedFileId, 
-            CancellationToken cancellationToken = default
-        );
     }
 }
