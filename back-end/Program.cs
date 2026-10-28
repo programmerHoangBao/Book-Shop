@@ -98,10 +98,10 @@ var googleSetting = builder.Configuration
     .GetSection("Authentication:Google")
     .Get<GoogleSetting>();
 
-builder.Services.Configure<FormOptions>(options =>
-{
-    options.MultipartBodyLengthLimit = (googleSetting!.MaxFileSizeMB + 5) * 1024L * 1024L;
-});
+//builder.Services.Configure<FormOptions>(options =>
+//{
+//    options.MultipartBodyLengthLimit = (googleSetting!.MaxFileSizeMB + 5) * 1024L * 1024L;
+//});
 
 // The AWS SDK uses the default credential provider chain.
 builder.Services.AddSingleton<IAmazonS3>(sp =>

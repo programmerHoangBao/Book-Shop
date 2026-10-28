@@ -22,5 +22,12 @@ namespace back_end.Controllers
         //    var response = await _fileService.UploadImageAsync(file);
         //    return Ok(response);
         //}
+
+        //[HttpDelete]
+        //public async Task<IActionResult> DeleteImageAsync([FromQuery] string objectKey)
+        //{
+        //    await _fileService.DeleteImageAsync(objectKey);
+        //    return NoContent();
+        //}
     }
 }
