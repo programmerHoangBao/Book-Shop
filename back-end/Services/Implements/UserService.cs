@@ -1,13 +1,9 @@
 ﻿using AutoMapper;
 using back_end.DTOs;
-using back_end.DTOs.Google.Responses;
 using back_end.DTOs.Users.Requests;
-using back_end.DTOs.Users.Responses;
-using back_end.Entities;
 using back_end.Exceptions;
 using back_end.Records;
 using back_end.Repositories;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace back_end.Services.Implements
 {
