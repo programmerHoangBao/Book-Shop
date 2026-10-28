@@ -3,7 +3,9 @@
     "http": {
       "commandName": "Project",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "AWS_PROFILE": "book-shop",
+        "AWS_DEFAULT_REGION": "ap-southeast-1"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5070"
