@@ -15,6 +15,8 @@ using back_end.Configurations;
 using back_end.Redis.Services;
 using back_end.Redis.Services.Implements;
 using Microsoft.AspNetCore.Http.Features;
+using Amazon.S3;
+using Amazon;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +42,8 @@ builder.Services.Configure<SecuritySetting>(builder.Configuration.GetSection("Se
 builder.Services.Configure<EmailSetting>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<KafkaSetting>(builder.Configuration.GetSection("Kafka"));
 builder.Services.Configure<GoogleSetting>(builder.Configuration.GetSection("Authentication:Google"));
+builder.Services.Configure<S3Setting>(builder.Configuration.GetSection("AWS:S3"));
+builder.Services.Configure<FileStorageSetting>(builder.Configuration.GetSection("FileStorage"));
 
 // Connection redis
 var redisConnectionString =
@@ -70,6 +74,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IGoogleService, GoogleService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IFileService, FileService>();
 
 // Background Service
 builder.Services.AddHostedService<OtpEmailConsumer>();
@@ -96,6 +101,16 @@ var googleSetting = builder.Configuration
 builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = (googleSetting!.MaxFileSizeMB + 5) * 1024L * 1024L;
+});
+
+// The AWS SDK uses the default credential provider chain.
+builder.Services.AddSingleton<IAmazonS3>(sp =>
+{
+    var options = sp.GetRequiredService<
+        Microsoft.Extensions.Options.IOptions<S3Setting>>().Value;
+
+    return new AmazonS3Client(
+        RegionEndpoint.GetBySystemName(options.Region));
 });
 
 var app = builder.Build();
