@@ -122,9 +122,85 @@ namespace back_end.Services.Implements
             }
         }
 
-        public Task DeleteImageAsync(string objectKey, CancellationToken cancellationToken = default)
+        public async Task DeleteImageAsync(
+            string objectKey, 
+            CancellationToken cancellationToken = default
+        )
         {
-            throw new NotImplementedException();
+            // Case 01: Validate ObjectKey
+            if (string.IsNullOrWhiteSpace(objectKey))
+            {
+                throw new ArgumentException(
+                    "ObjectKey is required.",
+                    nameof(objectKey));
+            }
+            objectKey = objectKey.Trim();
+
+            // Case 02: Only allow the deletion of objects belonging to ImagePrefix.
+            var prefix = _fileStorageSetting.ImagePrefix.Trim('/');
+            if (string.IsNullOrWhiteSpace(prefix))
+            {
+                throw new InvalidOperationException("ImagePrefix is not configured.");
+            }
+
+            var allowedPrefix = prefix + "/";
+
+            if (!objectKey.StartsWith(
+                    allowedPrefix,
+                    StringComparison.Ordinal))
+            {
+                throw new ArgumentException(
+                    "ObjectKey is outside the allowed image prefix.",
+                    nameof(objectKey));
+            }
+
+            // Case 03: Keys containing path navigation characters are not accepted.
+            if (objectKey.Contains('\\') ||
+                objectKey.Split('/').Any(segment =>
+                    segment is "." or ".."))
+            {
+                throw new ArgumentException(
+                    "ObjectKey is invalid.",
+                    nameof(objectKey));
+            }
+
+            try
+            {
+                // Case 04: Delete an object on S3.
+                var response = await _s3Client.DeleteObjectAsync(
+                    new Amazon.S3.Model.DeleteObjectRequest
+                    {
+                        BucketName = _s3Setting.BucketName,
+                        Key = objectKey
+                    },
+                    cancellationToken);
+
+                // Case 05: Handle the result. 
+                // DeleteObjectAsync typically throws an exception if the request fails. 
+                // S3 does not guarantee a 404 response for a non-existent key.
+                _logger.LogInformation(
+                    "Image deletion request completed. ObjectKey: {ObjectKey}, " +
+                    "StatusCode: {StatusCode}",
+                    objectKey,
+                    response.HttpStatusCode);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Amazon.S3.AmazonS3Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Failed to delete image from S3. ObjectKey: {ObjectKey}, " +
+                    "StatusCode: {StatusCode}",
+                    objectKey,
+                    ex.StatusCode);
+
+                throw new InvalidOperationException(
+                    "Failed to delete image from Amazon S3.",
+                    ex);
+            }
         }
 
         private string GenerateImageUrl(string objectKey)
