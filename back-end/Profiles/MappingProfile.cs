@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using back_end.DTOs.Auths.Requests;
 using back_end.DTOs.Emails.Requests;
+using back_end.DTOs.Stores.Requests;
+using back_end.DTOs.Stores.Responses;
 using back_end.DTOs.Users.Requests;
 using back_end.DTOs.Users.Responses;
 using back_end.Entities;
@@ -15,6 +17,8 @@ namespace back_end.Profiles
             CreateMap<SendOtpRequest, SendOtpEmailMessage>();
             CreateMap<CreateUserRequest, UserEntity>();
             CreateMap<UserEntity, CreateUserResponse>();
+            CreateMap<CreateStoreRequest, StoreEntity>();
+            CreateMap<StoreEntity, CreateStoreResponse>();
         }
     }
 }

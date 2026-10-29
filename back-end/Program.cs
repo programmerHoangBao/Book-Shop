@@ -76,6 +76,7 @@ builder.Services.AddScoped<IGoogleService, GoogleService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IStoreService, StoreService>();
 
 // Background Service
 builder.Services.AddHostedService<OtpEmailConsumer>();
