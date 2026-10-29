@@ -79,6 +79,12 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
 
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+
+      AWS__S3__Region: ${REGION}
+      AWS__S3__BucketName: ${BUCKET_NAME}
+
     depends_on:
       postgresql:
         condition: service_healthy
