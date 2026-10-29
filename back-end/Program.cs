@@ -65,6 +65,7 @@ builder.Services.AddSingleton<IKafkaProducer, KafkaProducer>();
 
 // Add Repository
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IStoreRepository, StoreRepository>();
 
 // Add service
 builder.Services.AddScoped<IRedisService, RedisService>();
@@ -75,6 +76,7 @@ builder.Services.AddScoped<IGoogleService, GoogleService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IStoreService, StoreService>();
 
 // Background Service
 builder.Services.AddHostedService<OtpEmailConsumer>();
