@@ -32,6 +32,16 @@ namespace back_end.Controllers
             return StatusCode(response.HttpStatus, response);
         }
 
+        [HttpDelete]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SoftDeleteByIdAsync(
+            [FromQuery(Name = "Id")] Guid storeId
+        )
+        {
+            var response = await _storeService.SoftDeleteByIdAsync(storeId);
+            return StatusCode(response.HttpStatus, response);
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetStoresAsync(
             [FromQuery] int pageNumber = 1,

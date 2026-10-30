@@ -72,6 +72,21 @@ namespace back_end.Services.Implements
             return ApiResponse<object?>.Response(MessageRecord.Success, data: pagination);
         }
 
+        public async Task<ApiResponse<object?>> SoftDeleteByIdAsync(Guid storeId)
+        {
+            StoreEntity? store = await _storeRepository.GetStoreByIdAsync(storeId);
+            if (store == null || store.IsDeleted)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+            bool softDeleted = await _storeRepository.SoftDeleteByIdAsync(storeId);
+            if (softDeleted)
+            {
+                return ApiResponse<object?>.Response(MessageRecord.Success);
+            }
+            throw new BusinessException(ErrorRecord.Failed);
+        }
+
         public async Task<ApiResponse<object?>> UpdateStoreAsync(UpdateStoreRequest req)
         {
             StoreEntity? existsStore = await _storeRepository.GetStoreByIdAsync(req.StoreId);
