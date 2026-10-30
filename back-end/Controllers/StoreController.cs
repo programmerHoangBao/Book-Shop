@@ -41,5 +41,14 @@ namespace back_end.Controllers
             var response = await _storeService.GetStoresAsync(pageNumber, pageSize);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpGet("{Id:guid}")]
+        public async Task<IActionResult> GetStoreByIdAsync(
+            [FromRoute(Name = "Id")] Guid storeId
+        )
+        {
+            var response = await _storeService.GetStoreByIdAsync(storeId);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }
