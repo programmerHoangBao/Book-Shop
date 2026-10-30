@@ -83,6 +83,42 @@ namespace back_end.Repositories.Implements
             return affectedRows > 0;
         }
 
+        public async Task<(List<StoreEntity> Stores, int TotalItems)> SearchStoresByKeyAndIsDeletedAsync(
+            string? key,
+            bool isDeleted = true,
+            int pageNumber = 1,
+            int pageSize = 10
+        )
+        {
+            IQueryable<StoreEntity> query = _context.Stores
+                .AsNoTracking()
+                .Where(s => s.IsDeleted == isDeleted);
+
+            if (!string.IsNullOrWhiteSpace(key))
+            {
+                key = key.Trim();
+
+                query = query.Where(s =>
+                    s.Name.Contains(key) ||
+                    s.Address.Contains(key) ||
+                    s.PhoneNumber.Contains(key)
+                );
+            }
+
+            int totalItems = await query.CountAsync();
+
+            query = isDeleted
+                ? query.OrderByDescending(s => s.UpdatedAt)
+                : query.OrderByDescending(s => s.CreatedAt);
+
+            List<StoreEntity> stores = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (stores, totalItems);
+        }
+
         public async Task<bool> SoftDeleteByIdAsync(Guid storeId)
         {
             var affectedRows = await _context.Stores

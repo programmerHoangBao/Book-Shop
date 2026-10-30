@@ -81,5 +81,23 @@ namespace back_end.Controllers
             var response = await _storeService.GetDeletedStoresAsync(pageNumber, pageSize);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchStoresByKeyAndIsDeletedAsync(
+            [FromQuery] string? key,
+            [FromQuery] bool isDeleted = true,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10
+        )
+        {
+            var response = await _storeService.SearchStoresByKeyAndIsDeletedAsync(
+                key,
+                isDeleted,
+                pageNumber,
+                pageSize
+            );
+
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }
