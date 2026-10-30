@@ -23,5 +23,13 @@ namespace back_end.Controllers
             var response = await _storeService.CreateStoreAsync(req);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpPut]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateStoreAsync([FromBody] UpdateStoreRequest req)
+        {
+            var response = await _storeService.UpdateStoreAsync(req);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }

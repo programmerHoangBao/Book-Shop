@@ -34,5 +34,22 @@ namespace back_end.Services.Implements
             }
             throw new BusinessException(ErrorRecord.Failed);
         }
+
+        public async Task<ApiResponse<object?>> UpdateStoreAsync(UpdateStoreRequest req)
+        {
+            StoreEntity? existsStore = await _storeRepository.GetStoreByIdAsync(req.StoreId);
+            if (existsStore == null || existsStore.IsDeleted)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+            existsStore = _mapper.Map(req, existsStore);
+            bool updated = await _storeRepository.UpdateStoreAsync(existsStore);
+            if (updated)
+            {
+                UpdateStoreResponse response = _mapper.Map<UpdateStoreResponse>(existsStore);
+                return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
+            }
+            throw new BusinessException(ErrorRecord.Failed);
+        }
     }
 }
