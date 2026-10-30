@@ -31,5 +31,15 @@ namespace back_end.Controllers
             var response = await _storeService.UpdateStoreAsync(req);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetStoresAsync(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10
+        )
+        {
+            var response = await _storeService.GetStoresAsync(pageNumber, pageSize);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }

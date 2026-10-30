@@ -7,5 +7,6 @@ namespace back_end.Repositories
         Task<bool> AddStoreAsync(StoreEntity store);
         Task<bool> UpdateStoreAsync(StoreEntity store);
         Task<StoreEntity?> GetStoreByIdAsync(Guid storeId);
+        Task<(List<StoreEntity> Stores, int TotalItems)> GetStoresAsync(int pageNumber, int pageSize);
     }
 }
