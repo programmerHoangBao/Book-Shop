@@ -73,6 +73,16 @@ namespace back_end.Repositories.Implements
             return (stores, totalItems);
         }
 
+        public async Task<bool> RestoreStoreByIdAsync(Guid storeId)
+        {
+            var affectedRows = await _context.Stores
+                .Where(s => s.Id == storeId && s.IsDeleted)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(s => s.IsDeleted, false));
+
+            return affectedRows > 0;
+        }
+
         public async Task<bool> SoftDeleteByIdAsync(Guid storeId)
         {
             var affectedRows = await _context.Stores

@@ -42,6 +42,16 @@ namespace back_end.Controllers
             return StatusCode(response.HttpStatus, response);
         }
 
+        [HttpPatch]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RestoreStoreByIdAsync(
+            [FromQuery(Name = "Id")] Guid storeId
+        )
+        {
+            var response = await _storeService.RestoreStoreByIdAsync(storeId);
+            return StatusCode(response.HttpStatus, response);
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetStoresAsync(
             [FromQuery] int pageNumber = 1,
