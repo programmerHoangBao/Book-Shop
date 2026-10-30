@@ -60,5 +60,16 @@ namespace back_end.Controllers
             var response = await _storeService.GetStoreByIdAsync(storeId);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpGet("deleted")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetDeletedStoresAsync(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10
+        )
+        {
+            var response = await _storeService.GetDeletedStoresAsync(pageNumber, pageSize);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }

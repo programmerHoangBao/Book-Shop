@@ -36,6 +36,22 @@ namespace back_end.Repositories.Implements
             }
         }
 
+        public async Task<(List<StoreEntity> Stores, int TotalItems)> GetDeletedStoresAsync(
+            int pageNumber, 
+            int pageSize
+        )
+        {
+            IQueryable<StoreEntity> query = _context.Stores
+                .Where(s => s.IsDeleted)
+                .OrderByDescending(s => s.UpdatedAt);
+            int totalItems = await query.CountAsync();
+            List<StoreEntity> stores = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            return (stores, totalItems);
+        }
+
         public async Task<StoreEntity?> GetStoreByIdAsync(Guid storeId)
         {
             return await _context.Stores.FirstOrDefaultAsync(s => s.Id == storeId);
