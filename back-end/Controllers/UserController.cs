@@ -1,8 +1,10 @@
 ﻿using back_end.DTOs;
 using back_end.DTOs.Users.Requests;
 using back_end.Services;
+using back_end.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace back_end.Controllers
 {
@@ -17,6 +19,7 @@ namespace back_end.Controllers
         }
 
         [Authorize(Roles = "Manager,Admin")]
+        [Consumes("multipart/form-data")]
         [HttpPost]
         public async Task<IActionResult> CreateUserAsync(
             [FromForm] CreateUserRequest req,
