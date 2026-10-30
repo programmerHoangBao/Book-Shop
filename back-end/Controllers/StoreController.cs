@@ -32,6 +32,26 @@ namespace back_end.Controllers
             return StatusCode(response.HttpStatus, response);
         }
 
+        [HttpDelete]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SoftDeleteByIdAsync(
+            [FromQuery(Name = "Id")] Guid storeId
+        )
+        {
+            var response = await _storeService.SoftDeleteByIdAsync(storeId);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpPatch]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RestoreStoreByIdAsync(
+            [FromQuery(Name = "Id")] Guid storeId
+        )
+        {
+            var response = await _storeService.RestoreStoreByIdAsync(storeId);
+            return StatusCode(response.HttpStatus, response);
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetStoresAsync(
             [FromQuery] int pageNumber = 1,
@@ -48,6 +68,17 @@ namespace back_end.Controllers
         )
         {
             var response = await _storeService.GetStoreByIdAsync(storeId);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpGet("deleted")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetDeletedStoresAsync(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10
+        )
+        {
+            var response = await _storeService.GetDeletedStoresAsync(pageNumber, pageSize);
             return StatusCode(response.HttpStatus, response);
         }
     }
