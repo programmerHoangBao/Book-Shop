@@ -28,7 +28,7 @@ namespace back_end.Services.Implements
             {
                 CreateStoreResponse response = _mapper.Map<CreateStoreResponse>(newStore);
                 return ApiResponse<object?>.Response(
-                    messageRecord: MessageRecord.Success,
+                    messageRecord: MessageRecord.CreatedSuccessfully,
                     data: response
                 );
             }

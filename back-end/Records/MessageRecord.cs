@@ -6,5 +6,7 @@
             new ("S001", "Register is successfully!", StatusCodes.Status200OK);
         public static readonly MessageRecord Success = 
             new("S002", "Successful!", StatusCodes.Status200OK);
+        public static readonly MessageRecord CreatedSuccessfully =
+            new("S003", "Successfully created!", StatusCodes.Status201Created);
     }
 }
