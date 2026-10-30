@@ -40,7 +40,7 @@ namespace back_end.Services.Implements
             var result = await _storeRepository.GetDeletedStoresAsync(pageNumber, pageSize);
             List<StoreEntity> stores = result.Stores;
             int totalItems = result.TotalItems;
-            if (totalItems == 0)
+            if (totalItems == 0 || stores.Count == 0)
             {
                 throw new BusinessException(ErrorRecord.NotFound);
             }
@@ -77,7 +77,7 @@ namespace back_end.Services.Implements
             var result = await _storeRepository.GetStoresAsync(pageNumber, pageSize);
             List<StoreEntity> stores = result.Stores;
             int totalItems = result.TotalItems;
-            if (totalItems == 0)
+            if (totalItems == 0 || stores.Count == 0)
             {
                 throw new BusinessException(ErrorRecord.NotFound);
             }
