@@ -48,7 +48,10 @@ namespace back_end.Services.Implements
             if (created)
             {
                 CreateUserResponse response = _mapper.Map<CreateUserResponse>(newUser);
-                return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
+                return ApiResponse<object?>.Response(
+                    MessageRecord.CreatedSuccessfully, 
+                    data: response
+                );
             }
             // Case 4: Rollback the avatar if saving to the database fails for the user.
 

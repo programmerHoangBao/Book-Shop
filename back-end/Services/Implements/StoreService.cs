@@ -28,11 +28,22 @@ namespace back_end.Services.Implements
             {
                 CreateStoreResponse response = _mapper.Map<CreateStoreResponse>(newStore);
                 return ApiResponse<object?>.Response(
-                    messageRecord: MessageRecord.Success,
+                    messageRecord: MessageRecord.CreatedSuccessfully,
                     data: response
                 );
             }
             throw new BusinessException(ErrorRecord.Failed);
+        }
+
+        public async Task<ApiResponse<object?>> GetStoreByIdAsync(Guid storeId)
+        {
+            StoreEntity? storeEntity = await _storeRepository.GetStoreByIdAsync(storeId);
+            if (storeEntity == null || storeEntity.IsDeleted)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+            StoreResponse response = _mapper.Map<StoreResponse>(storeEntity);
+            return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
         }
 
         public async Task<ApiResponse<object?>> GetStoresAsync(int pageNumber, int pageSize)
