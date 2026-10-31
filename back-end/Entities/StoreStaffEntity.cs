@@ -4,7 +4,7 @@ namespace back_end.Entities
 {
     public class StoreStaffEntity : IAuditable
     {
-        public Guid StoreId { get; set; } = Guid.CreateVersion7();
+        public Guid StoreId { get; set; }
         public Guid UserId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
