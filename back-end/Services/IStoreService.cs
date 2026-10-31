@@ -12,5 +12,11 @@ namespace back_end.Services
         Task<ApiResponse<object?>> SoftDeleteByIdAsync(Guid storeId);
         Task<ApiResponse<object?>> GetDeletedStoresAsync(int pageNumber, int pageSize);
         Task<ApiResponse<object?>> RestoreStoreByIdAsync(Guid storeId);
+        Task<ApiResponse<object?>> SearchStoresByKeyAndIsDeletedAsync(
+            string? key,
+            bool isDeleted = true,
+            int pageNumber = 1,
+            int pageSize = 10
+        );
     }
 }

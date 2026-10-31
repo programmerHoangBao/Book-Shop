@@ -11,5 +11,11 @@ namespace back_end.Repositories
         Task<bool> SoftDeleteByIdAsync(Guid storeId);
         Task<(List<StoreEntity> Stores, int TotalItems)> GetDeletedStoresAsync(int pageNumber, int pageSize);
         Task<bool> RestoreStoreByIdAsync(Guid storeId);
+        Task<(List<StoreEntity> Stores, int TotalItems)> SearchStoresByKeyAndIsDeletedAsync(
+            string? key,
+            bool isDeleted = true,
+            int pageNumber = 1, 
+            int pageSize = 10
+        );
     }
 }

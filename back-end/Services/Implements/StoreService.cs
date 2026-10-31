@@ -40,7 +40,7 @@ namespace back_end.Services.Implements
             var result = await _storeRepository.GetDeletedStoresAsync(pageNumber, pageSize);
             List<StoreEntity> stores = result.Stores;
             int totalItems = result.TotalItems;
-            if (totalItems == 0)
+            if (totalItems == 0 || stores.Count == 0)
             {
                 throw new BusinessException(ErrorRecord.NotFound);
             }
@@ -77,7 +77,7 @@ namespace back_end.Services.Implements
             var result = await _storeRepository.GetStoresAsync(pageNumber, pageSize);
             List<StoreEntity> stores = result.Stores;
             int totalItems = result.TotalItems;
-            if (totalItems == 0)
+            if (totalItems == 0 || stores.Count == 0)
             {
                 throw new BusinessException(ErrorRecord.NotFound);
             }
@@ -143,6 +143,43 @@ namespace back_end.Services.Implements
                 return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
             }
             throw new BusinessException(ErrorRecord.Failed);
+        }
+
+        public async Task<ApiResponse<object?>> SearchStoresByKeyAndIsDeletedAsync(
+            string? key,
+            bool isDeleted = true,
+            int pageNumber = 1,
+            int pageSize = 10
+        )
+        {
+            var result = await _storeRepository.SearchStoresByKeyAndIsDeletedAsync(
+                key, 
+                isDeleted, 
+                pageNumber, 
+                pageSize
+            );
+
+            List<StoreEntity> stores = result.Stores;
+            int totalItems = result.TotalItems;
+            if (totalItems == 0 || stores.Count == 0)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+            List<StoreResponse> responses = stores
+                .Select(s => _mapper.Map<StoreResponse>(s))
+                .ToList();
+            int totalPages = (int)Math.Ceiling(
+                (double)totalItems / pageSize
+            );
+            PaginationResponse<StoreResponse> pagination = new()
+            {
+                Items = responses,
+                CurrentPage = pageNumber,
+                PageSize = pageSize,
+                TotalItems = totalItems,
+                TotalPages = totalPages
+            };
+            return ApiResponse<object?>.Response(MessageRecord.Success, data: pagination);
         }
     }
 }
