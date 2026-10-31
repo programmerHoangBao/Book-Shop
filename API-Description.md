@@ -10,6 +10,15 @@
   - [1.5. Reset Password](#15-reset-password)
   - [1.6. Google Login](#16-google-login)
   - [1.7. Refresh Token](#17-refresh-token)
+- [2. Store](#2-store)
+  - [2.1. Create Store](#21-create-store)
+  - [2.2. Update Store](#22-update-store)
+  - [2.3. Delete Store](#23-delete-store)
+  - [2.4. Restore Store](#24-restore-store)
+  - [2.5. Get Stores](#25-get-stores)
+  - [2.6. Get Store By Id](#26-get-store-by-id)
+  - [2.7. Get Deleted Stores](#27-get-deleted-stores)
+  - [2.8. Search stores](#28-search-stores)
 
 ## 1. Auth
 
@@ -1585,4 +1594,2192 @@ sequenceDiagram
 
     Note over API,Middleware: Unexpected exceptions return E002 (HTTP 500).
 ```
+
+## 2. Store
+### 2.1 Create Store
+
+#### 2.1.1 API Information
+
+| Property | Description |
+|---|---|
+| API Name | Create Store |
+| Method | `POST` |
+| URL | `http://<host>:<port>/api/store` |
+| Authentication | Bearer Token (JWT) |
+| Authorization | Admin role required |
+| Content-Type | `application/json` |
+| Rate Limiting Policy | Global Rate Limiter (default) |
+
+**API URL Configuration**
+
+Replace `<host>` and `<port>` with the server's hostname or IP address and the port on which the API is running.
+
+Example:
+
+```http
+POST http://localhost:5070/api/store
+```
+
+**Request Headers**
+
+| Header | Value | Required | Description |
+|---|---|---|---|
+| `Authorization` | `Bearer <access_token>` | Yes | A valid JWT access token belonging to a user with the `Admin` role. |
+| `Content-Type` | `application/json` | Yes | Indicates that the request body contains JSON data. |
+
+#### 2.1.2 Rate Limiting Policy
+
+This API uses the **Global Rate Limiter** by default because no endpoint-specific rate-limiting policy is explicitly configured on the controller action.
+
+- Requests are subject to the globally configured request limit.
+- If the request limit is exceeded, the API returns HTTP `429 Too Many Requests`.
+- The client should wait before retrying the request.
+
+**Rate Limit Exceeded Response**
+
+HTTP Status Code: `429 Too Many Requests`
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+*Note: The response above follows the rate-limiting response format provided in the current configuration. Unlike the standard `ApiResponse<T>` structure, it uses the `status` and `message` properties.*
+
+#### 2.1.3 Description
+
+The Create Store API creates a new store in the system.
+
+The API accepts store information in JSON format, validates the request, maps the request DTO to a `StoreEntity`, and saves the new store through the store repository.
+
+If the operation succeeds, the API returns HTTP `201 Created` with the newly created store's information.
+
+**Authorization Requirement:** Only authenticated users with the `Admin` role are authorized to create a store.
+
+#### 2.1.4 Request Parameters
+
+The API receives a JSON request body containing the store's information.
+
+**Request Body**
+
+```json
+{
+  "name": "Central Store",
+  "address": "123 Main Street, Ho Chi Minh City",
+  "phoneNumber": "0901234567"
+}
+```
+
+**Request Fields**
+
+| Field | Data Type | Required | Constraints | Description |
+|---|---|---|---|---|
+| `name` | String | Yes | Maximum 500 characters | The name of the store. |
+| `address` | String | Yes | Maximum 500 characters | The store's address. |
+| `phoneNumber` | String | No* | Maximum 11 characters | The store's contact phone number. |
+
+*Note: `PhoneNumber` has no `[Required]` attribute, so it is not required by the declared Data Annotations. Its default value is an empty string. The request model does not explicitly validate phone-number format or a minimum length.*
+
+**Validation Rules**
+
+- `Name` must not be null and must not exceed 500 characters.
+- `Address` must not be null and must not exceed 500 characters.
+- `PhoneNumber` must not exceed 11 characters.
+- Invalid request data results in HTTP `400 Bad Request` when model validation fails.
+
+The property names in the JSON request are shown in camelCase, following the default JSON naming conventions commonly used by ASP.NET Core.
+
+#### 2.1.5 Response Results
+
+The API returns an `ApiResponse<T>` object for successful operations and errors handled by the application's response and exception-handling mechanisms. The HTTP status code is set using the response's `HttpStatus` property.
+
+**1. Store Created Successfully**
+
+HTTP Status Code: `201 Created`
+
+The store is saved successfully, and the response contains the created store's information.
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S003",
+  "message": "Successfully created!",
+  "httpStatus": 201,
+  "data": {
+    "id": "7d1a3b2c-4e5f-6789-abcd-0123456789ab",
+    "name": "Central Store",
+    "address": "123 Main Street, Ho Chi Minh City",
+    "phoneNumber": "0901234567",
+    "createdAt": "2026-10-31T10:00:00Z",
+    "updatedAt": null,
+    "isDeleted": false
+  }
+}
+```
+
+The values above are illustrative. The actual ID and timestamps are generated or populated by the application.
+
+**2. Invalid Request**
+
+HTTP Status Code: `400 Bad Request`
+
+Returned when request model validation fails, such as when the store name or address is missing or exceeds the maximum permitted length.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E001",
+  "message": "Request is invalid!",
+  "httpStatus": 400,
+  "data": [
+    "Name is required!"
+  ]
+}
+```
+
+The `data` array contains the validation error messages. The example shows one possible validation error; actual messages depend on the submitted request.
+
+**3. Store Creation Failed**
+
+HTTP Status Code: `400 Bad Request`
+
+If the repository indicates that the store could not be created, the service throws a `BusinessException` containing `ErrorRecord.Failed`.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E008",
+  "message": "Failed!",
+  "httpStatus": 400,
+  "data": null
+}
+```
+
+**4. Unauthorized Request**
+
+HTTP Status Code: `401 Unauthorized`
+
+Returned when the request does not contain a valid authentication token or authentication fails.
+
+The exact response body depends on the ASP.NET Core authentication configuration.
+
+**5. Forbidden Request**
+
+HTTP Status Code: `403 Forbidden`
+
+Returned when the authenticated user does not have the required `Admin` role.
+
+The exact response body depends on the ASP.NET Core authorization configuration.
+
+**6. Rate Limit Exceeded**
+
+HTTP Status Code: `429 Too Many Requests`
+
+Returned when the client exceeds the configured global request limit.
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+**7. Internal Server Error**
+
+HTTP Status Code: `500 Internal Server Error`
+
+Returned when an unexpected exception occurs and is handled by the exception-handling middleware.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E002",
+  "message": "Internal server error!",
+  "httpStatus": 500,
+  "data": null
+}
+```
+
+The response body follows the `ApiResponse<T>` structure used by the exception-handling middleware.
+
+**Response Summary**
+
+| HTTP Status Code | Response Code | Description |
+|---|---|---|
+| `201 Created` | `S003` | Store created successfully. |
+| `400 Bad Request` | `E001` | Request validation failed. |
+| `400 Bad Request` | `E008` | Store creation failed. |
+| `401 Unauthorized` | Authentication-dependent | Authentication is missing or invalid. |
+| `403 Forbidden` | Authorization-dependent | The authenticated user lacks the required `Admin` role. |
+| `429 Too Many Requests` | Rate-limiter-dependent | The global request limit has been exceeded. |
+| `500 Internal Server Error` | `E002` | An unexpected server-side error occurred. |
+
+*Note: The status codes and response codes above reflect the supplied implementation. Authentication, authorization, and rate-limiting response bodies may differ from `ApiResponse<T>` because those responses can be generated outside the service and exception-handling middleware.*
+
+#### 2.1.6 Sequence Diagram
+
+The following sequence diagram illustrates the request flow, including authentication, authorization, rate limiting, model validation, store creation, and the possible response paths.
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Client
+    participant API as ASP.NET Core API
+    participant RL as Global Rate Limiter
+    participant Auth as Authentication
+    participant AuthZ as Authorization
+    participant Validation as Model Validation
+    participant Controller as Store Controller
+    participant Service as Store Service
+    participant Mapper as AutoMapper
+    participant Repository as Store Repository
+    participant DB as Database
+    participant Middleware as Exception Middleware
+
+    Client->>API: POST /api/store
+    Note over Client,API: Content-Type: application/json<br/>Authorization: Bearer token
+
+    API->>RL: Check request limit
+
+    alt Rate limit exceeded
+        RL-->>Client: 429 Too Many Requests
+    else Request within limit
+        RL->>Auth: Continue request
+        Auth->>Auth: Validate JWT
+
+        alt Authentication failed
+            Auth-->>Client: 401 Unauthorized
+        else Authentication succeeded
+            Auth->>AuthZ: Check Admin role
+
+            alt User is not Admin
+                AuthZ-->>Client: 403 Forbidden
+            else User is Admin
+                AuthZ->>Validation: Validate request body
+
+                alt Request validation failed
+                    Validation-->>Client: 400 Bad Request<br/>Validation errors
+                else Request is valid
+                    Validation->>Controller: Invoke CreateStoreAsync(req)
+                    Controller->>Service: CreateStoreAsync(req)
+                    Service->>Mapper: Map request to StoreEntity
+                    Mapper-->>Service: New StoreEntity
+
+                    Service->>Repository: AddStoreAsync(newStore)
+                    Repository->>DB: Insert store
+
+                    alt Database operation succeeds
+                        DB-->>Repository: Save successful
+                        Repository-->>Service: created = true
+                        Service->>Mapper: Map entity to CreateStoreResponse
+                        Mapper-->>Service: Created store data
+                        Service-->>Controller: ApiResponse (S003)
+                        Controller-->>Client: 201 Created
+                    else Repository returns false
+                        Repository-->>Service: created = false
+                        Service->>Middleware: Throw BusinessException (E008)
+                        Middleware-->>Client: 400 Bad Request
+                    end
+                end
+            end
+        end
+    end
+
+    Note over Middleware,API: Unexpected exceptions are handled<br/>by ExceptionHandlingMiddleware<br/>and may return 500 Internal Server Error.
+```
+
+*Implementation note: The diagram presents the intended request-processing flow. The actual middleware execution order depends on the application's middleware registration in `Program.cs`. The `ExceptionHandlingMiddleware` catches exceptions that propagate through its downstream pipeline; it does not necessarily intercept every authentication, authorization, or rate-limiting response.*
+
+### 2.2. Update Store
+
+#### 2.2.1. API Information
+
+| Property | Description |
+|---|---|
+| API Name | Update Store |
+| HTTP Method | `PUT` |
+| API URL | `http://<host>:<port>/api/store` |
+| Content-Type | `application/json` |
+| Authentication | Bearer Token (JWT) |
+| Authorization | Admin role required |
+| Rate Limiting Policy | Global Rate Limiter (default) |
+
+**API URL Configuration**
+
+Replace `<host>` and `<port>` with the hostname or IP address and port where the API is running.
+
+Example:
+
+```http
+PUT http://localhost:5070/api/store
+```
+
+**Request Headers**
+
+| Header | Value | Required | Description |
+|---|---|---|---|
+| `Authorization` | `Bearer <access_token>` | Yes | A valid JWT access token belonging to a user with the `Admin` role. |
+| `Content-Type` | `application/json` | Yes | Indicates that the request body contains JSON data. |
+
+#### 2.2.2. Rate Limiting Policy
+
+The Update Store API uses the **Global Rate Limiter** by default because no endpoint-specific rate-limiting policy is explicitly configured on the controller action.
+
+- Requests are subject to the globally configured request limit.
+- Requests exceeding the configured limit are rejected with HTTP `429 Too Many Requests`.
+- Clients should wait before retrying the request.
+
+**Rate Limit Exceeded Response**
+
+HTTP Status Code: `429 Too Many Requests`
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+*Note: This response follows the rate-limiting response format provided in the current configuration and differs from the standard `ApiResponse<T>` structure.*
+
+#### 2.2.3. Description
+
+The Update Store API updates the information of an existing store.
+
+The API receives the store ID and the updated store information in a JSON request body. It retrieves the store by ID and checks whether the store exists and is not marked as deleted.
+
+If the store exists and is active, the API maps the request fields onto the existing entity and saves the changes through the store repository.
+
+If the update succeeds, the API returns HTTP `200 OK` with the updated store information.
+
+**Authorization Requirement:** Only authenticated users with the `Admin` role can update store information.
+
+**Business Rules:**
+- The store must exist in the database.
+- The store must not be marked as deleted (`IsDeleted = false`).
+- If the store does not exist or has been deleted, the API returns HTTP `404 Not Found`.
+- If the repository reports that the update failed, the API returns HTTP `400 Bad Request`.
+
+#### 2.2.4. Request Parameters
+
+The API receives a JSON request body containing the store ID and the store's updated information.
+
+**Request Body**
+
+```json
+{
+  "storeId": "7d1a3b2c-4e5f-6789-abcd-0123456789ab",
+  "name": "Updated Central Store",
+  "address": "456 Nguyen Hue Street, Ho Chi Minh City",
+  "phoneNumber": "0909876543"
+}
+```
+
+The values above are illustrative. Replace the store ID with the ID of the store you want to update.
+
+**Request Fields**
+
+| Field | Data Type | Required | Constraints | Description |
+|---|---|---|---|---|
+| `storeId` | GUID | Yes | Must be a valid GUID value | Identifies the store to update. |
+| `name` | String | Yes | Maximum 500 characters | The updated name of the store. |
+| `address` | String | Yes | Maximum 500 characters | The updated address of the store. |
+| `phoneNumber` | String | No* | Maximum 11 characters | The updated contact phone number. |
+
+*Note: `PhoneNumber` does not have a `[Required]` attribute, so it is optional under the declared Data Annotations. Its default value is an empty string.*
+
+**Validation Rules**
+
+- `StoreId` must be supplied as a valid GUID value.
+- `Name` must not be null and must not exceed 500 characters.
+- `Address` must not be null and must not exceed 500 characters.
+- `PhoneNumber` must not exceed 11 characters.
+- If request model validation fails, the API returns HTTP `400 Bad Request` with the validation error messages.
+
+**Important:** The `[Required]` attribute on a non-nullable `Guid` does not reject `Guid.Empty` (`00000000-0000-0000-0000-000000000000`). If the application must reject an empty GUID, add an explicit validation rule.
+
+#### 2.2.5. Response Results
+
+The API returns an `ApiResponse<T>` object for successful operations and errors handled by the application's response and exception-handling mechanisms. The HTTP status code is set using the response's `HttpStatus` property.
+
+**1. Store Updated Successfully**
+
+HTTP Status Code: `200 OK`
+
+Returned when the store exists, is not deleted, and the repository successfully updates its information.
+
+The success response uses `MessageRecord.Success`, with response code `S002` and message `Successful!`.
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": {
+    "id": "7d1a3b2c-4e5f-6789-abcd-0123456789ab",
+    "name": "Updated Central Store",
+    "address": "456 Nguyen Hue Street, Ho Chi Minh City",
+    "phoneNumber": "0909876543",
+    "createdAt": "2026-10-30T08:00:00Z",
+    "updatedAt": "2026-10-31T10:00:00Z",
+    "isDeleted": false
+  }
+}
+```
+
+The values above are illustrative. The actual timestamps and store information depend on the database and application implementation.
+
+**2. Invalid Request**
+
+HTTP Status Code: `400 Bad Request`
+
+Returned when the request fails model validation, such as when the store name or address is missing or exceeds the maximum permitted length.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E001",
+  "message": "Request is invalid!",
+  "httpStatus": 400,
+  "data": [
+    "Name is required!"
+  ]
+}
+```
+
+The `data` array contains the validation error messages. The example illustrates one possible validation error.
+
+**3. Store Not Found or Deleted**
+
+HTTP Status Code: `404 Not Found`
+
+Returned when the specified store does not exist or has been marked as deleted (`IsDeleted = true`).
+
+The service throws `BusinessException(ErrorRecord.NotFound)`, which maps to response code `E005`.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E005",
+  "message": "Not found data!",
+  "httpStatus": 404,
+  "data": null
+}
+```
+
+**4. Store Update Failed**
+
+HTTP Status Code: `400 Bad Request`
+
+Returned when the repository reports that the update operation failed.
+
+The service throws `BusinessException(ErrorRecord.Failed)`, which maps to response code `E008`.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E008",
+  "message": "Failed!",
+  "httpStatus": 400,
+  "data": null
+}
+```
+
+**5. Unauthorized Request**
+
+HTTP Status Code: `401 Unauthorized`
+
+Returned when the request does not contain a valid authentication token or authentication fails.
+
+The response body depends on the ASP.NET Core authentication configuration.
+
+**6. Forbidden Request**
+
+HTTP Status Code: `403 Forbidden`
+
+Returned when the user is authenticated but does not have the required `Admin` role.
+
+The response body depends on the ASP.NET Core authorization configuration.
+
+**7. Rate Limit Exceeded**
+
+HTTP Status Code: `429 Too Many Requests`
+
+Returned when the client exceeds the configured global request limit.
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+**8. Internal Server Error**
+
+HTTP Status Code: `500 Internal Server Error`
+
+Returned when an unexpected exception occurs and is handled by `ExceptionHandlingMiddleware`.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E002",
+  "message": "Internal server error!",
+  "httpStatus": 500,
+  "data": null
+}
+```
+
+**Response Summary**
+
+| HTTP Status Code | Response Code | Description |
+|---|---|---|
+| `200 OK` | `S002` | Store updated successfully. |
+| `400 Bad Request` | `E001` | Request validation failed. |
+| `400 Bad Request` | `E008` | Store update failed. |
+| `401 Unauthorized` | Authentication-dependent | Authentication is missing or invalid. |
+| `403 Forbidden` | Authorization-dependent | The authenticated user lacks the required `Admin` role. |
+| `404 Not Found` | `E005` | Store does not exist or has been deleted. |
+| `429 Too Many Requests` | Rate-limiter-dependent | The global request limit has been exceeded. |
+| `500 Internal Server Error` | `E002` | An unexpected server-side error occurred. |
+
+*Note: Authentication, authorization, and rate-limiting responses may be generated outside the service and exception-handling middleware. Their response bodies may therefore differ from the standard `ApiResponse<T>` format.*
+
+#### 2.2.6. Sequence Diagram
+
+The following Mermaid sequence diagram illustrates the Update Store API workflow, including rate limiting, authentication, authorization, request validation, store lookup, update processing, and possible error responses.
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Client
+    participant API as ASP.NET Core API
+    participant RL as Global Rate Limiter
+    participant Auth as Authentication
+    participant AuthZ as Authorization
+    participant Validation as Model Validation
+    participant Controller as Store Controller
+    participant Service as Store Service
+    participant Mapper as AutoMapper
+    participant Repository as Store Repository
+    participant DB as Database
+    participant Middleware as Exception Middleware
+
+    Client->>API: PUT /api/store
+    Note over Client,API: Content-Type: application/json<br/>Authorization: Bearer token
+
+    API->>RL: Check request limit
+
+    alt Rate limit exceeded
+        RL-->>Client: 429 Too Many Requests
+    else Request within limit
+        RL->>Auth: Continue request
+        Auth->>Auth: Validate JWT
+
+        alt Authentication failed
+            Auth-->>Client: 401 Unauthorized
+        else Authentication succeeded
+            Auth->>AuthZ: Check Admin role
+
+            alt User is not Admin
+                AuthZ-->>Client: 403 Forbidden
+            else User is Admin
+                AuthZ->>Validation: Validate request body
+
+                alt Request validation failed
+                    Validation-->>Client: 400 Bad Request<br/>Validation errors
+                else Request is valid
+                    Validation->>Controller: Invoke UpdateStoreAsync(req)
+                    Controller->>Service: UpdateStoreAsync(req)
+
+                    Service->>Repository: GetStoreByIdAsync(storeId)
+                    Repository->>DB: Query store by ID
+                    DB-->>Repository: Store entity or null
+                    Repository-->>Service: Existing store
+
+                    alt Store not found or deleted
+                        Service->>Middleware: Throw BusinessException (E005)
+                        Middleware-->>Client: 404 Not Found
+                    else Store exists and is active
+                        Service->>Mapper: Map request onto existing entity
+                        Mapper-->>Service: Updated StoreEntity
+
+                        Service->>Repository: UpdateStoreAsync(entity)
+                        Repository->>DB: Save updated store
+                        DB-->>Repository: Update result
+                        Repository-->>Service: updated = true or false
+
+                        alt Update succeeds
+                            Service->>Mapper: Map entity to UpdateStoreResponse
+                            Mapper-->>Service: Updated store data
+                            Service-->>Controller: ApiResponse (S002)
+                            Controller-->>Client: 200 OK
+                        else Update fails
+                            Service->>Middleware: Throw BusinessException (E008)
+                            Middleware-->>Client: 400 Bad Request
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    Note over Middleware,API: Unexpected exceptions may be handled<br/>as 500 Internal Server Error.
+```
+
+*Implementation note: The sequence diagram represents the intended processing flow. The actual middleware order depends on the configuration in `Program.cs`. The exception-handling middleware catches exceptions that propagate through its downstream pipeline.*
+
+### 2.3. Delete Store
+
+#### 2.3.1. API Information
+
+| Property | Description |
+|---|---|
+| API Name | Delete Store |
+| HTTP Method | `DELETE` |
+| API URL | `http://<host>:<port>/api/store?Id=<store_id>` |
+| Content-Type | Not required |
+| Authentication | Bearer Token (JWT) |
+| Authorization | Admin role required |
+| Rate Limiting Policy | Global Rate Limiter (default) |
+
+**API URL Configuration**
+
+Replace `<host>` and `<port>` with the hostname or IP address and port where the API is running. Replace `<store_id>` with the GUID of the store to delete.
+
+Example:
+
+```http
+DELETE http://localhost:5070/api/store?Id=7d1a3b2c-4e5f-6789-abcd-0123456789ab
+```
+
+**Request Headers**
+
+| Header | Value | Required | Description |
+|---|---|---|---|
+| `Authorization` | `Bearer <access_token>` | Yes | A valid JWT access token belonging to a user with the `Admin` role. |
+
+Because the store ID is supplied through the query string and the request does not contain a body, the `Content-Type: application/json` header is not required.
+
+#### 2.3.2. Rate Limiting Policy
+
+The Delete Store API uses the **Global Rate Limiter** by default because no endpoint-specific rate-limiting policy is explicitly configured on the controller action.
+
+- Requests are subject to the globally configured request limit.
+- Requests exceeding the configured limit are rejected with HTTP `429 Too Many Requests`.
+- Clients should wait before retrying the request.
+
+**Rate Limit Exceeded Response**
+
+HTTP Status Code: `429 Too Many Requests`
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+*Note: This response follows the rate-limiting response format provided in the current configuration and differs from the standard `ApiResponse<T>` structure.*
+
+#### 2.3.3. Description
+
+The Delete Store API performs a **soft delete** on an existing store.
+
+Instead of permanently removing the store's database record, the API marks the store as deleted, typically by setting `IsDeleted = true`.
+
+The API receives the store ID through the `Id` query parameter and checks whether the store exists and is not already deleted.
+
+- If the store exists and is active, the API attempts to mark it as deleted.
+- If the store does not exist or has already been deleted, the API returns HTTP `404 Not Found`.
+- If the soft-delete operation succeeds, the API returns HTTP `200 OK`.
+- If the repository reports that the operation failed, the API returns HTTP `400 Bad Request`.
+
+**Authorization Requirement:** Only authenticated users with the `Admin` role can delete a store.
+
+**Important:** The actual database update depends on the implementation of `_storeRepository.SoftDeleteByIdAsync(storeId)`. The service code indicates a soft-delete operation but does not show the repository implementation itself.
+
+#### 2.3.4. Request Parameters
+
+The API does not require a request body. The store ID must be supplied as a query parameter.
+
+**Request Example**
+
+```http
+DELETE /api/store?Id=7d1a3b2c-4e5f-6789-abcd-0123456789ab
+```
+
+**Query Parameters**
+
+| Parameter | Data Type | Required | Description |
+|---|---|---|---|
+| `Id` | GUID | Yes | Identifies the store to be soft-deleted. |
+
+The parameter name is `Id`, as explicitly specified by `[FromQuery(Name = "Id")]` in the controller.
+
+**Validation and Business Rules**
+
+- The `Id` query parameter must contain a valid GUID representation.
+- The specified store must exist in the database.
+- The store must not already be marked as deleted.
+- If the store is missing or already deleted, the API returns `404 Not Found`.
+- If the repository reports that the soft-delete operation failed, the API returns `400 Bad Request`.
+
+If `Id` is missing or contains an invalid GUID value, ASP.NET Core model binding may add a model-state error. The exact response depends on the application's API behavior and validation configuration.
+
+#### 2.3.5. Response Results
+
+The API returns an `ApiResponse<T>` object for successful operations and errors handled by the application's response and exception-handling mechanisms.
+
+**1. Store Deleted Successfully**
+
+HTTP Status Code: `200 OK`
+
+Returned when the store exists, is not already deleted, and the repository successfully performs the soft-delete operation.
+
+The service returns `MessageRecord.Success`, which has response code `S002` and message `Successful!`.
+
+Because the service does not pass a `data` argument to `ApiResponse<object?>.Response`, the response's `data` property is `null`.
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": null
+}
+```
+
+**2. Store Not Found or Already Deleted**
+
+HTTP Status Code: `404 Not Found`
+
+Returned when the store does not exist or has already been marked as deleted.
+
+The service throws `BusinessException(ErrorRecord.NotFound)`, which maps to response code `E005`.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E005",
+  "message": "Not found data!",
+  "httpStatus": 404,
+  "data": null
+}
+```
+
+**3. Soft Delete Failed**
+
+HTTP Status Code: `400 Bad Request`
+
+Returned when the repository reports that the soft-delete operation failed.
+
+The service throws `BusinessException(ErrorRecord.Failed)`, which maps to response code `E008`.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E008",
+  "message": "Failed!",
+  "httpStatus": 400,
+  "data": null
+}
+```
+
+**4. Invalid Request**
+
+HTTP Status Code: `400 Bad Request`
+
+Returned when the request contains an invalid query parameter, such as a malformed GUID, if the application's model-validation pipeline handles the binding error as a bad request.
+
+The standard validation response uses `ErrorRecord.RequestInvalid`, with response code `E001`.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E001",
+  "message": "Request is invalid!",
+  "httpStatus": 400,
+  "data": [
+    "The value 'invalid-guid' is not valid."
+  ]
+}
+```
+
+The exact validation message depends on the model-binding error and the application's validation configuration.
+
+**5. Unauthorized Request**
+
+HTTP Status Code: `401 Unauthorized`
+
+Returned when the request does not contain a valid authentication token or authentication fails.
+
+The response body depends on the ASP.NET Core authentication configuration.
+
+**6. Forbidden Request**
+
+HTTP Status Code: `403 Forbidden`
+
+Returned when the user is authenticated but does not have the required `Admin` role.
+
+The response body depends on the ASP.NET Core authorization configuration.
+
+**7. Rate Limit Exceeded**
+
+HTTP Status Code: `429 Too Many Requests`
+
+Returned when the client exceeds the configured global request limit.
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+**8. Internal Server Error**
+
+HTTP Status Code: `500 Internal Server Error`
+
+Returned when an unexpected exception occurs and is handled by `ExceptionHandlingMiddleware`.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E002",
+  "message": "Internal server error!",
+  "httpStatus": 500,
+  "data": null
+}
+```
+
+**Response Summary**
+
+| HTTP Status Code | Response Code | Description |
+|---|---|---|
+| `200 OK` | `S002` | Store soft-deleted successfully. |
+| `400 Bad Request` | `E001` | Invalid request or query parameter, when handled by model validation. |
+| `400 Bad Request` | `E008` | Soft-delete operation failed. |
+| `401 Unauthorized` | Authentication-dependent | Authentication is missing or invalid. |
+| `403 Forbidden` | Authorization-dependent | The authenticated user lacks the required `Admin` role. |
+| `404 Not Found` | `E005` | Store does not exist or has already been deleted. |
+| `429 Too Many Requests` | Rate-limiter-dependent | The global request limit has been exceeded. |
+| `500 Internal Server Error` | `E002` | An unexpected server-side error occurred. |
+
+*Note: Authentication, authorization, model-binding, and rate-limiting responses may be generated outside the service and exception-handling middleware. Their response bodies may therefore differ from the standard `ApiResponse<T>` structure.*
+
+#### 2.3.6. Sequence Diagram
+
+The following Mermaid sequence diagram illustrates the Delete Store API workflow, including rate limiting, authentication, authorization, query-parameter validation, store lookup, soft deletion, and possible error responses.
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Client
+    participant API as ASP.NET Core API
+    participant RL as Global Rate Limiter
+    participant Auth as Authentication
+    participant AuthZ as Authorization
+    participant Validation as Model Binding and Validation
+    participant Controller as Store Controller
+    participant Service as Store Service
+    participant Repository as Store Repository
+    participant DB as Database
+    participant Middleware as Exception Middleware
+
+    Client->>API: DELETE /api/store?Id={storeId}
+    Note over Client,API: Authorization: Bearer token<br/>No request body required
+
+    API->>RL: Check request limit
+
+    alt Rate limit exceeded
+        RL-->>Client: 429 Too Many Requests
+    else Request within limit
+        RL->>Auth: Continue request
+        Auth->>Auth: Validate JWT
+
+        alt Authentication failed
+            Auth-->>Client: 401 Unauthorized
+        else Authentication succeeded
+            Auth->>AuthZ: Check Admin role
+
+            alt User is not Admin
+                AuthZ-->>Client: 403 Forbidden
+            else User is Admin
+                AuthZ->>Validation: Bind and validate Id query parameter
+
+                alt Id is missing or invalid
+                    Validation-->>Client: 400 Bad Request
+                else Id is a valid GUID
+                    Validation->>Controller: Invoke SoftDeleteByIdAsync(storeId)
+                    Controller->>Service: SoftDeleteByIdAsync(storeId)
+
+                    Service->>Repository: GetStoreByIdAsync(storeId)
+                    Repository->>DB: Query store by ID
+                    DB-->>Repository: Store entity or null
+                    Repository-->>Service: Store entity
+
+                    alt Store not found or already deleted
+                        Service->>Middleware: Throw BusinessException (E005)
+                        Middleware-->>Client: 404 Not Found
+                    else Store exists and is active
+                        Service->>Repository: SoftDeleteByIdAsync(storeId)
+                        Repository->>DB: Mark store as deleted
+                        DB-->>Repository: Operation result
+                        Repository-->>Service: softDeleted = true or false
+
+                        alt Soft delete succeeds
+                            Service-->>Controller: ApiResponse (S002)
+                            Controller-->>Client: 200 OK
+                        else Soft delete fails
+                            Service->>Middleware: Throw BusinessException (E008)
+                            Middleware-->>Client: 400 Bad Request
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    Note over Middleware,API: Unexpected exceptions may be handled<br/>as 500 Internal Server Error.
+```
+
+*Implementation note: The diagram represents the intended request-processing flow. Actual middleware ordering depends on the configuration in `Program.cs`. The exception-handling middleware catches exceptions that propagate through its downstream pipeline.*
+
+### 2.4. Restore Store
+
+#### API Information
+
+| Property | Description |
+|---|---|
+| **Method** | `PATCH` |
+| **API URL** | `http://<host>:<port>/api/store?Id={storeId}` |
+| **Content-Type** | `application/json` |
+| **Authorization** | Bearer Token |
+| **Required Role** | `Admin` |
+| **Rate Limiting Policy** | Global Rate Limiter (default) |
+
+**URL Configuration:**
+- `<host>`: The API server hostname or IP address.
+- `<port>`: The API server port.
+- `storeId`: The unique identifier (GUID) of the store to restore.
+
+**Example:**
+```http
+PATCH http://localhost:5070/api/store?Id=550e8400-e29b-41d4-a716-446655440000
+```
+
+#### Description
+
+This API restores a previously soft-deleted store by setting its deletion status to active.
+
+Only authenticated users with the `Admin` role are authorized to perform this operation. The store must exist and currently be marked as deleted. If the store does not exist or is already active, the API returns a `404 Not Found` response.
+
+#### Request
+
+**Query Parameters**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `Id` | `Guid` | Yes | The unique identifier of the store to restore. |
+
+**Request Body:** None.
+
+**Request Headers:**
+
+```http
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+#### Response
+
+The API returns an `ApiResponse<object?>` object containing the operation status, response code, message, HTTP status code, and optional data.
+
+**1. Success — Store Restored**
+
+**HTTP Status:** `200 OK`
+
+The store exists, is currently soft-deleted, and is successfully restored.
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": null
+}
+```
+
+**2. Store Not Found or Already Active**
+
+**HTTP Status:** `404 Not Found`
+
+Returned when the specified store does not exist or is not marked as deleted.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E005",
+  "message": "Data not found!",
+  "httpStatus": 404,
+  "data": null
+}
+```
+
+**3. Restoration Failed**
+
+**HTTP Status:** `400 Bad Request`
+
+Returned when the repository fails to restore the store.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E008",
+  "message": "Operation failed!",
+  "httpStatus": 400,
+  "data": null
+}
+```
+
+**4. Invalid Request**
+
+**HTTP Status:** `400 Bad Request`
+
+Returned when the request contains an invalid parameter, such as a malformed GUID, provided the request reaches the application's exception-handling logic.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E001",
+  "message": "Request is invalid!",
+  "httpStatus": 400,
+  "data": null
+}
+```
+
+If model validation fails before the controller executes, the API may instead return a validation response containing a list of error messages in `data`.
+
+**5. Unauthorized Access**
+
+**HTTP Status:** `401 Unauthorized`
+
+Returned when the request does not contain a valid authentication token.
+
+The response body depends on the application's authentication configuration and may not follow the standard `ApiResponse<T>` format.
+
+**6. Forbidden Access**
+
+**HTTP Status:** `403 Forbidden`
+
+Returned when the authenticated user does not have the required `Admin` role.
+
+The response body depends on the application's authorization configuration and may not follow the standard `ApiResponse<T>` format.
+
+**7. Rate Limit Exceeded**
+
+**HTTP Status:** `429 Too Many Requests`
+
+Returned when the request exceeds the configured global rate limit.
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+**8. Internal Server Error**
+
+**HTTP Status:** `500 Internal Server Error`
+
+Returned when an unexpected exception occurs during request processing.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E002",
+  "message": "Internal server error!",
+  "httpStatus": 500,
+  "data": null
+}
+```
+
+#### Sequence Diagram
+
+The following diagram illustrates the request flow from authentication and rate limiting through store validation and restoration.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant API as Store Controller
+    participant Auth as Authentication / Authorization
+    participant Rate as Global Rate Limiter
+    participant Service as Store Service
+    participant Repo as Store Repository
+
+    Admin->>API: PATCH /api/store?Id={storeId}
+    Note over Admin,API: Authorization: Bearer <access_token>
+
+    API->>Auth: Validate token and Admin role
+
+    alt Token is invalid or missing
+        Auth-->>Admin: 401 Unauthorized
+    else User lacks Admin role
+        Auth-->>Admin: 403 Forbidden
+    else Authorized
+        Auth->>Rate: Check global rate limit
+
+        alt Rate limit exceeded
+            Rate-->>Admin: 429 Too Many Requests
+        else Request allowed
+            Rate->>API: Continue request
+            API->>Service: RestoreStoreByIdAsync(storeId)
+            Service->>Repo: GetStoreByIdAsync(storeId)
+            Repo-->>Service: StoreEntity or null
+
+            alt Store not found
+                Service-->>API: Throw BusinessException(NotFound)
+                API-->>Admin: 404 Not Found
+            else Store is already active
+                Service-->>API: Throw BusinessException(NotFound)
+                API-->>Admin: 404 Not Found
+            else Store exists and is deleted
+                Service->>Repo: RestoreStoreByIdAsync(storeId)
+                Repo-->>Service: restore result
+
+                alt Restoration succeeds
+                    Service-->>API: ApiResponse(Success)
+                    API-->>Admin: 200 OK
+                else Restoration fails
+                    Service-->>API: Throw BusinessException(Failed)
+                    API-->>Admin: 400 Bad Request
+                end
+            end
+        end
+    end
+```
+
+**Notes:**
+- The API uses the global rate limiter by default because no endpoint-specific rate-limiting policy is configured on the controller action.
+- The `PATCH` request does not require a request body; the store identifier is supplied through the `Id` query parameter.
+- The service checks that the store exists and is soft-deleted before attempting restoration.
+- Unexpected exceptions are handled by `ExceptionHandlingMiddleware` and mapped to the standard internal server error response.
+
+### 2.5. Get Stores
+
+#### API Information
+
+| Property | Description |
+|---|---|
+| **Method** | `GET` |
+| **API URL** | `http://<host>:<port>/api/store` |
+| **Content-Type** | `application/json` |
+| **Authorization** | No authorization attribute is explicitly defined on this endpoint. |
+| **Rate Limiting Policy** | Global Rate Limiter (default) |
+
+**URL Configuration:**
+- `<host>`: The API server hostname or IP address.
+- `<port>`: The API server port.
+
+**Example:**
+```http
+GET http://localhost:5070/api/store?pageNumber=1&pageSize=10
+```
+
+#### Description
+
+This API retrieves a paginated list of stores from the database.
+
+The response contains a list of stores and pagination metadata, including the current page, page size, total number of stores, and total number of pages.
+
+Each store includes its ID, name, address, phone number, creation and update timestamps, and deletion status.
+
+If no stores are found, the API returns a `404 Not Found` response.
+
+#### Request
+
+**Query Parameters**
+
+| Parameter | Type | Required | Default Value | Description |
+|---|---|---|---|---|
+| `pageNumber` | `int` | No | `1` | The page number to retrieve. |
+| `pageSize` | `int` | No | `10` | The number of stores to return per page. |
+
+**Request Body:** None.
+
+**Request Headers:**
+
+```http
+Accept: application/json
+```
+
+The `Content-Type` header is unnecessary because this endpoint does not accept a request body.
+
+**Example Request:**
+
+```http
+GET /api/store?pageNumber=1&pageSize=10 HTTP/1.1
+Host: localhost:5070
+Accept: application/json
+```
+
+#### Response
+
+The API returns an `ApiResponse<object?>` object. The `data` field contains a `PaginationResponse<StoreResponse>` object when the request succeeds.
+
+##### 1. Success — Stores Retrieved Successfully
+
+**HTTP Status:** `200 OK`
+
+Returned when the requested page contains stores and the total number of stores is greater than zero.
+
+**Example Response:**
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": {
+    "items": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "name": "Store A",
+        "address": "123 Main Street",
+        "phoneNumber": "0123456789",
+        "createdAt": "2026-10-01T08:00:00Z",
+        "updatedAt": null,
+        "isDeleted": false
+      },
+      {
+        "id": "660e8400-e29b-41d4-a716-446655440000",
+        "name": "Store B",
+        "address": "456 Second Street",
+        "phoneNumber": "0987654321",
+        "createdAt": "2026-10-05T09:30:00Z",
+        "updatedAt": "2026-10-10T10:00:00Z",
+        "isDeleted": false
+      }
+    ],
+    "currentPage": 1,
+    "pageSize": 10,
+    "totalItems": 25,
+    "totalPages": 3
+  }
+}
+```
+
+**Pagination Fields:**
+
+| Field | Type | Description |
+|---|---|---|
+| `items` | `array` | The list of stores returned for the requested page. |
+| `currentPage` | `int` | The current page number. |
+| `pageSize` | `int` | The maximum number of stores requested per page. |
+| `totalItems` | `int` | The total number of stores matching the repository query. |
+| `totalPages` | `int` | The total number of pages, calculated by dividing `totalItems` by `pageSize` and rounding up. |
+
+**Store Fields:**
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | `Guid` | The unique identifier of the store. |
+| `name` | `string` | The name of the store. |
+| `address` | `string` | The store's address. |
+| `phoneNumber` | `string` | The store's contact phone number. |
+| `createdAt` | `DateTime` | The date and time the store was created. |
+| `updatedAt` | `DateTime?` | The date and time the store was last updated, or `null` if it has not been updated. |
+| `isDeleted` | `bool` | Indicates whether the store has been soft-deleted. |
+
+**Note:** The example values above are illustrative. The actual response depends on the database contents and the repository's filtering logic.
+
+##### 2. No Stores Found
+
+**HTTP Status:** `404 Not Found`
+
+Returned when:
+- The database contains no stores matching the repository query.
+- The requested page contains no stores, even if other pages contain stores.
+
+The service throws `BusinessException(ErrorRecord.NotFound)` when either `totalItems == 0` or `stores.Count == 0`.
+
+**Example Response:**
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E005",
+  "message": "Data not found!",
+  "httpStatus": 404,
+  "data": null
+}
+```
+
+##### 3. Invalid Request
+
+**HTTP Status:** `400 Bad Request`
+
+Returned when the request contains invalid query parameter values that fail model binding or validation.
+
+For example, `pageNumber=abc` cannot be converted to an integer.
+
+If automatic model validation is configured to use `ValidationErrorResponse`, the response may contain a list of validation messages in the `data` field.
+
+**Example Response:**
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E001",
+  "message": "Request is invalid!",
+  "httpStatus": 400,
+  "data": [
+    "The value 'abc' is not valid."
+  ]
+}
+```
+
+The exact validation message depends on ASP.NET Core model binding and validation configuration.
+
+**Important:** The supplied service does not explicitly validate that `pageNumber` and `pageSize` are positive. Therefore, values such as `pageNumber=0` or `pageSize=-1` are not guaranteed to return `400 Bad Request`. Their behavior depends on the repository implementation and any additional validation rules.
+
+##### 4. Rate Limit Exceeded
+
+**HTTP Status:** `429 Too Many Requests`
+
+Returned when the request exceeds the configured global rate limit.
+
+**Example Response:**
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+This response follows the configured rate-limiting handler and does not use the standard `ApiResponse<T>` structure.
+
+##### 5. Internal Server Error
+
+**HTTP Status:** `500 Internal Server Error`
+
+Returned when an unexpected exception occurs during request processing, such as an unhandled database error.
+
+**Example Response:**
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E002",
+  "message": "Internal server error!",
+  "httpStatus": 500,
+  "data": null
+}
+```
+
+The response is generated by `ExceptionHandlingMiddleware`.
+
+#### Sequence Diagram
+
+The following sequence diagram illustrates the request flow, pagination processing, and possible outcomes.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Rate as Global Rate Limiter
+    participant Controller as Store Controller
+    participant Service as Store Service
+    participant Repo as Store Repository
+    participant DB as Database
+    participant Middleware as Exception Handling Middleware
+
+    Client->>Rate: GET /api/store?pageNumber=1&pageSize=10
+
+    alt Rate limit exceeded
+        Rate-->>Client: 429 Too Many Requests
+    else Request allowed
+        Rate->>Controller: Forward request
+        Controller->>Service: GetStoresAsync(pageNumber, pageSize)
+        Service->>Repo: GetStoresAsync(pageNumber, pageSize)
+        Repo->>DB: Query stores and total item count
+        DB-->>Repo: Stores and totalItems
+        Repo-->>Service: result.Stores, result.TotalItems
+
+        alt No stores found or requested page is empty
+            Service-->>Middleware: Throw BusinessException(NotFound)
+            Middleware-->>Client: 404 Not Found
+        else Stores found
+            Service->>Service: Map entities to StoreResponse
+            Service->>Service: Calculate totalPages
+            Service->>Service: Build PaginationResponse
+            Service-->>Controller: ApiResponse(Success, pagination)
+            Controller-->>Client: 200 OK with paginated stores
+        end
+    end
+
+    Note over Client,Controller: Invalid query parameters may produce 400 Bad Request
+    Note over Service,Middleware: Unexpected exceptions are mapped to 500 Internal Server Error
+```
+
+#### Additional Notes
+
+- **Pagination:** The default request retrieves page `1` with up to `10` stores. Clients can specify other values using query parameters.
+- **Empty pages:** If the requested page has no stores, the service returns `404 Not Found`, even when other pages contain stores.
+- **Authorization:** The controller action does not declare an `[Authorize]` attribute. Authentication may still be required if authorization is enforced globally.
+- **Rate limiting:** The endpoint uses the global rate limiter by default because no endpoint-specific rate-limiting policy is declared.
+- **Soft deletion:** Whether deleted stores appear in the results depends on the filtering logic implemented in `_storeRepository.GetStoresAsync()`.
+
+### 2.6. Get Store By Id
+
+#### API Information
+
+| Property | Description |
+|---|---|
+| **Method** | `GET` |
+| **API URL** | `http://<host>:<port>/api/store/{Id}` |
+| **Content-Type** | `application/json` |
+| **Authorization** | No authorization attribute is explicitly defined on this endpoint. |
+| **Rate Limiting Policy** | Global Rate Limiter (default) |
+
+**URL Configuration:**
+- `<host>`: The API server hostname or IP address.
+- `<port>`: The API server port.
+- `{Id}`: The unique identifier (GUID) of the store to retrieve.
+
+**Example:**
+
+```http
+GET http://localhost:5070/api/store/550e8400-e29b-41d4-a716-446655440000
+```
+
+#### Description
+
+This API retrieves the details of a specific store using its unique identifier (`Id`).
+
+The API returns the store's information if the store exists and is not soft-deleted. If the store does not exist or has been soft-deleted, the API returns a `404 Not Found` response.
+
+#### Request
+
+**Route Parameters**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `Id` | `Guid` | Yes | The unique identifier of the store to retrieve. |
+
+**Request Body:** None.
+
+**Request Headers:**
+
+```http
+Accept: application/json
+```
+
+The `Content-Type` header is unnecessary because this endpoint does not accept a request body. The API returns JSON responses.
+
+**Example Request:**
+
+```http
+GET /api/store/550e8400-e29b-41d4-a716-446655440000 HTTP/1.1
+Host: localhost:5070
+Accept: application/json
+```
+
+#### Response
+
+The API returns an `ApiResponse<object?>` object containing the operation status, response code, message, HTTP status code, and response data.
+
+##### 1. Success — Store Retrieved Successfully
+
+**HTTP Status:** `200 OK`
+
+Returned when the specified store exists and is not soft-deleted.
+
+**Example Response:**
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "Store A",
+    "address": "123 Main Street",
+    "phoneNumber": "0123456789",
+    "createdAt": "2026-10-01T08:00:00Z",
+    "updatedAt": null,
+    "isDeleted": false
+  }
+}
+```
+
+**Response Fields:**
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | `Guid` | The unique identifier of the store. |
+| `name` | `string` | The name of the store. |
+| `address` | `string` | The store's address. |
+| `phoneNumber` | `string` | The store's contact phone number. |
+| `createdAt` | `DateTime` | The date and time the store was created. |
+| `updatedAt` | `DateTime?` | The date and time the store was last updated, or `null` if it has not been updated. |
+| `isDeleted` | `bool` | Indicates whether the store has been soft-deleted. This endpoint returns `false` for a successfully retrieved store. |
+
+##### 2. Store Not Found or Soft-Deleted
+
+**HTTP Status:** `404 Not Found`
+
+Returned when:
+- The specified store ID does not exist in the database.
+- The specified store has been soft-deleted (`IsDeleted = true`).
+
+**Example Response:**
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E005",
+  "message": "Data not found!",
+  "httpStatus": 404,
+  "data": null
+}
+```
+
+##### 3. Invalid Request
+
+**HTTP Status:** `400 Bad Request`
+
+Returned when the request contains an invalid route parameter, such as a malformed GUID, that does not satisfy the route constraint or model binding requirements.
+
+For example:
+
+```http
+GET /api/store/invalid-guid
+```
+
+**Important:** Because the route uses the `{Id:guid}` constraint, a malformed GUID does not match this endpoint's route. Depending on the application's routing configuration, the result may be `404 Not Found` rather than `400 Bad Request`. The `400` response applies only if the request reaches validation or exception-handling logic that classifies the input as invalid.
+
+**Example Validation Response, if applicable:**
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E001",
+  "message": "Request is invalid!",
+  "httpStatus": 400,
+  "data": null
+}
+```
+
+##### 4. Rate Limit Exceeded
+
+**HTTP Status:** `429 Too Many Requests`
+
+Returned when the request exceeds the configured global rate limit.
+
+**Example Response:**
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+This response follows the configured rate-limiting handler and does not use the standard `ApiResponse<T>` structure.
+
+##### 5. Internal Server Error
+
+**HTTP Status:** `500 Internal Server Error`
+
+Returned when an unexpected exception occurs during request processing, such as an unhandled database error.
+
+**Example Response:**
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E002",
+  "message": "Internal server error!",
+  "httpStatus": 500,
+  "data": null
+}
+```
+
+This response is generated by `ExceptionHandlingMiddleware`.
+
+##### 6. Unauthorized or Forbidden Access
+
+These responses apply only if authentication or authorization is enforced by global filters or middleware.
+
+- **`401 Unauthorized`**: The request is not authenticated when authentication is required.
+- **`403 Forbidden`**: The authenticated user does not have the necessary permissions when authorization is required.
+
+The controller action does not explicitly declare an `[Authorize]` attribute. Therefore, these outcomes depend on the application's global security configuration and are not guaranteed responses for this endpoint.
+
+#### Sequence Diagram
+
+The following sequence diagram illustrates the request flow from the client through the global rate limiter, controller, service, repository, and database.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Rate as Global Rate Limiter
+    participant Controller as Store Controller
+    participant Service as Store Service
+    participant Repo as Store Repository
+    participant DB as Database
+    participant Middleware as Exception Handling Middleware
+
+    Client->>Rate: GET /api/store/{Id}
+
+    alt Rate limit exceeded
+        Rate-->>Client: 429 Too Many Requests
+    else Request allowed
+        Rate->>Controller: Forward request
+        Controller->>Service: GetStoreByIdAsync(storeId)
+        Service->>Repo: GetStoreByIdAsync(storeId)
+        Repo->>DB: Query store by ID
+        DB-->>Repo: StoreEntity or null
+        Repo-->>Service: Return store entity
+
+        alt Store does not exist
+            Service-->>Middleware: Throw BusinessException(NotFound)
+            Middleware-->>Client: 404 Not Found
+        else Store is soft-deleted
+            Service-->>Middleware: Throw BusinessException(NotFound)
+            Middleware-->>Client: 404 Not Found
+        else Store exists and is active
+            Service->>Service: Map StoreEntity to StoreResponse
+            Service-->>Controller: ApiResponse(Success, store)
+            Controller-->>Client: 200 OK with store details
+        end
+    end
+
+    Note over Client,Controller: Invalid GUID may result in 404 due to the route constraint
+    Note over Service,Middleware: Unexpected exceptions are mapped to 500 Internal Server Error
+```
+
+#### Additional Notes
+
+- **Route constraint:** The `{Id:guid}` constraint ensures that the route matches only when the supplied ID has a valid GUID format.
+- **Soft deletion:** Stores with `IsDeleted = true` are treated as not found and are not returned by this endpoint.
+- **Authorization:** No endpoint-specific authorization attribute is declared. Global authentication or authorization policies may still apply.
+- **Rate limiting:** The endpoint uses the global rate limiter by default because no endpoint-specific rate-limiting policy is configured.
+- **Response format:** Successful requests and exceptions handled by `ExceptionHandlingMiddleware` use the standard `ApiResponse<T>` structure. Rate-limiting and authentication responses may use different formats depending on their respective configurations.
+
+### 2.7. Get Deleted Stores
+
+#### API Information
+
+| Property | Description |
+|---|---|
+| **Method** | `GET` |
+| **API URL** | `http://<host>:<port>/api/store/deleted` |
+| **Content-Type** | `application/json` |
+| **Authorization** | Bearer Token |
+| **Required Role** | `Admin` |
+| **Rate Limiting Policy** | Global Rate Limiter (default) |
+
+**URL Configuration:**
+- `<host>`: The API server hostname or IP address.
+- `<port>`: The API server port.
+
+**Example:**
+
+```http
+GET http://localhost:5070/api/store/deleted?pageNumber=1&pageSize=10
+```
+
+#### Description
+
+This API retrieves a paginated list of soft-deleted stores from the database.
+
+Only authenticated users with the `Admin` role are authorized to access this endpoint.
+
+The response contains the deleted stores and pagination metadata, including the current page, page size, total number of deleted stores, and total number of pages.
+
+If no deleted stores are found, or the requested page contains no stores, the API returns a `404 Not Found` response.
+
+#### Request
+
+**Query Parameters**
+
+| Parameter | Type | Required | Default Value | Description |
+|---|---|---|---|---|
+| `pageNumber` | `int` | No | `1` | The page number to retrieve. |
+| `pageSize` | `int` | No | `10` | The maximum number of stores to return per page. |
+
+**Request Body:** None.
+
+**Request Headers:**
+
+```http
+Authorization: Bearer <access_token>
+Accept: application/json
+```
+
+The `Content-Type` header is unnecessary because this endpoint does not accept a request body.
+
+**Example Request:**
+
+```http
+GET /api/store/deleted?pageNumber=1&pageSize=10 HTTP/1.1
+Host: localhost:5070
+Authorization: Bearer <access_token>
+Accept: application/json
+```
+
+#### Response
+
+The API returns an `ApiResponse<object?>` object. When successful, the `data` field contains a `PaginationResponse<StoreResponse>` object.
+
+##### 1. Success — Deleted Stores Retrieved Successfully
+
+**HTTP Status:** `200 OK`
+
+Returned when deleted stores exist and the requested page contains at least one store.
+
+**Example Response:**
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": {
+    "items": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "name": "Deleted Store A",
+        "address": "123 Main Street",
+        "phoneNumber": "0123456789",
+        "createdAt": "2026-10-01T08:00:00Z",
+        "updatedAt": "2026-10-20T10:00:00Z",
+        "isDeleted": true
+      },
+      {
+        "id": "660e8400-e29b-41d4-a716-446655440000",
+        "name": "Deleted Store B",
+        "address": "456 Second Street",
+        "phoneNumber": "0987654321",
+        "createdAt": "2026-10-05T09:30:00Z",
+        "updatedAt": null,
+        "isDeleted": true
+      }
+    ],
+    "currentPage": 1,
+    "pageSize": 10,
+    "totalItems": 15,
+    "totalPages": 2
+  }
+}
+```
+
+**Pagination Fields**
+
+| Field | Type | Description |
+|---|---|---|
+| `items` | `array` | The list of deleted stores returned for the requested page. |
+| `currentPage` | `int` | The current page number. |
+| `pageSize` | `int` | The requested maximum number of stores per page. |
+| `totalItems` | `int` | The total number of deleted stores matching the repository query. |
+| `totalPages` | `int` | The total number of pages, calculated by dividing `totalItems` by `pageSize` and rounding up. |
+
+**Store Fields**
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | `Guid` | The unique identifier of the store. |
+| `name` | `string` | The name of the store. |
+| `address` | `string` | The store's address. |
+| `phoneNumber` | `string` | The store's contact phone number. |
+| `createdAt` | `DateTime` | The date and time the store was created. |
+| `updatedAt` | `DateTime?` | The date and time the store was last updated, or `null` if it has not been updated. |
+| `isDeleted` | `bool` | Indicates whether the store has been soft-deleted. This endpoint is expected to return stores with `isDeleted = true`. |
+
+##### 2. No Deleted Stores Found
+
+**HTTP Status:** `404 Not Found`
+
+Returned when:
+- No soft-deleted stores exist in the database.
+- The requested page contains no deleted stores, even if deleted stores exist on other pages.
+
+The service throws `BusinessException(ErrorRecord.NotFound)` when `totalItems == 0` or `stores.Count == 0`.
+
+**Example Response:**
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E005",
+  "message": "Data not found!",
+  "httpStatus": 404,
+  "data": null
+}
+```
+
+##### 3. Invalid Request
+
+**HTTP Status:** `400 Bad Request`
+
+Returned when query parameters contain invalid values that fail model binding or configured validation.
+
+For example:
+
+```http
+GET /api/store/deleted?pageNumber=abc&pageSize=10
+```
+
+**Example Response:**
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E001",
+  "message": "Request is invalid!",
+  "httpStatus": 400,
+  "data": [
+    "The value 'abc' is not valid."
+  ]
+}
+```
+
+The exact validation response depends on the application's model-binding and validation configuration.
+
+**Note:** The supplied service does not explicitly validate that `pageNumber` and `pageSize` are positive. Values such as `pageNumber=0` or `pageSize=-1` may therefore produce different results depending on repository behavior and additional validation rules.
+
+##### 4. Unauthorized Access
+
+**HTTP Status:** `401 Unauthorized`
+
+Returned when the request does not contain a valid authentication token.
+
+The response body depends on the application's authentication configuration and may not follow the standard `ApiResponse<T>` structure.
+
+##### 5. Forbidden Access
+
+**HTTP Status:** `403 Forbidden`
+
+Returned when the authenticated user does not have the required `Admin` role.
+
+The response body depends on the application's authorization configuration and may not follow the standard `ApiResponse<T>` structure.
+
+##### 6. Rate Limit Exceeded
+
+**HTTP Status:** `429 Too Many Requests`
+
+Returned when the request exceeds the configured global rate limit.
+
+**Example Response:**
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+This response follows the configured rate-limiting handler and does not use the standard `ApiResponse<T>` structure.
+
+##### 7. Internal Server Error
+
+**HTTP Status:** `500 Internal Server Error`
+
+Returned when an unexpected exception occurs during request processing, such as an unhandled database error.
+
+**Example Response:**
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E002",
+  "message": "Internal server error!",
+  "httpStatus": 500,
+  "data": null
+}
+```
+
+This response is generated by `ExceptionHandlingMiddleware`.
+
+#### Sequence Diagram
+
+The following diagram illustrates the request flow, authorization checks, rate limiting, pagination, and possible outcomes.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant Auth as Authentication / Authorization
+    participant Rate as Global Rate Limiter
+    participant Controller as Store Controller
+    participant Service as Store Service
+    participant Repo as Store Repository
+    participant DB as Database
+    participant Middleware as Exception Handling Middleware
+
+    Admin->>Auth: GET /api/store/deleted?pageNumber=1&pageSize=10
+    Note over Admin,Auth: Authorization: Bearer <access_token>
+
+    alt Token is invalid or missing
+        Auth-->>Admin: 401 Unauthorized
+    else User lacks Admin role
+        Auth-->>Admin: 403 Forbidden
+    else Authorized
+        Auth->>Rate: Check global rate limit
+
+        alt Rate limit exceeded
+            Rate-->>Admin: 429 Too Many Requests
+        else Request allowed
+            Rate->>Controller: Forward request
+            Controller->>Service: GetDeletedStoresAsync(pageNumber, pageSize)
+            Service->>Repo: GetDeletedStoresAsync(pageNumber, pageSize)
+            Repo->>DB: Query deleted stores and total count
+            DB-->>Repo: Stores and totalItems
+            Repo-->>Service: Return stores and totalItems
+
+            alt No deleted stores or requested page is empty
+                Service-->>Middleware: Throw BusinessException(NotFound)
+                Middleware-->>Admin: 404 Not Found
+            else Deleted stores found
+                Service->>Service: Map entities to StoreResponse
+                Service->>Service: Calculate totalPages
+                Service->>Service: Build PaginationResponse
+                Service-->>Controller: ApiResponse(Success, pagination)
+                Controller-->>Admin: 200 OK with deleted stores
+            end
+        end
+    end
+
+    Note over Admin,Controller: Invalid query parameters may produce 400 Bad Request
+    Note over Service,Middleware: Unexpected exceptions are mapped to 500 Internal Server Error
+```
+
+#### Additional Notes
+
+- **Pagination:** The default request retrieves page `1` with up to `10` deleted stores.
+- **Soft deletion:** The repository is expected to filter stores where `IsDeleted = true`. Confirm this behavior in `_storeRepository.GetDeletedStoresAsync()`.
+- **Authorization:** The endpoint requires an authenticated user with the `Admin` role through `[Authorize(Roles = "Admin")]`.
+- **Rate limiting:** The endpoint uses the global rate limiter by default because no endpoint-specific rate-limiting policy is declared.
+- **Empty pages:** The current implementation returns `404 Not Found` when the requested page contains no stores, even if deleted stores exist on other pages.
+- **Response format:** Successful requests and exceptions handled by `ExceptionHandlingMiddleware` use the standard `ApiResponse<T>` structure. Authentication, authorization, and rate-limiting responses may use different formats depending on their respective configurations.
+
+  
+### 2.8. Search Stores
+
+#### API Configuration
+
+- **API URL:** `http://<host>:<port>/api/store/search`
+- **HTTP Method:** `GET`
+- **Content-Type:** `application/json`
+- **Rate Limiting Policy:** Global rate limiter (default policy).
+- **Authorization:** No explicit `[Authorize]` attribute is defined on this endpoint in the provided controller code.
+
+#### Description
+
+Searches for stores using an optional keyword and a deletion-status filter. The API supports pagination and returns matching stores with pagination metadata.
+
+The keyword is used to search store information according to the repository's search implementation. The `isDeleted` parameter determines whether to search active or deleted stores.
+
+#### Request
+
+**Query Parameters**
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `key` | `string` | No | `null` | Optional keyword used to search stores. The exact fields searched depend on the repository implementation. |
+| `isDeleted` | `bool` | No | `true` | Filters stores by deletion status. `true` searches deleted stores; `false` searches active stores. |
+| `pageNumber` | `int` | No | `1` | The page number to retrieve. |
+| `pageSize` | `int` | No | `10` | The number of stores per page. |
+
+**Example Request**
+
+```http
+GET /api/store/search?key=book&isDeleted=false&pageNumber=1&pageSize=10 HTTP/1.1
+Host: <host>:<port>
+Accept: application/json
+```
+
+A request body is not required. The `Content-Type` header can be omitted because this GET request does not send a body; `Accept: application/json` indicates that the client expects a JSON response.
+
+#### Response
+
+**1. 200 OK — Search Successful**
+
+Returned when matching stores are found for the requested page.
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": {
+    "items": [
+      {
+        "id": "11111111-1111-1111-1111-111111111111",
+        "name": "Book Store",
+        "address": "123 Example Street",
+        "phoneNumber": "0123456789",
+        "createdAt": "2026-10-31T10:00:00",
+        "updatedAt": null,
+        "isDeleted": false
+      }
+    ],
+    "currentPage": 1,
+    "pageSize": 10,
+    "totalItems": 1,
+    "totalPages": 1
+  }
+}
+```
+
+The store data above is an illustrative example. Actual values depend on the database.
+
+**Response Fields**
+
+| Field | Type | Description |
+|---|---|---|
+| `isSuccess` | `bool` | Indicates whether the request succeeded. |
+| `responseCode` | `string` | Response code. `S002` indicates success. |
+| `message` | `string` | Response message. |
+| `httpStatus` | `int` | HTTP status code. |
+| `data.items` | `array` | List of matching stores. |
+| `data.currentPage` | `int` | Current page number. |
+| `data.pageSize` | `int` | Number of items per page. |
+| `data.totalItems` | `int` | Total number of matching stores, according to the repository query. |
+| `data.totalPages` | `int` | Total number of pages. |
+
+Each item in `data.items` contains the following fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | `Guid` | Unique store identifier. |
+| `name` | `string` | Store name. |
+| `address` | `string` | Store address. |
+| `phoneNumber` | `string` | Store phone number. |
+| `createdAt` | `DateTime` | Store creation timestamp. |
+| `updatedAt` | `DateTime?` | Last update timestamp; may be `null`. |
+| `isDeleted` | `bool` | Indicates whether the store is deleted. |
+
+**2. 400 Bad Request — Invalid Request**
+
+Returned when request validation fails or an `ArgumentException` is handled by the exception middleware.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E001",
+  "message": "Request is invalid!",
+  "httpStatus": 400,
+  "data": [
+    "Invalid request parameter."
+  ]
+}
+```
+
+The example error message is illustrative. The actual validation messages depend on the validation configuration. The response may contain a list of validation errors in `data`.
+
+**3. 404 Not Found — No Matching Stores**
+
+Returned when the repository returns no matching stores or the requested page contains no stores. The service throws `BusinessException(ErrorRecord.NotFound)` in this case.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E005",
+  "message": "Data not found!",
+  "httpStatus": 404,
+  "data": null
+}
+```
+
+**4. 429 Too Many Requests — Rate Limit Exceeded**
+
+Returned when the request exceeds the configured global rate limit.
+
+```json
+{
+  "status": 429,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+**5. 500 Internal Server Error — Unexpected Error**
+
+Returned when an unexpected exception occurs and is handled by the exception middleware.
+
+```json
+{
+  "isSuccess": false,
+  "responseCode": "E002",
+  "message": "Internal server error!",
+  "httpStatus": 500,
+  "data": null
+}
+```
+
+#### Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Middleware as Middleware
+    participant Controller as StoreController
+    participant Service as StoreService
+    participant Repository as StoreRepository
+    participant Database as Database
+
+    Client->>Middleware: GET /api/store/search?key=book&isDeleted=false&pageNumber=1&pageSize=10
+    Middleware->>Middleware: Apply global rate limiting
+
+    alt Rate limit exceeded
+        Middleware-->>Client: 429 Too Many Requests
+    else Request allowed
+        Middleware->>Controller: SearchStoresByKeyAndIsDeletedAsync(...)
+        Controller->>Service: SearchStoresByKeyAndIsDeletedAsync(key, isDeleted, pageNumber, pageSize)
+        Service->>Repository: SearchStoresByKeyAndIsDeletedAsync(...)
+        Repository->>Database: Query stores by keyword, deletion status, and pagination
+        Database-->>Repository: Matching stores and total item count
+        Repository-->>Service: Stores, TotalItems
+
+        alt No matching stores or requested page is empty
+            Service-->>Middleware: Throw BusinessException(E005)
+            Middleware-->>Client: 404 Not Found
+        else Matching stores found
+            Service->>Service: Map entities to StoreResponse
+            Service->>Service: Calculate total pages
+            Service-->>Controller: ApiResponse with pagination data
+            Controller-->>Client: 200 OK
+        end
+    end
+```
+
+#### Notes
+
+- The keyword search fields and matching rules depend on the implementation of `StoreRepository.SearchStoresByKeyAndIsDeletedAsync`.
+- The default value of `isDeleted` is `true`; therefore, omitting this parameter searches deleted stores by default.
+- The service code shown does not explicitly validate that `pageNumber` and `pageSize` are positive. Invalid pagination values may therefore depend on repository behavior or other validation.
+- The controller code provided does not show an explicit authorization attribute for this endpoint. Actual access may still be affected by global authorization configuration.
+- A `401 Unauthorized` or `403 Forbidden` response is possible if applicable authorization policies are configured elsewhere; these outcomes are not established by the supplied endpoint code.
+- The example response bodies for errors should be verified against the application's actual middleware and validation configuration.
 
