@@ -13,5 +13,7 @@ namespace back_end.DTOs.Users.Responses
         public bool Enabled { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        public Guid StoreId { get; set; }
     }
 }
