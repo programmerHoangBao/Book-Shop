@@ -25,6 +25,6 @@ namespace back_end.DTOs.Users.Requests
 
         public RoleUser Role { get; set; } = RoleUser.Employee;
 
-        public Guid StoreId { get; set; };
+        public Guid StoreId { get; set; }
     }
 }

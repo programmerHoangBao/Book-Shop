@@ -5,5 +5,6 @@ namespace back_end.Repositories
     public interface IStoreStaffRepository
     {
         Task<bool> AddStoreStaffAsync(StoreStaffEntity storeStaff);
+        Task<bool> RemoveStoreStaffAsync(StoreStaffEntity storeStaff);
     }
 }

@@ -34,5 +34,28 @@ namespace back_end.Repositories.Implements
                 throw;
             }
         }
+
+        public async Task<bool> RemoveStoreStaffAsync(StoreStaffEntity storeStaff)
+        {
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
+            try
+            {
+                _context.StoreStaffs.Remove(storeStaff);
+                var result = await _context.SaveChangesAsync();
+                if (result <= 0)
+                {
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
     }
 }
