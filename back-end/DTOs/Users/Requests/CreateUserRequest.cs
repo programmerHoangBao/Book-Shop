@@ -24,5 +24,7 @@ namespace back_end.DTOs.Users.Requests
         public string Password { get; set; } = string.Empty;
 
         public RoleUser Role { get; set; } = RoleUser.Employee;
+
+        public Guid StoreId { get; set; }
     }
 }

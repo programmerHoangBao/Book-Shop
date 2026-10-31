@@ -56,4 +56,10 @@ public sealed record ErrorRecord(
             "User creation failed and avatar cleanup could not be completed.",
             StatusCodes.Status500InternalServerError
         );
+
+    public static readonly ErrorRecord Forbidden =
+        new("E017", "Access denied.", StatusCodes.Status403Forbidden);
+
+    public static readonly ErrorRecord StoreNotFound =
+        new("E018", "Store not found.", StatusCodes.Status404NotFound);
 }
