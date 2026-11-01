@@ -28,5 +28,13 @@ namespace back_end.Controllers
             var response = await _userService.CreateUserAsync(req, file);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetUserByIdAsync([FromQuery(Name = "Id")] Guid userId)
+        {
+            var response = await _userService.GetProfileByIdAsync(userId);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }

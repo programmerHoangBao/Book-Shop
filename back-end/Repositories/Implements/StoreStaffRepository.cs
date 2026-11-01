@@ -1,5 +1,6 @@
 ﻿using back_end.Data;
 using back_end.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace back_end.Repositories.Implements
 {
@@ -33,6 +34,14 @@ namespace back_end.Repositories.Implements
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+
+        public async Task<StoreEntity?> GetStoreByUserIdAsync(Guid userId)
+        {
+            return await _context.StoreStaffs
+                .Where(ss => ss.UserId == userId && !ss.IsDeleted)
+                .Select(ss => ss.Store)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<bool> RemoveStoreStaffAsync(StoreStaffEntity storeStaff)
