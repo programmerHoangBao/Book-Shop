@@ -125,28 +125,101 @@ namespace back_end.Services.Implements
             {
                 throw new BusinessException(ErrorRecord.NotFound);
             }
-            if (
-                _currentUserService.GetRoleCurrentUser() != RoleUser.Admin 
-                && _currentUserService.GetCurrentUserId() != user.Id
-            )
+
+            RoleUser? currentRole = _currentUserService.GetRoleCurrentUser();
+            Guid? currentUserId = _currentUserService.GetCurrentUserId();
+
+            if (!CanViewUserProfile(currentRole, currentUserId, user))
             {
                 throw new BusinessException(ErrorRecord.Forbidden);
             }
+
             GetProfileResponse response = _mapper.Map<GetProfileResponse>(user);
+
             if (user.Role != RoleUser.Customer && user.Role != RoleUser.Admin)
             {
-                StoreEntity? store = await _staffRepository.GetStoreByUserIdAsync(userId);
+                StoreEntity? store = await _staffRepository.GetStoreByUserIdAsync(user.Id);
+
                 if (store == null || store.IsDeleted)
                 {
                     throw new BusinessException(ErrorRecord.StoreNotFound);
                 }
-                StoreInfo storeInfo = _mapper.Map<StoreInfo>(store);
-                response.StoreInfo = storeInfo;
+
+                response.StoreInfo = _mapper.Map<StoreInfo>(store);
             }
+
             return ApiResponse<object?>.Response(
                 MessageRecord.Success,
                 data: response
             );
+        }
+
+        public async Task<ApiResponse<object?>> GetProfileUserByEmailAsync(string email)
+        {
+            UserEntity? user = await _userRepository.GetUserByEmailAsync(email);
+
+            if (user == null || user.IsDeleted)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+
+            RoleUser? currentRole = _currentUserService.GetRoleCurrentUser();
+            Guid? currentUserId = _currentUserService.GetCurrentUserId();
+
+            if (!CanViewUserProfile(currentRole, currentUserId, user))
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            GetProfileResponse response = _mapper.Map<GetProfileResponse>(user);
+
+            if (user.Role != RoleUser.Customer && user.Role != RoleUser.Admin)
+            {
+                StoreEntity? store = await _staffRepository.GetStoreByUserIdAsync(user.Id);
+
+                if (store == null || store.IsDeleted)
+                {
+                    throw new BusinessException(ErrorRecord.StoreNotFound);
+                }
+
+                response.StoreInfo = _mapper.Map<StoreInfo>(store);
+            }
+
+            return ApiResponse<object?>.Response(
+                MessageRecord.Success,
+                data: response
+            );
+        }
+        private bool CanViewUserProfile(RoleUser? currentRole, Guid? currentUserId, UserEntity targetUser)
+        {
+            // Admin can view all profiles
+            if (currentRole == RoleUser.Admin)
+            {
+                return true;
+            }
+
+            // Users can view their own profiles
+            if (currentUserId == targetUser.Id)
+            {
+                return true;
+            }
+
+            return currentRole switch
+            {
+                // Manager can view Employee and Customer
+                RoleUser.Manager =>
+                    targetUser.Role == RoleUser.Employee ||
+                    targetUser.Role == RoleUser.Customer,
+
+                // Employee can view Customer
+                RoleUser.Employee =>
+                    targetUser.Role == RoleUser.Customer,
+
+                // Customer cannot view other users
+                RoleUser.Customer => false,
+
+                _ => false
+            };
         }
     }
 }

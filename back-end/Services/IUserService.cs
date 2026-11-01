@@ -7,5 +7,6 @@ namespace back_end.Services
     {
         public Task<ApiResponse<object?>> CreateUserAsync(CreateUserRequest req, IFormFile? file);
         public Task<ApiResponse<object?>> GetProfileByIdAsync(Guid userId);
+        public Task<ApiResponse<object?>> GetProfileUserByEmailAsync(string Email);
     }
 }
