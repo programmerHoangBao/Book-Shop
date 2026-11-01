@@ -1,4 +1,5 @@
-﻿using back_end.Enums;
+﻿using back_end.DTOs.Users.Infos;
+using back_end.Enums;
 
 namespace back_end.DTOs.Users.Responses
 {
