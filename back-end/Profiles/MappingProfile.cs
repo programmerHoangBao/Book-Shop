@@ -3,6 +3,7 @@ using back_end.DTOs.Auths.Requests;
 using back_end.DTOs.Emails.Requests;
 using back_end.DTOs.Stores.Requests;
 using back_end.DTOs.Stores.Responses;
+using back_end.DTOs.Users.Infos;
 using back_end.DTOs.Users.Requests;
 using back_end.DTOs.Users.Responses;
 using back_end.Entities;

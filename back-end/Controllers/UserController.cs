@@ -31,7 +31,7 @@ namespace back_end.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> GetUserByIdAsync([FromQuery(Name = "Id")] Guid userId)
+        public async Task<IActionResult> GetProfileByIdAsync([FromQuery(Name = "Id")] Guid userId)
         {
             var response = await _userService.GetProfileByIdAsync(userId);
             return StatusCode(response.HttpStatus, response);

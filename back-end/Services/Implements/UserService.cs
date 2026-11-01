@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using back_end.DTOs;
 using back_end.DTOs.Files.Responses;
+using back_end.DTOs.Users.Infos;
 using back_end.DTOs.Users.Requests;
 using back_end.DTOs.Users.Responses;
 using back_end.Entities;
