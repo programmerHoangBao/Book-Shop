@@ -36,5 +36,13 @@ namespace back_end.Controllers
             var response = await _userService.GetProfileByIdAsync(userId);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [Authorize]
+        [HttpGet("email")]
+        public async Task<IActionResult> GetProfileUserByEmailAsync([FromQuery(Name = "email")] string email)
+        {
+            var response = await _userService.GetProfileUserByEmailAsync(email);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }
