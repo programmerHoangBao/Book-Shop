@@ -81,6 +81,7 @@ builder.Services.AddScoped<IStoreService, StoreService>();
 
 // Background Service
 builder.Services.AddHostedService<OtpEmailConsumer>();
+builder.Services.AddHostedService<DeleteFileConsumer>();
 
 // Auto mapper
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());

@@ -7,6 +7,7 @@ using back_end.DTOs.Users.Responses;
 using back_end.Entities;
 using back_end.Enums;
 using back_end.Exceptions;
+using back_end.Kafka.Producers;
 using back_end.Records;
 using back_end.Repositories;
 using back_end.Settings;
@@ -23,6 +24,7 @@ namespace back_end.Services.Implements
         private readonly IStoreStaffRepository _staffRepository;
         private readonly ICurrentUserService _currentUserService;
         private readonly SecuritySetting _securitySetting;
+        private readonly IKafkaProducer _kafkaProducer;
         private readonly IMapper _mapper;
 
         public UserService(
@@ -32,6 +34,7 @@ namespace back_end.Services.Implements
             IStoreStaffRepository staffRepository,
             ICurrentUserService currentUserService,
             IOptions<SecuritySetting> options,
+            IKafkaProducer kafkaProducer,
             IMapper mapper
         )
         {
@@ -41,6 +44,7 @@ namespace back_end.Services.Implements
             _staffRepository = staffRepository;
             _currentUserService = currentUserService;
             _securitySetting = options.Value;
+            _kafkaProducer = kafkaProducer;
             _mapper = mapper;
         }
 
@@ -190,6 +194,51 @@ namespace back_end.Services.Implements
                 data: response
             );
         }
+
+        public async Task<ApiResponse<object?>> UpdateUserAsync(UpdateUserRequest req, IFormFile? file)
+        {
+            UserEntity? existsUser = await _userRepository.GetUserByIdAsync(req.Id);
+            UploadImageResponse? uploadImageResponse = null;
+            RoleUser? currentRole = _currentUserService.GetRoleCurrentUser();
+            Guid? currentUserId = _currentUserService.GetCurrentUserId();
+            string oldAvatarUrl = existsUser?.AvatarUrl ?? string.Empty;
+            if (existsUser == null || existsUser.IsDeleted)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+            if (!CanViewUserProfile(currentRole, currentUserId, existsUser))
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+            if (file != null && file.Length > 0)
+            {
+                uploadImageResponse = await _fileService.UploadImageAsync(file);
+            }
+            existsUser = _mapper.Map(req, existsUser);
+            if (uploadImageResponse != null)
+            {
+                existsUser.AvatarUrl = uploadImageResponse.ImageUrl;
+            }
+            if (!String.IsNullOrEmpty(oldAvatarUrl))
+            {
+                await _kafkaProducer.ProduceAsync(
+                "delete-file",
+                oldAvatarUrl);
+            }
+            bool updated = await _userRepository.UpdateUserAsync(existsUser);
+            if (updated)
+            {
+                return ApiResponse<object?>.Response(
+                    MessageRecord.Success,
+                    data: _mapper.Map<UpdateUserResponse>(existsUser)
+                );
+            }
+            else
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+        }
+
         private bool CanViewUserProfile(RoleUser? currentRole, Guid? currentUserId, UserEntity targetUser)
         {
             // Admin can view all profiles

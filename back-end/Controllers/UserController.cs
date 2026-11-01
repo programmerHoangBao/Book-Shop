@@ -44,5 +44,15 @@ namespace back_end.Controllers
             var response = await _userService.GetProfileUserByEmailAsync(email);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> UpdateUserAsync(
+            [FromForm] UpdateUserRequest req,
+            [FromForm] IFormFile? file = default)
+        {
+            var response = await _userService.UpdateUserAsync(req, file);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }

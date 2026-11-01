@@ -13,5 +13,10 @@ namespace back_end.Services
             string objectKey,
             CancellationToken cancellationToken = default
         );
+
+        Task DeleteImageByUrlAsync(
+            string imageUrl,
+            CancellationToken cancellationToken = default
+        );
     }
 }
