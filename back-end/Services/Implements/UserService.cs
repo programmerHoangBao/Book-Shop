@@ -4,6 +4,7 @@ using back_end.DTOs.Files.Responses;
 using back_end.DTOs.Users.Requests;
 using back_end.DTOs.Users.Responses;
 using back_end.Entities;
+using back_end.Enums;
 using back_end.Exceptions;
 using back_end.Records;
 using back_end.Repositories;
@@ -114,6 +115,37 @@ namespace back_end.Services.Implements
 
                 throw new BusinessException(errorRecord: ErrorRecord.Failed);
             }
+        }
+
+        public async Task<ApiResponse<object?>> GetProfileByIdAsync(Guid userId)
+        {
+            UserEntity? user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null || user.IsDeleted)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+            if (
+                _currentUserService.GetRoleCurrentUser() != RoleUser.Admin 
+                && _currentUserService.GetCurrentUserId() != user.Id
+            )
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+            GetProfileResponse response = _mapper.Map<GetProfileResponse>(user);
+            if (user.Role != RoleUser.Customer && user.Role != RoleUser.Admin)
+            {
+                StoreEntity? store = await _staffRepository.GetStoreByUserIdAsync(userId);
+                if (store == null || store.IsDeleted)
+                {
+                    throw new BusinessException(ErrorRecord.StoreNotFound);
+                }
+                StoreInfo storeInfo = _mapper.Map<StoreInfo>(store);
+                response.StoreInfo = storeInfo;
+            }
+            return ApiResponse<object?>.Response(
+                MessageRecord.Success,
+                data: response
+            );
         }
     }
 }

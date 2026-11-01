@@ -22,6 +22,8 @@ namespace back_end.Profiles
             CreateMap<UpdateStoreRequest, StoreEntity>();
             CreateMap<StoreEntity, UpdateStoreResponse>();
             CreateMap<StoreEntity, StoreResponse>();
+            CreateMap<UserEntity, GetProfileResponse>();
+            CreateMap<StoreEntity, StoreInfo>();
         }
     }
 }

@@ -6,5 +6,6 @@ namespace back_end.Services
     public interface IUserService
     {
         public Task<ApiResponse<object?>> CreateUserAsync(CreateUserRequest req, IFormFile? file);
+        public Task<ApiResponse<object?>> GetProfileByIdAsync(Guid userId);
     }
 }
