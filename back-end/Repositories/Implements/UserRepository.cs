@@ -45,6 +45,26 @@ namespace back_end.Repositories.Implements
             return await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
         }
 
+        public async Task<bool> RestoreUserByIdAsync(Guid userId)
+        {
+            var affectedRows = await _context.Users
+                .Where(u => u.Id == userId && u.IsDeleted)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(u => u.IsDeleted, false));
+
+            return affectedRows > 0;
+        }
+
+        public async Task<bool> SoftDeleteUserByIdAsync(Guid userId)
+        {
+            var affectedRows = await _context.Users
+                .Where(u => u.Id == userId && !u.IsDeleted)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(u => u.IsDeleted, true));
+
+            return affectedRows > 0;
+        }
+
         public async Task<bool> UpdateUserAsync(UserEntity user)
         {
             await using var transaction =

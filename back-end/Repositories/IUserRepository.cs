@@ -8,5 +8,7 @@ namespace back_end.Repositories
         Task<bool> AddUserAsync(UserEntity user);
         Task<UserEntity?> GetUserByIdAsync(Guid userId);
         Task<bool> UpdateUserAsync(UserEntity user);
+        Task<bool> SoftDeleteUserByIdAsync(Guid userId);
+        Task<bool> RestoreUserByIdAsync(Guid userId);
     }
 }

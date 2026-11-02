@@ -122,6 +122,31 @@ namespace back_end.Services.Implements
             }
         }
 
+        public async Task<ApiResponse<object?>> DeleteUserByIdAsync(Guid userId)
+        {
+            UserEntity? user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null || user.IsDeleted)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+            bool deleted = await _userRepository.SoftDeleteUserByIdAsync(userId);
+            if (deleted)
+            {
+                if (!await _staffRepository.SoftDeleteByUserId(userId))
+                {
+                    await _userRepository.RestoreUserByIdAsync(userId);
+                    throw new BusinessException(ErrorRecord.UserCannotBeRemovedFromStore);
+                }
+                return ApiResponse<object?>.Response(
+                    MessageRecord.Success
+                );
+            }
+            else
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+        }
+
         public async Task<ApiResponse<object?>> GetProfileByIdAsync(Guid userId)
         {
             UserEntity? user = await _userRepository.GetUserByIdAsync(userId);
@@ -265,6 +290,32 @@ namespace back_end.Services.Implements
                     targetUser.Role == RoleUser.Customer,
 
                 // Customer cannot view other users
+                RoleUser.Customer => false,
+
+                _ => false
+            };
+        }
+
+        private bool CanDeleteUserProfile(RoleUser? currentRole, Guid? currentUserId, UserEntity targetUser)
+        {
+            // Admin can delete all profiles
+            if (currentRole == RoleUser.Admin)
+            {
+                return true;
+            }
+
+            return currentRole switch
+            {
+                // Manager can delete Employee and Customer
+                RoleUser.Manager =>
+                    targetUser.Role == RoleUser.Employee ||
+                    targetUser.Role == RoleUser.Customer,
+
+                // Employee can delete Customer
+                RoleUser.Employee =>
+                    targetUser.Role == RoleUser.Customer,
+
+                // Customer cannot delete other users
                 RoleUser.Customer => false,
 
                 _ => false

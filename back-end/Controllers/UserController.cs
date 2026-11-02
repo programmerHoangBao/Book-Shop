@@ -54,5 +54,13 @@ namespace back_end.Controllers
             var response = await _userService.UpdateUserAsync(req, file);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpDelete]
+        [Authorize(Roles = "Manager,Admin,Employee")]
+        public async Task<IActionResult> DeleteUserByIdAsync([FromQuery(Name = "Id")] Guid userId)
+        {
+            var response = await _userService.DeleteUserByIdAsync(userId);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }

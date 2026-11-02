@@ -66,5 +66,15 @@ namespace back_end.Repositories.Implements
                 throw;
             }
         }
+
+        public async Task<bool> SoftDeleteByUserId(Guid userId)
+        {
+            var affectedRows = await _context.StoreStaffs
+                .Where(ss => ss.UserId == userId && !ss.IsDeleted)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(ss => ss.IsDeleted, true));
+
+            return affectedRows > 0;
+        }
     }
 }
