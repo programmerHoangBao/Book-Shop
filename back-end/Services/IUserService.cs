@@ -10,5 +10,6 @@ namespace back_end.Services
         public Task<ApiResponse<object?>> GetProfileUserByEmailAsync(string email);
         public Task<ApiResponse<object?>> UpdateUserAsync(UpdateUserRequest req, IFormFile? file);
         public Task<ApiResponse<object?>> DeleteUserByIdAsync(Guid userId);
+        public Task<ApiResponse<object?>> RestoreUserByIdAsync(Guid userId);
     }
 }

@@ -7,6 +7,7 @@ namespace back_end.Repositories
         Task<bool> AddStoreStaffAsync(StoreStaffEntity storeStaff);
         Task<bool> RemoveStoreStaffAsync(StoreStaffEntity storeStaff);
         Task<StoreEntity?> GetStoreByUserIdAsync(Guid userId);
-        Task<bool> SoftDeleteByUserId(Guid userId);
+        Task<bool> SoftDeleteByUserIdAsync(Guid userId);
+        Task<bool> RestoreByUserIdAsync(Guid userId);
     }
 }

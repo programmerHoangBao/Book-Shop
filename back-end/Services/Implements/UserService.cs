@@ -125,17 +125,52 @@ namespace back_end.Services.Implements
         public async Task<ApiResponse<object?>> DeleteUserByIdAsync(Guid userId)
         {
             UserEntity? user = await _userRepository.GetUserByIdAsync(userId);
+            RoleUser? currentRole = _currentUserService.GetRoleCurrentUser();
             if (user == null || user.IsDeleted)
             {
                 throw new BusinessException(ErrorRecord.NotFound);
             }
+            if (!CanDeleteUserProfile(currentRole, user.Role))
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
             bool deleted = await _userRepository.SoftDeleteUserByIdAsync(userId);
             if (deleted)
             {
-                if (!await _staffRepository.SoftDeleteByUserId(userId))
+                if (!await _staffRepository.SoftDeleteByUserIdAsync(userId))
                 {
                     await _userRepository.RestoreUserByIdAsync(userId);
                     throw new BusinessException(ErrorRecord.UserCannotBeRemovedFromStore);
+                }
+                return ApiResponse<object?>.Response(
+                    MessageRecord.Success
+                );
+            }
+            else
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+        }
+
+        public async Task<ApiResponse<object?>> RestoreUserByIdAsync(Guid userId)
+        {
+            UserEntity? user = await _userRepository.GetUserByIdAsync(userId);
+            RoleUser? currentRole = _currentUserService.GetRoleCurrentUser();
+            if (user == null || user.IsDeleted)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+            if (!CanDeleteUserProfile(currentRole, user.Role))
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+            bool restore = await _userRepository.RestoreUserByIdAsync(userId);
+            if (restore)
+            {
+                if (!await _staffRepository.RestoreByUserIdAsync(userId))
+                {
+                    await _userRepository.SoftDeleteUserByIdAsync(userId);
+                    throw new BusinessException(ErrorRecord.UserCannotBeRestoreFromStore);
                 }
                 return ApiResponse<object?>.Response(
                     MessageRecord.Success
@@ -296,7 +331,7 @@ namespace back_end.Services.Implements
             };
         }
 
-        private bool CanDeleteUserProfile(RoleUser? currentRole, Guid? currentUserId, UserEntity targetUser)
+        private bool CanDeleteUserProfile(RoleUser? currentRole, RoleUser roleTargetUser)
         {
             // Admin can delete all profiles
             if (currentRole == RoleUser.Admin)
@@ -308,12 +343,12 @@ namespace back_end.Services.Implements
             {
                 // Manager can delete Employee and Customer
                 RoleUser.Manager =>
-                    targetUser.Role == RoleUser.Employee ||
-                    targetUser.Role == RoleUser.Customer,
+                    roleTargetUser == RoleUser.Employee ||
+                    roleTargetUser == RoleUser.Customer,
 
                 // Employee can delete Customer
                 RoleUser.Employee =>
-                    targetUser.Role == RoleUser.Customer,
+                    roleTargetUser == RoleUser.Customer,
 
                 // Customer cannot delete other users
                 RoleUser.Customer => false,
