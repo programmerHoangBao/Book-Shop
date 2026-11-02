@@ -219,15 +219,15 @@ namespace back_end.Services.Implements
             {
                 existsUser.AvatarUrl = uploadImageResponse.ImageUrl;
             }
-            if (!String.IsNullOrEmpty(oldAvatarUrl))
-            {
-                await _kafkaProducer.ProduceAsync(
-                "delete-file",
-                oldAvatarUrl);
-            }
             bool updated = await _userRepository.UpdateUserAsync(existsUser);
             if (updated)
             {
+                if (!String.IsNullOrEmpty(oldAvatarUrl) && uploadImageResponse != null)
+                {
+                    await _kafkaProducer.ProduceAsync(
+                    "delete-file",
+                    oldAvatarUrl);
+                }
                 return ApiResponse<object?>.Response(
                     MessageRecord.Success,
                     data: _mapper.Map<UpdateUserResponse>(existsUser)
