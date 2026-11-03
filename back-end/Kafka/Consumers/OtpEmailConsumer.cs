@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using back_end.DTOs.Emails.Requests;
+﻿using back_end.DTOs.Emails.Requests;
 using back_end.Kafka.Messages;
 using back_end.Services;
 using back_end.Settings;

@@ -62,4 +62,10 @@ public sealed record ErrorRecord(
 
     public static readonly ErrorRecord StoreNotFound =
         new("E018", "Store not found.", StatusCodes.Status404NotFound);
+
+    public static readonly ErrorRecord UserCannotBeRemovedFromStore =
+        new("E019", "It is not possible to remove a user from the store.", StatusCodes.Status400BadRequest);
+
+    public static readonly ErrorRecord UserCannotBeRestoreFromStore =
+        new("E020", "It is not possible to restore a user from the store.", StatusCodes.Status400BadRequest);
 }

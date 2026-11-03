@@ -203,6 +203,80 @@ namespace back_end.Services.Implements
             }
         }
 
+        public async Task DeleteImageByUrlAsync(
+            string imageUrl,
+            CancellationToken cancellationToken = default
+        )
+        {
+            // Case 01: Validate ImageUrl
+            if (string.IsNullOrWhiteSpace(imageUrl))
+            {
+                throw new ArgumentException(
+                    "ImageUrl is required.",
+                    nameof(imageUrl));
+            }
+
+            if (!Uri.TryCreate(imageUrl.Trim(), UriKind.Absolute, out Uri? uri))
+            {
+                throw new ArgumentException(
+                    "ImageUrl is invalid.",
+                    nameof(imageUrl));
+            }
+
+            // Case 02: Extract ObjectKey from ImageUrl
+            string objectKey;
+
+            if (string.Equals(
+                _s3Setting.AccessMode,
+                "StableUrl",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                string expectedHost =
+                    $"{_s3Setting.BucketName}.s3.{_s3Setting.Region}.amazonaws.com";
+
+                if (!string.Equals(
+                    uri.Host,
+                    expectedHost,
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ArgumentException(
+                        "ImageUrl does not belong to the configured S3 bucket.",
+                        nameof(imageUrl));
+                }
+
+                objectKey = Uri.UnescapeDataString(
+                    uri.AbsolutePath.TrimStart('/'));
+            }
+            else if (string.Equals(
+                _s3Setting.AccessMode,
+                "PresignedUrl",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                string expectedHost =
+                    $"{_s3Setting.BucketName}.s3.{_s3Setting.Region}.amazonaws.com";
+
+                if (!string.Equals(
+                    uri.Host,
+                    expectedHost,
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ArgumentException(
+                        "ImageUrl does not belong to the configured S3 bucket.",
+                        nameof(imageUrl));
+                }
+
+                objectKey = Uri.UnescapeDataString(
+                    uri.AbsolutePath.TrimStart('/'));
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    "Unsupported S3 AccessMode.");
+            }
+
+            // Case 03: Delete image using ObjectKey
+            await DeleteImageAsync(objectKey, cancellationToken);
+        }
         private string GenerateImageUrl(string objectKey)
         {
             if (string.Equals(

@@ -1,4 +1,4 @@
-﻿namespace back_end.DTOs.Users.Responses
+﻿namespace back_end.DTOs.Users.Infos
 {
     public class StoreInfo
     {

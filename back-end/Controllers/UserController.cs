@@ -1,10 +1,7 @@
-﻿using back_end.DTOs;
-using back_end.DTOs.Users.Requests;
+﻿using back_end.DTOs.Users.Requests;
 using back_end.Services;
-using back_end.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace back_end.Controllers
 {
@@ -31,9 +28,63 @@ namespace back_end.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> GetUserByIdAsync([FromQuery(Name = "Id")] Guid userId)
+        public async Task<IActionResult> GetProfileByIdAsync([FromQuery(Name = "Id")] Guid userId)
         {
             var response = await _userService.GetProfileByIdAsync(userId);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [Authorize]
+        [HttpGet("email")]
+        public async Task<IActionResult> GetProfileUserByEmailAsync([FromQuery(Name = "email")] string email)
+        {
+            var response = await _userService.GetProfileUserByEmailAsync(email);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> UpdateUserAsync(
+            [FromForm] UpdateUserRequest req,
+            [FromForm] IFormFile? file = default)
+        {
+            var response = await _userService.UpdateUserAsync(req, file);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpDelete]
+        [Authorize(Roles = "Manager,Admin,Employee")]
+        public async Task<IActionResult> DeleteUserByIdAsync([FromQuery(Name = "Id")] Guid userId)
+        {
+            var response = await _userService.DeleteUserByIdAsync(userId);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpPatch("restore")]
+        [Authorize(Roles = "Manager,Admin,Employee")]
+        public async Task<IActionResult> RestoreUserByIdAsync([FromQuery(Name = "Id")] Guid userId)
+        {
+            var response = await _userService.RestoreUserByIdAsync(userId);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpDelete("bulk")]
+        [Authorize(Roles = "Manager,Admin,Employee")]
+        public async Task<IActionResult> DeleteUsersByListIdAsync(
+            [FromBody] DeleteUsersRequest request
+        )
+        {
+            var response = await _userService.DeleteUsersByListIdAsync(request);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpPatch("bulk/restore")]
+        [Authorize(Roles = "Manager,Admin,Employee")]
+        public async Task<IActionResult> RestoreUserByListIdAsync(
+            [FromBody] RestoreUserRequest request
+        )
+        {
+            var response = await _userService.RestoreUserByListIdAsync(request);
             return StatusCode(response.HttpStatus, response);
         }
     }

@@ -23,11 +23,11 @@ namespace back_end.Controllers
         //    return Ok(response);
         //}
 
-        //[HttpDelete]
-        //public async Task<IActionResult> DeleteImageAsync([FromQuery] string objectKey)
-        //{
-        //    await _fileService.DeleteImageAsync(objectKey);
-        //    return NoContent();
-        //}
+        [HttpDelete]
+        public async Task<IActionResult> DeleteImageAsync([FromQuery] string objectKey)
+        {
+            await _fileService.DeleteImageAsync(objectKey);
+            return NoContent();
+        }
     }
 }
