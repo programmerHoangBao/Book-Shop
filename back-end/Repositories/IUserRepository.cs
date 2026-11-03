@@ -16,5 +16,9 @@ namespace back_end.Repositories
         Task<List<Guid>> SoftDeleteUsersChunkAsync(
             IReadOnlyCollection<Guid> userIds
         );
+
+        Task<List<Guid>> RestoreUserChunkAsync(
+            IReadOnlyCollection<Guid> userIds
+        );
     }
 }

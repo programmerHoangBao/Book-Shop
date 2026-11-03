@@ -460,5 +460,117 @@ namespace back_end.Services.Implements
                 _ => false
             };
         }
+
+        public async Task<ApiResponse<RestoreUserResponse>> RestoreUserByListIdAsync(RestoreUserRequest req)
+        {
+            if (req.UserIds == null || req.UserIds.Count == 0)
+            {
+                throw new BusinessException(ErrorRecord.RequestNotFound);
+            }
+
+            // Remove duplicate and empty IDs
+            List<Guid> uniqueUserIds = req.UserIds
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToList();
+
+            if (uniqueUserIds.Count == 0)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+
+            RestoreUserResponse result = new();
+
+            RoleUser? currentRole = _currentUserService.GetRoleCurrentUser();
+
+            // Retrieve all target users
+            List<UserEntity> users = await _userRepository
+                .GetUsersByIdsAsync(uniqueUserIds);
+
+            // Validate each user
+            foreach (Guid userId in uniqueUserIds)
+            {
+                UserEntity? user = users.FirstOrDefault(u => u.Id == userId);
+
+                if (user == null)
+                {
+                    result.ListErrors.Add(new ErrorDeleteUserInfo
+                    {
+                        UserId = userId,
+                        Message = "User not found."
+                    });
+
+                    continue;
+                }
+
+                if (!user.IsDeleted)
+                {
+                    result.ListErrors.Add(new ErrorDeleteUserInfo
+                    {
+                        UserId = userId,
+                        Message = "User is exists."
+                    });
+
+                    continue;
+                }
+
+                if (!CanDeleteUser(currentRole, user.Role))
+                {
+                    result.ListErrors.Add(new ErrorDeleteUserInfo
+                    {
+                        UserId = userId,
+                        Message = "You do not have permission to restore this user."
+                    });
+
+                    continue;
+                }
+            }
+
+            // Get eligible user IDs
+            HashSet<Guid> errorUserIds = result.ListErrors
+                .Select(e => e.UserId)
+                .ToHashSet();
+
+            List<Guid> eligibleUserIds = uniqueUserIds
+                .Where(id => !errorUserIds.Contains(id))
+                .ToList();
+
+            // Chunking
+            const int chunkSize = 100;
+
+            foreach (var chunk in eligibleUserIds.Chunk(chunkSize))
+            {
+                List<Guid> restoredIds = await _userRepository
+                    .RestoreUserChunkAsync(chunk);
+
+                result.ListUserIdSuccess.AddRange(restoredIds);
+
+                // Handle users that could not be restore
+                HashSet<Guid> restoredSet = restoredIds.ToHashSet();
+
+                foreach (Guid userId in chunk)
+                {
+                    if (!restoredSet.Contains(userId))
+                    {
+                        result.ListErrors.Add(new ErrorDeleteUserInfo
+                        {
+                            UserId = userId,
+                            Message = "Failed to restore user."
+                        });
+                    }
+                }
+            }
+
+            // No successful retorelation
+            if (result.ListUserIdSuccess.Count == 0)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+
+            return ApiResponse<RestoreUserResponse>.Response(
+                MessageRecord.Success,
+                data: result
+            );
+        }
     }
 }

@@ -13,7 +13,10 @@ namespace back_end.Services
         Task<ApiResponse<object?>> DeleteUserByIdAsync(Guid userId);
         Task<ApiResponse<object?>> RestoreUserByIdAsync(Guid userId);
         Task<ApiResponse<DeleteUserResponse>> DeleteUsersByListIdAsync(
-                    DeleteUsersRequest req
-                );
+            DeleteUsersRequest req
+        );
+        Task<ApiResponse<RestoreUserResponse>> RestoreUserByListIdAsync(
+            RestoreUserRequest req
+        );
     }
 }

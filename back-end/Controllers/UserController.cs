@@ -1,10 +1,7 @@
-﻿using back_end.DTOs;
-using back_end.DTOs.Users.Requests;
+﻿using back_end.DTOs.Users.Requests;
 using back_end.Services;
-using back_end.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace back_end.Controllers
 {
@@ -78,6 +75,16 @@ namespace back_end.Controllers
         )
         {
             var response = await _userService.DeleteUsersByListIdAsync(request);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpPatch("bulk/restore")]
+        [Authorize(Roles = "Manager,Admin,Employee")]
+        public async Task<IActionResult> RestoreUserByListIdAsync(
+            [FromBody] RestoreUserRequest request
+        )
+        {
+            var response = await _userService.RestoreUserByListIdAsync(request);
             return StatusCode(response.HttpStatus, response);
         }
     }
