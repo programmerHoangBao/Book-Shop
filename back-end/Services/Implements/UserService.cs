@@ -130,18 +130,13 @@ namespace back_end.Services.Implements
             {
                 throw new BusinessException(ErrorRecord.NotFound);
             }
-            if (!CanDeleteUserProfile(currentRole, user.Role))
+            if (!CanDeleteUser(currentRole, user.Role))
             {
                 throw new BusinessException(ErrorRecord.Forbidden);
             }
             bool deleted = await _userRepository.SoftDeleteUserByIdAsync(userId);
             if (deleted)
             {
-                if (!await _staffRepository.SoftDeleteByUserIdAsync(userId))
-                {
-                    await _userRepository.RestoreUserByIdAsync(userId);
-                    throw new BusinessException(ErrorRecord.UserCannotBeRemovedFromStore);
-                }
                 return ApiResponse<object?>.Response(
                     MessageRecord.Success
                 );
@@ -160,18 +155,13 @@ namespace back_end.Services.Implements
             {
                 throw new BusinessException(ErrorRecord.NotFound);
             }
-            if (!CanDeleteUserProfile(currentRole, user.Role))
+            if (!CanDeleteUser(currentRole, user.Role))
             {
                 throw new BusinessException(ErrorRecord.Forbidden);
             }
             bool restore = await _userRepository.RestoreUserByIdAsync(userId);
             if (restore)
             {
-                if (!await _staffRepository.RestoreByUserIdAsync(userId))
-                {
-                    await _userRepository.SoftDeleteUserByIdAsync(userId);
-                    throw new BusinessException(ErrorRecord.UserCannotBeRestoreFromStore);
-                }
                 return ApiResponse<object?>.Response(
                     MessageRecord.Success
                 );
@@ -299,6 +289,120 @@ namespace back_end.Services.Implements
             }
         }
 
+        public async Task<ApiResponse<DeleteUserResponse>> DeleteUsersByListIdAsync(
+            DeleteUsersRequest req
+        )
+        {
+            if (req.UserIds == null || req.UserIds.Count == 0)
+            {
+                throw new BusinessException(ErrorRecord.RequestNotFound);
+            }
+
+            // Remove duplicate and empty IDs
+            List<Guid> uniqueUserIds = req.UserIds
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToList();
+
+            if (uniqueUserIds.Count == 0)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+
+            DeleteUserResponse result = new();
+
+            RoleUser? currentRole = _currentUserService.GetRoleCurrentUser();
+
+            // Retrieve all target users
+            List<UserEntity> users = await _userRepository
+                .GetUsersByIdsAsync(uniqueUserIds);
+
+            // Validate each user
+            foreach (Guid userId in uniqueUserIds)
+            {
+                UserEntity? user = users.FirstOrDefault(u => u.Id == userId);
+
+                if (user == null)
+                {
+                    result.ListErrors.Add(new ErrorDeleteUserInfo
+                    {
+                        UserId = userId,
+                        Message = "User not found."
+                    });
+
+                    continue;
+                }
+
+                if (user.IsDeleted)
+                {
+                    result.ListErrors.Add(new ErrorDeleteUserInfo
+                    {
+                        UserId = userId,
+                        Message = "User has already been deleted."
+                    });
+
+                    continue;
+                }
+
+                if (!CanDeleteUser(currentRole, user.Role))
+                {
+                    result.ListErrors.Add(new ErrorDeleteUserInfo
+                    {
+                        UserId = userId,
+                        Message = "You do not have permission to delete this user."
+                    });
+
+                    continue;
+                }
+            }
+
+            // Get eligible user IDs
+            HashSet<Guid> errorUserIds = result.ListErrors
+                .Select(e => e.UserId)
+                .ToHashSet();
+
+            List<Guid> eligibleUserIds = uniqueUserIds
+                .Where(id => !errorUserIds.Contains(id))
+                .ToList();
+
+            // Chunking
+            const int chunkSize = 100;
+
+            foreach (var chunk in eligibleUserIds.Chunk(chunkSize))
+            {
+                List<Guid> deletedIds = await _userRepository
+                    .SoftDeleteUsersChunkAsync(chunk);
+
+                result.ListUserIdSuccess.AddRange(deletedIds);
+
+                // Handle users that could not be deleted
+                HashSet<Guid> deletedSet = deletedIds.ToHashSet();
+
+                foreach (Guid userId in chunk)
+                {
+                    if (!deletedSet.Contains(userId))
+                    {
+                        result.ListErrors.Add(new ErrorDeleteUserInfo
+                        {
+                            UserId = userId,
+                            Message = "Failed to delete user."
+                        });
+                    }
+                }
+            }
+
+            // No successful deletion
+            if (result.ListUserIdSuccess.Count == 0)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+
+            return ApiResponse<DeleteUserResponse>.Response(
+                MessageRecord.Success,
+                data: result
+            );
+        }
+
         private bool CanViewUserProfile(RoleUser? currentRole, Guid? currentUserId, UserEntity targetUser)
         {
             // Admin can view all profiles
@@ -331,7 +435,7 @@ namespace back_end.Services.Implements
             };
         }
 
-        private bool CanDeleteUserProfile(RoleUser? currentRole, RoleUser roleTargetUser)
+        private bool CanDeleteUser(RoleUser? currentRole, RoleUser roleTargetUser)
         {
             // Admin can delete all profiles
             if (currentRole == RoleUser.Admin)

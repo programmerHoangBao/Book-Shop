@@ -10,5 +10,11 @@ namespace back_end.Repositories
         Task<bool> UpdateUserAsync(UserEntity user);
         Task<bool> SoftDeleteUserByIdAsync(Guid userId);
         Task<bool> RestoreUserByIdAsync(Guid userId);
+        Task<List<UserEntity>> GetUsersByIdsAsync(
+            IReadOnlyCollection<Guid> userIds
+        );
+        Task<List<Guid>> SoftDeleteUsersChunkAsync(
+            IReadOnlyCollection<Guid> userIds
+        );
     }
 }

@@ -1,15 +1,19 @@
 ﻿using back_end.DTOs;
 using back_end.DTOs.Users.Requests;
+using back_end.DTOs.Users.Responses;
 
 namespace back_end.Services
 {
     public interface IUserService
     {
-        public Task<ApiResponse<object?>> CreateUserAsync(CreateUserRequest req, IFormFile? file);
-        public Task<ApiResponse<object?>> GetProfileByIdAsync(Guid userId);
-        public Task<ApiResponse<object?>> GetProfileUserByEmailAsync(string email);
-        public Task<ApiResponse<object?>> UpdateUserAsync(UpdateUserRequest req, IFormFile? file);
-        public Task<ApiResponse<object?>> DeleteUserByIdAsync(Guid userId);
-        public Task<ApiResponse<object?>> RestoreUserByIdAsync(Guid userId);
+        Task<ApiResponse<object?>> CreateUserAsync(CreateUserRequest req, IFormFile? file);
+        Task<ApiResponse<object?>> GetProfileByIdAsync(Guid userId);
+        Task<ApiResponse<object?>> GetProfileUserByEmailAsync(string email);
+        Task<ApiResponse<object?>> UpdateUserAsync(UpdateUserRequest req, IFormFile? file);
+        Task<ApiResponse<object?>> DeleteUserByIdAsync(Guid userId);
+        Task<ApiResponse<object?>> RestoreUserByIdAsync(Guid userId);
+        Task<ApiResponse<DeleteUserResponse>> DeleteUsersByListIdAsync(
+                    DeleteUsersRequest req
+                );
     }
 }
