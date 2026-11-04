@@ -44,6 +44,7 @@ builder.Services.Configure<KafkaSetting>(builder.Configuration.GetSection("Kafka
 builder.Services.Configure<GoogleSetting>(builder.Configuration.GetSection("Authentication:Google"));
 builder.Services.Configure<S3Setting>(builder.Configuration.GetSection("AWS:S3"));
 builder.Services.Configure<FileStorageSetting>(builder.Configuration.GetSection("FileStorage"));
+builder.Services.Configure<ElasticsearchSetting>(builder.Configuration.GetSection("Elasticsearch"));
 
 // Connection redis
 var redisConnectionString =
@@ -103,11 +104,6 @@ var googleSetting = builder.Configuration
     .GetSection("Authentication:Google")
     .Get<GoogleSetting>();
 
-//builder.Services.Configure<FormOptions>(options =>
-//{
-//    options.MultipartBodyLengthLimit = (googleSetting!.MaxFileSizeMB + 5) * 1024L * 1024L;
-//});
-
 // The AWS SDK uses the default credential provider chain.
 builder.Services.AddSingleton<IAmazonS3>(sp =>
 {
@@ -117,6 +113,9 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
     return new AmazonS3Client(
         RegionEndpoint.GetBySystemName(options.Region));
 });
+
+// Elasticsearch Configuration
+builder.Services.AddElasticsearch(builder.Configuration);
 
 var app = builder.Build();
 
