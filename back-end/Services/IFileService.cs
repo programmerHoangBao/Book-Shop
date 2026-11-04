@@ -18,5 +18,10 @@ namespace back_end.Services
             string imageUrl,
             CancellationToken cancellationToken = default
         );
+
+        Task<List<UploadImageResponse>> UploadListImagesAsync(
+            List<IFormFile> files,
+            CancellationToken cancellationToken = default
+        );
     }
 }
