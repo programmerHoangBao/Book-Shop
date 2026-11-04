@@ -5,7 +5,6 @@ using back_end.Exceptions;
 using back_end.Records;
 using back_end.Settings;
 using Microsoft.Extensions.Options;
-using System.IO;
 using System.Net;
 
 namespace back_end.Services.Implements
@@ -119,6 +118,44 @@ namespace back_end.Services.Implements
                     objectKey);
 
                 throw new BusinessException(ErrorRecord.UploadFileFailed);
+            }
+        }
+
+        public async Task<List<UploadImageResponse>> UploadListImagesAsync(
+            List<IFormFile> files,
+            CancellationToken cancellationToken = default
+        )
+        {
+            // Case 01: Validate files
+            if (files == null || files.Count == 0)
+            {
+                throw new BusinessException(ErrorRecord.FileEmpty);
+            }
+
+            try
+            {
+                // Case 02: Upload all images concurrently
+                var uploadTasks = files.Select(file =>
+                    UploadImageAsync(file, cancellationToken)
+                );
+
+                var results = await Task.WhenAll(uploadTasks);
+
+                return results.ToList();
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Failed to upload list of images. FileCount: {FileCount}",
+                    files.Count
+                );
+
+                throw;
             }
         }
 
