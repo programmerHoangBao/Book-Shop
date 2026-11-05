@@ -1,4 +1,5 @@
 ﻿using back_end.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace back_end.Controllers
@@ -14,16 +15,17 @@ namespace back_end.Controllers
             _fileService = fileService;
         }
 
-        //[HttpPost]
-        //[Consumes("multipart/form-data")]
-        //[RequestSizeLimit(6 * 1024 * 1024)]
-        //public async Task<IActionResult> UploadImageAsync([FromForm] IFormFile? file)
-        //{
-        //    var response = await _fileService.UploadImageAsync(file);
-        //    return Ok(response);
-        //}
+        [HttpPost]
+        [Consumes("multipart/form-data")]
+        [Authorize]
+        public async Task<IActionResult> UploadImageAsync([FromForm] IFormFile? file)
+        {
+            var response = await _fileService.UploadImageAsync(file);
+            return Ok(response);
+        }
 
         [HttpDelete]
+        [Authorize]
         public async Task<IActionResult> DeleteImageAsync([FromQuery] string objectKey)
         {
             await _fileService.DeleteImageAsync(objectKey);
