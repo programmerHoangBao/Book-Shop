@@ -69,6 +69,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IStoreRepository, StoreRepository>();
 builder.Services.AddScoped<IStoreStaffRepository, StoreStaffRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 // Add service
 builder.Services.AddScoped<IRedisService, RedisService>();
@@ -80,10 +81,13 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IStoreService, StoreService>();
+builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IBookElasticsearchService, BookElasticsearchService>();
 
 // Background Service
 builder.Services.AddHostedService<OtpEmailConsumer>();
 builder.Services.AddHostedService<DeleteFileConsumer>();
+builder.Services.AddHostedService<CreateBookElasticsearchConsumer>();
 
 // Auto mapper
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());

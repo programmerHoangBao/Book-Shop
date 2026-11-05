@@ -12,20 +12,38 @@ namespace back_end.Repositories.Implements
             _context = context;
         }
 
-        public async Task<bool> AddUserAsync(UserEntity user)
+
+        public async Task<bool> AddUserAsync(
+            UserEntity user,
+            Guid? storeId = default
+        )
         {
-            await using var transaction = 
+            await using var transaction =
                 await _context.Database.BeginTransactionAsync();
+
             try
             {
                 await _context.Users.AddAsync(user);
+
+                if (storeId.HasValue && IsStoreStaffRole(user.Role))
+                {
+                    await _context.StoreStaffs.AddAsync(new StoreStaffEntity
+                    {
+                        UserId = user.Id,
+                        StoreId = storeId.Value
+                    });
+                }
+
                 var result = await _context.SaveChangesAsync();
+
                 if (result <= 0)
                 {
                     await transaction.RollbackAsync();
                     return false;
                 }
+
                 await transaction.CommitAsync();
+
                 return true;
             }
             catch
@@ -216,6 +234,12 @@ namespace back_end.Repositories.Implements
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+
+        private static bool IsStoreStaffRole(Enums.RoleUser role)
+        {
+            return role != Enums.RoleUser.Customer &&
+                   role != Enums.RoleUser.Admin;
         }
     }
 }

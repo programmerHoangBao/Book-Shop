@@ -10,7 +10,7 @@ namespace back_end.DTOs.Users.Requests
         public string FullName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email is required!")]
-        [EmailAddress]
+        [EmailAddress(ErrorMessage = "Invalid email format.")]
         [StringLength(255, ErrorMessage = "Email length must not exceed 255 characters.")]
         public string Email { get; set; } = string.Empty;
         [Required(ErrorMessage = "Password is required!")]
@@ -24,6 +24,12 @@ namespace back_end.DTOs.Users.Requests
         public string Password { get; set; } = string.Empty;
 
         public RoleUser Role { get; set; } = RoleUser.Employee;
+
+        [RegularExpression(@"^\d+$", ErrorMessage = "Phone number must contain digits only.")]
+        [StringLength(11, ErrorMessage = "Phone number must not exceed 11 characters.")]
+        public string? PhoneNumber { get; set; }
+
+        public string? AvatarUrl { get; set; }
 
         public Guid StoreId { get; set; }
     }

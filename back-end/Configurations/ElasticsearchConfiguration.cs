@@ -26,7 +26,8 @@ namespace back_end.Configurations
                     setting.Username,
                     setting.Password
                 )
-            );
+            )
+            .DefaultIndex(setting.DefaultIndex);
 
             services.AddSingleton(
                 new ElasticsearchClient(settings)

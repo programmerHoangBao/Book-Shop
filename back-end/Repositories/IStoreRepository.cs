@@ -17,5 +17,6 @@ namespace back_end.Repositories
             int pageNumber = 1, 
             int pageSize = 10
         );
+        Task<List<Guid>> GetActiveStoreIdsAsync(List<Guid> storeIds);
     }
 }

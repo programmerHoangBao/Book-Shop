@@ -151,5 +151,13 @@ namespace back_end.Repositories.Implements
                 throw;
             }
         }
+
+        public Task<List<Guid>> GetActiveStoreIdsAsync(List<Guid> storeIds)
+        {
+            return _context.Stores
+                .Where(store => storeIds.Contains(store.Id) && !store.IsDeleted)
+                .Select(store => store.Id)
+                .ToListAsync();
+        }
     }
 }

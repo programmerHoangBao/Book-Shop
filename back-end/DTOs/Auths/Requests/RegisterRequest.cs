@@ -9,7 +9,7 @@ namespace back_end.DTOs.Auths.Requests
         public string FullName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email is required!")]
-        [EmailAddress]
+        [EmailAddress(ErrorMessage = "Invalid email format.")]
         [StringLength(255, ErrorMessage = "Email length must not exceed 255 characters.")]
         public string Email { get; set; } = string.Empty;
         [Required(ErrorMessage = "Password is required!")]

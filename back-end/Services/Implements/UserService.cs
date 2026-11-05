@@ -48,10 +48,10 @@ namespace back_end.Services.Implements
             _mapper = mapper;
         }
 
-        public async Task<ApiResponse<object?>> CreateUserAsync(CreateUserRequest req, IFormFile? file)
+        public async Task<ApiResponse<object?>> CreateUserAsync(CreateUserRequest req)
         {
             UserEntity? existsUser = await _userRepository.GetUserByEmailAsync(req.Email);
-            UploadImageResponse? uploadImageResponse = null;
+            RoleUser? currentRole = _currentUserService.GetRoleCurrentUser();
             // Case 1: User Exist
             if (existsUser != null)
             {
@@ -59,67 +59,34 @@ namespace back_end.Services.Implements
             }
 
             // Case 2: Check the user's permissions for creating users in detail and store not found
-            if (req.Role != Enums.RoleUser.Customer && req.StoreId != Guid.Empty)
+            if (!CanCreateUser(currentRole, req.Role))
             {
-                if (
-                    _currentUserService.GetRoleCurrentUser() == Enums.RoleUser.Manager
-                    && (req.Role == Enums.RoleUser.Admin || req.Role == Enums.RoleUser.Manager)
-                    )
-                {
-                    throw new BusinessException(ErrorRecord.Forbidden);
-                }
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
 
+            // Case 3: Check store if the user is not a customer
+            if (req.Role != RoleUser.Customer)
+            {
                 StoreEntity? store = await _storeRepository.GetStoreByIdAsync(req.StoreId);
                 if (store == null || store.IsDeleted)
                 {
                     throw new BusinessException(ErrorRecord.StoreNotFound);
                 }
+            }
 
-            }
-            // Case 3: Upload file
-            if (file != null && file.Length > 0)
-            {
-                uploadImageResponse = await _fileService.UploadImageAsync(file);
-            }
             // Case 4: Save user to the database
             UserEntity newUser = _mapper.Map<UserEntity>(req);
-            newUser.AvatarUrl = uploadImageResponse?.ImageUrl ?? newUser.AvatarUrl;
             newUser.PasswordHash = HashUtility.HashBySHA256(req.Password, _securitySetting.SHASecrectKey);
-            StoreStaffEntity? staff = null;
-            bool addStaff = false;
-            bool createdUser = await _userRepository.AddUserAsync(newUser);
+            bool createdUser = await _userRepository.AddUserAsync(newUser, req.StoreId);
             CreateUserResponse response = _mapper.Map<CreateUserResponse>(newUser);
-            if (req.Role != Enums.RoleUser.Customer)
-            {
-                staff = new StoreStaffEntity
-                {
-                    StoreId = req.StoreId,
-                    UserId = newUser.Id,
-                };
-                addStaff = await _staffRepository.AddStoreStaffAsync(staff);
-                response.StoreId = staff.StoreId;
-            }
-            if (
-                (createdUser && addStaff && req.Role != Enums.RoleUser.Customer) ||
-                (createdUser && req.Role == Enums.RoleUser.Customer)
-            )
+            if (createdUser)
             {
                 return ApiResponse<object?>.Response(
                     MessageRecord.CreatedSuccessfully,
                     data: response
                 );
             }
-            else
-            {
-                // Case 5: Rollback the avatar if saving to the database fails for the user.
-                if (uploadImageResponse != null)
-                    await _fileService.DeleteImageAsync(uploadImageResponse.ObjectKey);
-
-                if (!addStaff && staff != null)
-                    await _staffRepository.RemoveStoreStaffAsync(staff);
-
-                throw new BusinessException(errorRecord: ErrorRecord.Failed);
-            }
+            throw new BusinessException(errorRecord: ErrorRecord.Failed);
         }
 
         public async Task<ApiResponse<object?>> DeleteUserByIdAsync(Guid userId)
@@ -245,10 +212,9 @@ namespace back_end.Services.Implements
             );
         }
 
-        public async Task<ApiResponse<object?>> UpdateUserAsync(UpdateUserRequest req, IFormFile? file)
+        public async Task<ApiResponse<object?>> UpdateUserAsync(UpdateUserRequest req)
         {
             UserEntity? existsUser = await _userRepository.GetUserByIdAsync(req.Id);
-            UploadImageResponse? uploadImageResponse = null;
             RoleUser? currentRole = _currentUserService.GetRoleCurrentUser();
             Guid? currentUserId = _currentUserService.GetCurrentUserId();
             string oldAvatarUrl = existsUser?.AvatarUrl ?? string.Empty;
@@ -260,19 +226,11 @@ namespace back_end.Services.Implements
             {
                 throw new BusinessException(ErrorRecord.Forbidden);
             }
-            if (file != null && file.Length > 0)
-            {
-                uploadImageResponse = await _fileService.UploadImageAsync(file);
-            }
             existsUser = _mapper.Map(req, existsUser);
-            if (uploadImageResponse != null)
-            {
-                existsUser.AvatarUrl = uploadImageResponse.ImageUrl;
-            }
             bool updated = await _userRepository.UpdateUserAsync(existsUser);
             if (updated)
             {
-                if (!String.IsNullOrEmpty(oldAvatarUrl) && uploadImageResponse != null)
+                if (!String.IsNullOrEmpty(oldAvatarUrl))
                 {
                     await _kafkaProducer.ProduceAsync(
                     "delete-file",
@@ -403,65 +361,9 @@ namespace back_end.Services.Implements
             );
         }
 
-        private bool CanViewUserProfile(RoleUser? currentRole, Guid? currentUserId, UserEntity targetUser)
-        {
-            // Admin can view all profiles
-            if (currentRole == RoleUser.Admin)
-            {
-                return true;
-            }
-
-            // Users can view their own profiles
-            if (currentUserId == targetUser.Id)
-            {
-                return true;
-            }
-
-            return currentRole switch
-            {
-                // Manager can view Employee and Customer
-                RoleUser.Manager =>
-                    targetUser.Role == RoleUser.Employee ||
-                    targetUser.Role == RoleUser.Customer,
-
-                // Employee can view Customer
-                RoleUser.Employee =>
-                    targetUser.Role == RoleUser.Customer,
-
-                // Customer cannot view other users
-                RoleUser.Customer => false,
-
-                _ => false
-            };
-        }
-
-        private bool CanDeleteUser(RoleUser? currentRole, RoleUser roleTargetUser)
-        {
-            // Admin can delete all profiles
-            if (currentRole == RoleUser.Admin)
-            {
-                return true;
-            }
-
-            return currentRole switch
-            {
-                // Manager can delete Employee and Customer
-                RoleUser.Manager =>
-                    roleTargetUser == RoleUser.Employee ||
-                    roleTargetUser == RoleUser.Customer,
-
-                // Employee can delete Customer
-                RoleUser.Employee =>
-                    roleTargetUser == RoleUser.Customer,
-
-                // Customer cannot delete other users
-                RoleUser.Customer => false,
-
-                _ => false
-            };
-        }
-
-        public async Task<ApiResponse<RestoreUserResponse>> RestoreUserByListIdAsync(RestoreUserRequest req)
+        public async Task<ApiResponse<RestoreUserResponse>> RestoreUserByListIdAsync(
+            RestoreUserRequest req
+        )
         {
             if (req.UserIds == null || req.UserIds.Count == 0)
             {
@@ -571,6 +473,90 @@ namespace back_end.Services.Implements
                 MessageRecord.Success,
                 data: result
             );
+        }
+
+        private bool CanViewUserProfile(RoleUser? currentRole, Guid? currentUserId, UserEntity targetUser)
+        {
+            // Admin can view all profiles
+            if (currentRole == RoleUser.Admin)
+            {
+                return true;
+            }
+
+            // Users can view their own profiles
+            if (currentUserId == targetUser.Id)
+            {
+                return true;
+            }
+
+            return currentRole switch
+            {
+                // Manager can view Employee and Customer
+                RoleUser.Manager =>
+                    targetUser.Role == RoleUser.Employee ||
+                    targetUser.Role == RoleUser.Customer,
+
+                // Employee can view Customer
+                RoleUser.Employee =>
+                    targetUser.Role == RoleUser.Customer,
+
+                // Customer cannot view other users
+                RoleUser.Customer => false,
+
+                _ => false
+            };
+        }
+
+        private bool CanDeleteUser(RoleUser? currentRole, RoleUser roleTargetUser)
+        {
+            // Admin can delete all profiles
+            if (currentRole == RoleUser.Admin)
+            {
+                return true;
+            }
+
+            return currentRole switch
+            {
+                // Manager can delete Employee and Customer
+                RoleUser.Manager =>
+                    roleTargetUser == RoleUser.Employee ||
+                    roleTargetUser == RoleUser.Customer,
+
+                // Employee can delete Customer
+                RoleUser.Employee =>
+                    roleTargetUser == RoleUser.Customer,
+
+                // Customer cannot delete other users
+                RoleUser.Customer => false,
+
+                _ => false
+            };
+        }
+
+        private bool CanCreateUser(RoleUser? currentRole, RoleUser roleTargetUser)
+        {
+            // Admin can create all profiles
+            if (currentRole == RoleUser.Admin)
+            {
+                return true;
+            }
+
+            return currentRole switch
+            {
+                // Manager can create Employee and Customer
+                RoleUser.Manager =>
+                    roleTargetUser == RoleUser.Employee ||
+                    roleTargetUser == RoleUser.Customer,
+
+                // Employee can create Customer
+                RoleUser.Employee =>
+                    roleTargetUser == RoleUser.Customer,
+
+                // Customer cannot create other users
+                RoleUser.Customer => false,
+
+                _ => false
+            };
         }
     }
 }

@@ -5,7 +5,7 @@ namespace back_end.Repositories
     public interface IUserRepository
     {
         Task<UserEntity?> GetUserByEmailAsync(string email);
-        Task<bool> AddUserAsync(UserEntity user);
+        Task<bool> AddUserAsync(UserEntity user, Guid? storeId = default);
         Task<UserEntity?> GetUserByIdAsync(Guid userId);
         Task<bool> UpdateUserAsync(UserEntity user);
         Task<bool> SoftDeleteUserByIdAsync(Guid userId);
