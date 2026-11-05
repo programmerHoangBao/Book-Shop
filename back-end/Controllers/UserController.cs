@@ -45,10 +45,9 @@ namespace back_end.Controllers
         [HttpPut]
         [Authorize]
         public async Task<IActionResult> UpdateUserAsync(
-            [FromForm] UpdateUserRequest req,
-            [FromForm] IFormFile? file = default)
+            [FromBody] UpdateUserRequest req)
         {
-            var response = await _userService.UpdateUserAsync(req, file);
+            var response = await _userService.UpdateUserAsync(req);
             return StatusCode(response.HttpStatus, response);
         }
 

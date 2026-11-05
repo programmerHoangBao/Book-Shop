@@ -212,10 +212,9 @@ namespace back_end.Services.Implements
             );
         }
 
-        public async Task<ApiResponse<object?>> UpdateUserAsync(UpdateUserRequest req, IFormFile? file)
+        public async Task<ApiResponse<object?>> UpdateUserAsync(UpdateUserRequest req)
         {
             UserEntity? existsUser = await _userRepository.GetUserByIdAsync(req.Id);
-            UploadImageResponse? uploadImageResponse = null;
             RoleUser? currentRole = _currentUserService.GetRoleCurrentUser();
             Guid? currentUserId = _currentUserService.GetCurrentUserId();
             string oldAvatarUrl = existsUser?.AvatarUrl ?? string.Empty;
@@ -227,19 +226,11 @@ namespace back_end.Services.Implements
             {
                 throw new BusinessException(ErrorRecord.Forbidden);
             }
-            if (file != null && file.Length > 0)
-            {
-                uploadImageResponse = await _fileService.UploadImageAsync(file);
-            }
             existsUser = _mapper.Map(req, existsUser);
-            if (uploadImageResponse != null)
-            {
-                existsUser.AvatarUrl = uploadImageResponse.ImageUrl;
-            }
             bool updated = await _userRepository.UpdateUserAsync(existsUser);
             if (updated)
             {
-                if (!String.IsNullOrEmpty(oldAvatarUrl) && uploadImageResponse != null)
+                if (!String.IsNullOrEmpty(oldAvatarUrl))
                 {
                     await _kafkaProducer.ProduceAsync(
                     "delete-file",
