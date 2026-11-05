@@ -28,6 +28,8 @@ namespace back_end.Profiles
             CreateMap<UpdateUserRequest, UserEntity>();
             CreateMap<UserEntity, UpdateUserResponse>();
             CreateMap<BookEntity, BookDocument>();
+            CreateMap<BookDocumentMessage, BookEntity>();
+            CreateMap<BookEntity, BookDocumentMessage>();
         }
     }
 }

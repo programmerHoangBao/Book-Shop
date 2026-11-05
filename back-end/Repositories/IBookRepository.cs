@@ -1,9 +1,15 @@
-﻿using back_end.Entities;
+using back_end.DTOs.Books.Requests;
+using back_end.Entities;
 
 namespace back_end.Repositories
 {
     public interface IBookRepository
     {
-        Task<bool> AddBookAsync(BookEntity book, List<string>? images = default);
+        Task<bool> AddBookAsync(
+            BookEntity book,
+            Guid categoryId,
+            List<string> images,
+            List<CreateBookInventoryRequest> inventories
+        );
     }
 }
