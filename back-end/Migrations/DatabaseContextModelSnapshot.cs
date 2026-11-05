@@ -232,6 +232,11 @@ namespace back_end.Migrations
 
             modelBuilder.Entity("back_end.Entities.CategoryEntity", b =>
                 {
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");

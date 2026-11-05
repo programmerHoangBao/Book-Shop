@@ -9,6 +9,9 @@ namespace back_end.Entities
         [Key]
         public Guid Id { get; set; } = Guid.CreateVersion7();
 
+        [Required]
+        [MaxLength(150)]
+        public string Name { get; set; } = string.Empty;
         public Guid? ParentId { get; set; }
         [Required]
         public bool IsActive { get; set; } = true;
