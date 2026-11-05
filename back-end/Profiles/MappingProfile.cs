@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using back_end.Documents;
 using back_end.DTOs.Emails.Requests;
 using back_end.DTOs.Stores.Requests;
 using back_end.DTOs.Stores.Responses;
@@ -26,6 +27,7 @@ namespace back_end.Profiles
             CreateMap<StoreEntity, StoreInfo>();
             CreateMap<UpdateUserRequest, UserEntity>();
             CreateMap<UserEntity, UpdateUserResponse>();
+            CreateMap<BookEntity, BookDocument>();
         }
     }
 }

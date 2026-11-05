@@ -80,6 +80,7 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IStoreService, StoreService>();
+builder.Services.AddScoped<IBookElasticsearchService, BookElasticsearchService>();
 
 // Background Service
 builder.Services.AddHostedService<OtpEmailConsumer>();
