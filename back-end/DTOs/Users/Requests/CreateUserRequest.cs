@@ -25,6 +25,12 @@ namespace back_end.DTOs.Users.Requests
 
         public RoleUser Role { get; set; } = RoleUser.Employee;
 
+        [RegularExpression(@"^\d+$", ErrorMessage = "Phone number must contain digits only.")]
+        [StringLength(11, ErrorMessage = "Phone number must not exceed 11 characters.")]
+        public string? PhoneNumber { get; set; }
+
+        public string? AvatarUrl { get; set; }
+
         public Guid StoreId { get; set; }
     }
 }

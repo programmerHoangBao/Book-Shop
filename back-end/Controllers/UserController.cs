@@ -19,10 +19,10 @@ namespace back_end.Controllers
         [Consumes("multipart/form-data")]
         [HttpPost]
         public async Task<IActionResult> CreateUserAsync(
-            [FromForm] CreateUserRequest req,
-            [FromForm] IFormFile? file = null)
+            [FromBody] CreateUserRequest req
+        )
         {
-            var response = await _userService.CreateUserAsync(req, file);
+            var response = await _userService.CreateUserAsync(req);
             return StatusCode(response.HttpStatus, response);
         }
 
