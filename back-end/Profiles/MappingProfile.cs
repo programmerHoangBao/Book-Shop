@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using back_end.Documents;
+using back_end.DTOs.Categories.Requests;
+using back_end.DTOs.Categories.Responses;
 using back_end.DTOs.Emails.Requests;
 using back_end.DTOs.Stores.Requests;
 using back_end.DTOs.Stores.Responses;
@@ -25,6 +27,10 @@ namespace back_end.Profiles
             CreateMap<StoreEntity, StoreResponse>();
             CreateMap<UserEntity, GetProfileResponse>();
             CreateMap<StoreEntity, StoreInfo>();
+            CreateMap<CreateCategoryRequest, CategoryEntity>();
+            CreateMap<UpdateCategoryRequest, CategoryEntity>()
+                .ForMember(destination => destination.Id, options => options.MapFrom(source => source.CategoryId));
+            CreateMap<CategoryEntity, CategoryResponse>();
             CreateMap<UpdateUserRequest, UserEntity>();
             CreateMap<UserEntity, UpdateUserResponse>();
             CreateMap<BookEntity, BookDocument>();

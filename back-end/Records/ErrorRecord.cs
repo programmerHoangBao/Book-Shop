@@ -17,6 +17,9 @@ public sealed record ErrorRecord(
     public static readonly ErrorRecord UserExists =
         new("E004", "User already exists!", StatusCodes.Status409Conflict);
 
+    public static readonly ErrorRecord CategoryExists =
+        new("E021", "Category already exists!", StatusCodes.Status409Conflict);
+
     public static readonly ErrorRecord NotFound =
         new("E005", "Data not found!", StatusCodes.Status404NotFound);
 
