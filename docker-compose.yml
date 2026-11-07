@@ -100,9 +100,7 @@ services:
   back-end:
     container_name: book-shop-back-end
 
-    build:
-      context: .
-      dockerfile: back-end/Dockerfile
+    image: ghcr.io/programmerhoangbao/book-shop-back-end:${IMAGE_TAG:-latest}
 
     ports:
       - "7282:8081"
@@ -117,6 +115,9 @@ services:
       AWS__S3__Region: ${REGION}
       AWS__S3__BucketName: ${BUCKET_NAME}
 
+    volumes:
+      - ${APPSETTINGS_PRODUCTION_PATH}:/app/appsettings.Production.json:ro
+
     depends_on:
       postgresql:
         condition: service_healthy
@@ -124,7 +125,6 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
-
       elasticsearch:
         condition: service_healthy
 
