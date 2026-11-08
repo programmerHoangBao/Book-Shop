@@ -116,5 +116,61 @@ namespace back_end.Services.Implements
 
             return ApiResponse<object?>.Response(MessageRecord.CreatedSuccessfully, data: response);
         }
+
+        public async Task<ApiResponse<object?>> UpdateBookAsync(Guid bookId, UpdateBookRequest request)
+        {
+            if (bookId == Guid.Empty || request.CategoryId == Guid.Empty)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            BookEntity? book = await _bookRepository.GetBookForUpdateAsync(bookId);
+            if (book == null)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+
+            if (!await _categoryRepository.CategoryExistsAsync(request.CategoryId))
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+
+            List<string> imageUrls = (request.ImageUrls ?? new List<string>())
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Select(url => url.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            book.Name = request.Name.Trim();
+            book.Author = request.Author?.Trim();
+            book.Publisher = request.Publisher?.Trim();
+            book.Description = request.Description;
+            book.Price = request.Price;
+
+            if (!await _bookRepository.UpdateBookAsync(book, request.CategoryId, imageUrls))
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+
+            BookDocumentMessage bookDocumentMessage = _mapper.Map<BookDocumentMessage>(book);
+            await _kafkaProducer.ProduceAsync(
+                "creat-index-book-elasticsearch",
+                bookDocumentMessage
+            );
+
+            UpdateBookResponse response = new()
+            {
+                Id = book.Id,
+                Name = book.Name,
+                Author = book.Author,
+                Publisher = book.Publisher,
+                Description = book.Description,
+                Price = book.Price,
+                CategoryId = request.CategoryId,
+                ImageUrls = imageUrls
+            };
+
+            return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
+        }
     }
 }

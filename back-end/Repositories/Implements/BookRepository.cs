@@ -67,5 +67,54 @@ namespace back_end.Repositories.Implements
                 throw;
             }
         }
+
+        public Task<BookEntity?> GetBookForUpdateAsync(Guid bookId)
+        {
+            return _context.Books
+                .Include(book => book.Images)
+                .Include(book => book.BookCategories)
+                .FirstOrDefaultAsync(book => book.Id == bookId && !book.IsDeleted);
+        }
+
+        public async Task<bool> UpdateBookAsync(
+            BookEntity book,
+            Guid categoryId,
+            List<string> images)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                if (book.BookCategories.Count != 1 || book.BookCategories.First().CategoryId != categoryId)
+                {
+                    _context.BookCategories.RemoveRange(book.BookCategories);
+                    book.BookCategories.Clear();
+                    book.BookCategories.Add(new BookCategoryEntity
+                    {
+                        BookId = book.Id,
+                        CategoryId = categoryId
+                    });
+                }
+
+                _context.BookImages.RemoveRange(book.Images);
+                book.Images.Clear();
+                foreach (string image in images)
+                {
+                    book.Images.Add(new BookImageEntity
+                    {
+                        BookId = book.Id,
+                        ImageUrl = image
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
     }
 }
