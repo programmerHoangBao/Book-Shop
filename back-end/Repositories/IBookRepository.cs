@@ -11,5 +11,13 @@ namespace back_end.Repositories
             List<string> images,
             List<CreateBookInventoryRequest> inventories
         );
+
+        Task<BookEntity?> GetBookForUpdateAsync(Guid bookId);
+
+        Task<bool> UpdateBookAsync(
+            BookEntity book,
+            Guid categoryId,
+            List<string> images
+        );
     }
 }
