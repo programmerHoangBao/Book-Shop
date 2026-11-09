@@ -24,5 +24,16 @@ namespace back_end.Controllers
             var response = await _reviewService.CreateReviewAsync(request);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetBookReviewsAsync(
+            Guid bookId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var response = await _reviewService.GetBookReviewsAsync(bookId, pageNumber, pageSize);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }
