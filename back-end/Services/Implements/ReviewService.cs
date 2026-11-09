@@ -163,5 +163,26 @@ namespace back_end.Services.Implements
 
             return ApiResponse<object?>.Response(MessageRecord.Success);
         }
+
+        public async Task<ApiResponse<object?>> RestoreReviewAsync(Guid reviewId)
+        {
+            if (reviewId == Guid.Empty)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            ReviewEntity? review = await _reviewRepository.GetDeletedReviewByIdAsync(reviewId);
+            if (review == null)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+
+            if (!await _reviewRepository.RestoreReviewAsync(review))
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+
+            return ApiResponse<object?>.Response(MessageRecord.Success);
+        }
     }
 }
