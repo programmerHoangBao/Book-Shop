@@ -6,9 +6,9 @@ namespace back_end.Services
 {
     public interface IBookElasticsearchService
     {
-        Task CreateIndexBookAsync(BookEntity book);
+        Task IndexBookAsync(BookEntity book);
 
-        Task CreateIndexListBooksAsync(List<BookEntity> books);
+        Task IndexListBooksAsync(List<BookEntity> books);
 
         Task DeleteBookAsync(Guid bookId);
 

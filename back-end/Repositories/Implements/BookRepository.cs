@@ -76,6 +76,20 @@ namespace back_end.Repositories.Implements
                 .FirstOrDefaultAsync(book => book.Id == bookId && !book.IsDeleted);
         }
 
+        public Task<BookEntity?> GetBookDetailsAsync(Guid bookId)
+        {
+            return _context.Books
+                .AsNoTracking()
+                .Where(book => book.Id == bookId && !book.IsDeleted)
+                .Include(book => book.Images)
+                .Include(book => book.BookCategories.Where(bookCategory => !bookCategory.IsDeleted))
+                    .ThenInclude(bookCategory => bookCategory.Category)
+                .Include(book => book.Inventories.Where(inventory => !inventory.IsDeleted && inventory.Store != null && !inventory.Store.IsDeleted))
+                    .ThenInclude(inventory => inventory.Store)
+                .Include(book => book.Reviews.Where(review => !review.IsDeleted))
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<bool> UpdateBookAsync(
             BookEntity book,
             Guid categoryId,

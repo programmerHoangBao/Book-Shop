@@ -88,7 +88,7 @@ builder.Services.AddScoped<IBookElasticsearchService, BookElasticsearchService>(
 // Background Service
 builder.Services.AddHostedService<OtpEmailConsumer>();
 builder.Services.AddHostedService<DeleteFileConsumer>();
-builder.Services.AddHostedService<CreateBookElasticsearchConsumer>();
+builder.Services.AddHostedService<IndexBookElasticsearchConsumer>();
 
 // Auto mapper
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
