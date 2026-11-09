@@ -71,4 +71,10 @@ public sealed record ErrorRecord(
 
     public static readonly ErrorRecord UserCannotBeRestoreFromStore =
         new("E020", "It is not possible to restore a user from the store.", StatusCodes.Status400BadRequest);
+
+    public static readonly ErrorRecord BookPurchaseRequired =
+        new("E022", "A completed purchase of this book is required to submit a review.", StatusCodes.Status403Forbidden);
+
+    public static readonly ErrorRecord ReviewAlreadyExists =
+        new("E023", "A review for this book and order already exists.", StatusCodes.Status409Conflict);
 }
