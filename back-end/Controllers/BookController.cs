@@ -33,5 +33,12 @@ namespace back_end.Controllers
             var response = await _bookService.UpdateBookAsync(bookId, request);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpGet("{bookId:guid}")]
+        public async Task<IActionResult> GetBookDetailsAsync(Guid bookId)
+        {
+            var response = await _bookService.GetBookDetailsAsync(bookId);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }

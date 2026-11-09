@@ -14,6 +14,8 @@ namespace back_end.Repositories
 
         Task<BookEntity?> GetBookForUpdateAsync(Guid bookId);
 
+        Task<BookEntity?> GetBookDetailsAsync(Guid bookId);
+
         Task<bool> UpdateBookAsync(
             BookEntity book,
             Guid categoryId,

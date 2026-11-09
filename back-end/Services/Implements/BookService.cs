@@ -172,5 +172,53 @@ namespace back_end.Services.Implements
 
             return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
         }
+
+        public async Task<ApiResponse<object?>> GetBookDetailsAsync(Guid bookId)
+        {
+            if (bookId == Guid.Empty)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            BookEntity? book = await _bookRepository.GetBookDetailsAsync(bookId);
+            if (book == null)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+
+            var response = new BookDetailResponse
+            {
+                Id = book.Id,
+                Name = book.Name,
+                Author = book.Author,
+                Publisher = book.Publisher,
+                Description = book.Description,
+                Price = book.Price,
+                Status = book.Status,
+                Rank = book.Rank,
+                CreatedAt = book.CreatedAt,
+                UpdatedAt = book.UpdatedAt,
+                Category = book.BookCategories
+                    .Where(bookCategory => bookCategory.Category != null && !bookCategory.Category.IsDeleted)
+                    .Select(bookCategory => new BookDetailCategoryResponse
+                    {
+                        Id = bookCategory.Category!.Id,
+                        Name = bookCategory.Category.Name
+                    })
+                    .FirstOrDefault(),
+                ImageUrls = book.Images.Select(image => image.ImageUrl).ToList(),
+                Inventories = book.Inventories.Select(inventory => new BookDetailInventoryResponse
+                {
+                    StoreId = inventory.StoreId,
+                    StoreName = inventory.Store!.Name,
+                    StoreAddress = inventory.Store.Address,
+                    AvailableQuantity = inventory.AvailableQuantity
+                }).ToList(),
+                AverageRating = book.Reviews.Count == 0 ? null : book.Reviews.Average(review => review.Ratting),
+                ReviewCount = book.Reviews.Count
+            };
+
+            return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
+        }
     }
 }
