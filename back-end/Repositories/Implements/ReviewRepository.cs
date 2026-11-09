@@ -53,6 +53,19 @@ namespace back_end.Repositories.Implements
             return await _context.SaveChangesAsync() > 0;
         }
 
+        public Task<ReviewEntity?> GetDeletedReviewByIdAsync(Guid reviewId)
+        {
+            return _context.Reviews.FirstOrDefaultAsync(review =>
+                review.Id == reviewId &&
+                review.IsDeleted);
+        }
+
+        public async Task<bool> RestoreReviewAsync(ReviewEntity review)
+        {
+            review.IsDeleted = false;
+            return await _context.SaveChangesAsync() > 0;
+        }
+
         public Task<bool> BookExistsAsync(Guid bookId)
         {
             return _context.Books.AnyAsync(book => book.Id == bookId && !book.IsDeleted);

@@ -10,6 +10,8 @@ namespace back_end.Repositories
         Task<bool> AddReviewAsync(ReviewEntity review);
         Task<ReviewEntity?> GetReviewExistByIdAsync(Guid reviewId);
         Task<bool> SoftDeleteReviewAsync(ReviewEntity review);
+        Task<ReviewEntity?> GetDeletedReviewByIdAsync(Guid reviewId);
+        Task<bool> RestoreReviewAsync(ReviewEntity review);
         Task<bool> BookExistsAsync(Guid bookId);
         Task<(List<ReviewEntity> Reviews, int TotalItems)> GetReviewsAsync(Guid bookId, int pageNumber, int pageSize);
         Task<BookRatingSummaryResponse> GetRatingSummaryAsync(Guid bookId);

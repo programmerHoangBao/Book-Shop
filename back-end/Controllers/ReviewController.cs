@@ -43,5 +43,13 @@ namespace back_end.Controllers
             var response = await _reviewService.DeleteReviewAsync(reviewId);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpPatch("{reviewId:guid}/restore")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> RestoreReviewAsync(Guid reviewId)
+        {
+            var response = await _reviewService.RestoreReviewAsync(reviewId);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }
