@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace back_end.Controllers
 {
     [ApiController]
-    [Route("api/books/{bookId:guid}/reviews")]
+    [Route("api/reviews")]
     [Authorize]
     public class ReviewController : ControllerBase
     {
@@ -28,11 +28,19 @@ namespace back_end.Controllers
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetBookReviewsAsync(
-            Guid bookId,
+            [FromQuery] Guid bookId,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10)
         {
             var response = await _reviewService.GetBookReviewsAsync(bookId, pageNumber, pageSize);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpDelete("{reviewId:guid}")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> DeleteReviewAsync(Guid reviewId)
+        {
+            var response = await _reviewService.DeleteReviewAsync(reviewId);
             return StatusCode(response.HttpStatus, response);
         }
     }

@@ -40,6 +40,19 @@ namespace back_end.Repositories.Implements
             return await _context.SaveChangesAsync() > 0;
         }
 
+        public Task<ReviewEntity?> GetReviewExistByIdAsync(Guid reviewId)
+        {
+            return _context.Reviews.FirstOrDefaultAsync(review =>
+                review.Id == reviewId &&
+                !review.IsDeleted);
+        }
+
+        public async Task<bool> SoftDeleteReviewAsync(ReviewEntity review)
+        {
+            review.IsDeleted = true;
+            return await _context.SaveChangesAsync() > 0;
+        }
+
         public Task<bool> BookExistsAsync(Guid bookId)
         {
             return _context.Books.AnyAsync(book => book.Id == bookId && !book.IsDeleted);

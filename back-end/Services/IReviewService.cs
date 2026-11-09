@@ -7,5 +7,6 @@ namespace back_end.Services
     {
         Task<ApiResponse<object?>> CreateReviewAsync(CreateReviewRequest request);
         Task<ApiResponse<object?>> GetBookReviewsAsync(Guid bookId, int pageNumber, int pageSize);
+        Task<ApiResponse<object?>> DeleteReviewAsync(Guid reviewId);
     }
 }
