@@ -15,5 +15,6 @@ namespace back_end.Repositories
         Task<bool> BookExistsAsync(Guid bookId);
         Task<(List<ReviewEntity> Reviews, int TotalItems)> GetReviewsAsync(Guid bookId, int pageNumber, int pageSize);
         Task<BookRatingSummaryResponse> GetRatingSummaryAsync(Guid bookId);
+        Task<(List<ReviewEntity> Reviews, int TotalItems)> GetDeletedReviewsAsync(int pageNumber, int pageSize);
     }
 }

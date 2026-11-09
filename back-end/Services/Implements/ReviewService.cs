@@ -184,5 +184,43 @@ namespace back_end.Services.Implements
 
             return ApiResponse<object?>.Response(MessageRecord.Success);
         }
+
+        public async Task<ApiResponse<object?>> GetDeletedReviewsAsync(int pageNumber, int pageSize)
+        {
+            if (pageNumber < 1 || pageSize < 1 || pageSize > 100 ||
+                (long)(pageNumber - 1) * pageSize > int.MaxValue)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            (List<ReviewEntity> reviews, int totalItems) =
+                await _reviewRepository.GetDeletedReviewsAsync(pageNumber, pageSize);
+
+            DeletedReviewsResponse response = new()
+            {
+                Reviews = new PaginationResponse<DeletedReviewResponse>
+                {
+                    Items = reviews.Select(review => new DeletedReviewResponse
+                    {
+                        ReviewId = review.Id,
+                        BookId = review.BookId,
+                        ReviewerName = review.User is { IsDeleted: false } user
+                            ? user.FullName
+                            : "Deleted user",
+                        Rating = review.Ratting,
+                        Comment = review.Comment,
+                        ImageUrls = review.Images.Select(image => image.ImageUrl).ToList(),
+                        CreatedAt = review.CreatedAt,
+                        DeletedAt = review.UpdatedAt
+                    }).ToList(),
+                    CurrentPage = pageNumber,
+                    PageSize = pageSize,
+                    TotalItems = totalItems,
+                    TotalPages = (int)Math.Ceiling((double)totalItems / pageSize)
+                }
+            };
+
+            return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
+        }
     }
 }
