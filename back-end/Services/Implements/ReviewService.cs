@@ -2,6 +2,7 @@ using back_end.DTOs;
 using back_end.DTOs.Reviews.Requests;
 using back_end.DTOs.Reviews.Responses;
 using back_end.Entities;
+using back_end.Enums;
 using back_end.Exceptions;
 using back_end.Records;
 using back_end.Repositories;
@@ -127,6 +128,40 @@ namespace back_end.Services.Implements
             };
 
             return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
+        }
+
+        public async Task<ApiResponse<object?>> DeleteReviewAsync(Guid reviewId)
+        {
+            Guid? userId = _currentUserService.GetCurrentUserId();
+            if (userId == null)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            if (reviewId == Guid.Empty)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            ReviewEntity? review = await _reviewRepository.GetReviewExistByIdAsync(reviewId);
+            if (review == null)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+
+            RoleUser? role = _currentUserService.GetRoleCurrentUser();
+            bool canDeleteAnyReview = role is RoleUser.Admin or RoleUser.Manager;
+            if (!canDeleteAnyReview && review.UserId != userId.Value)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            if (!await _reviewRepository.SoftDeleteReviewAsync(review))
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+
+            return ApiResponse<object?>.Response(MessageRecord.Success);
         }
     }
 }
