@@ -10,18 +10,18 @@ using System.Text.Json;
 
 namespace back_end.Kafka.Consumers
 {
-    public class CreateBookElasticsearchConsumer : BackgroundService
+    public class IndexBookElasticsearchConsumer : BackgroundService
     {
         private readonly KafkaSetting _setting;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IMapper _mapper;
-        private readonly ILogger<CreateBookElasticsearchConsumer> _logger;
+        private readonly ILogger<IndexBookElasticsearchConsumer> _logger;
 
-        public CreateBookElasticsearchConsumer(
+        public IndexBookElasticsearchConsumer(
             IOptions<KafkaSetting> options,
             IServiceScopeFactory scopeFactory, 
             IMapper mapper,
-            ILogger<CreateBookElasticsearchConsumer> logger
+            ILogger<IndexBookElasticsearchConsumer> logger
         )
         {
             _setting = options.Value;
@@ -44,7 +44,7 @@ namespace back_end.Kafka.Consumers
             var config = new ConsumerConfig
             {
                 BootstrapServers = _setting.BootstrapServers,
-                GroupId = "creat-index-book-elasticsearch-consumer",
+                GroupId = "index-book-elasticsearch-consumer",
                 AutoOffsetReset = AutoOffsetReset.Earliest,
                 EnableAutoCommit = false
             };
@@ -52,10 +52,10 @@ namespace back_end.Kafka.Consumers
             using var consumer =
                 new ConsumerBuilder<Ignore, string>(config).Build();
 
-            consumer.Subscribe("creat-index-book-elasticsearch");
+            consumer.Subscribe("index-book-elasticsearch");
 
             _logger.LogInformation(
-                "Subscribed to Kafka topic: creat-index-book-elasticsearch-consumer"
+                "Subscribed to Kafka topic: index-book-elasticsearch-consumer"
             );
 
             try
@@ -65,7 +65,7 @@ namespace back_end.Kafka.Consumers
                     try
                     {
                         _logger.LogInformation(
-                            "Waiting for Create index " +
+                            "Waiting for index " +
                             "for book entity on Elasticsearch message..."
                         );
 
@@ -127,12 +127,12 @@ namespace back_end.Kafka.Consumers
 
                         BookEntity bookEntity = _mapper.Map<BookEntity>(message);
 
-                        await bookElasticsearchService.CreateIndexBookAsync(bookEntity);
+                        await bookElasticsearchService.IndexBookAsync(bookEntity);
 
                         consumer.Commit(result);
 
                         _logger.LogInformation(
-                            "Create index for book entity on Elasticsearch successfully to bookId={Id}.",
+                            "Index for book entity on Elasticsearch successfully to bookId={Id}.",
                             message.Id
                         );
                     }
@@ -145,7 +145,7 @@ namespace back_end.Kafka.Consumers
                     {
                         _logger.LogError(
                             ex,
-                            "Error while processing Create index for book entity on Elasticsearch."
+                            "Error while processing index for book entity on Elasticsearch."
                         );
                     }
                 }
@@ -153,7 +153,7 @@ namespace back_end.Kafka.Consumers
             catch (OperationCanceledException)
             {
                 _logger.LogInformation(
-                    "Create index for book entity on Elasticsearch consumer cancellation requested."
+                    "Index for book entity on Elasticsearch consumer cancellation requested."
                 );
             }
             finally
@@ -161,7 +161,7 @@ namespace back_end.Kafka.Consumers
                 consumer.Close();
 
                 _logger.LogInformation(
-                    "Create index for book entity on Elasticsearch consumer stopped."
+                    "Index for book entity on Elasticsearch consumer stopped."
                 );
             }
         }

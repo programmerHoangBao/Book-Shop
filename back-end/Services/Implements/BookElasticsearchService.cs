@@ -24,7 +24,7 @@ namespace back_end.Services.Implements
             _logger = logger;
         }
 
-        public async Task CreateIndexBookAsync(BookEntity book)
+        public async Task IndexBookAsync(BookEntity book)
         {
             BookDocument document = _mapper.Map<BookDocument>(book);
             var response = await _client.IndexAsync(
@@ -39,7 +39,7 @@ namespace back_end.Services.Implements
             }
         }
 
-        public async Task CreateIndexListBooksAsync(List<BookEntity> books)
+        public async Task IndexListBooksAsync(List<BookEntity> books)
         {
             List<BookDocument> documents = books
                     .Select(b => _mapper.Map<BookDocument>(b))

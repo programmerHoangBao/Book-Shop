@@ -93,7 +93,7 @@ namespace back_end.Services.Implements
 
             BookDocumentMessage bookDocumentMessage = _mapper.Map<BookDocumentMessage>(book);
             await _kafkaProducer.ProduceAsync(
-                "creat-index-book-elasticsearch",
+                "index-book-elasticsearch",
                 bookDocumentMessage
             );
 
@@ -154,7 +154,7 @@ namespace back_end.Services.Implements
 
             BookDocumentMessage bookDocumentMessage = _mapper.Map<BookDocumentMessage>(book);
             await _kafkaProducer.ProduceAsync(
-                "creat-index-book-elasticsearch",
+                "index-book-elasticsearch",
                 bookDocumentMessage
             );
 
