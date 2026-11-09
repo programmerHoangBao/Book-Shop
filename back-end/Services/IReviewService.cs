@@ -9,5 +9,6 @@ namespace back_end.Services
         Task<ApiResponse<object?>> GetBookReviewsAsync(Guid bookId, int pageNumber, int pageSize);
         Task<ApiResponse<object?>> DeleteReviewAsync(Guid reviewId);
         Task<ApiResponse<object?>> RestoreReviewAsync(Guid reviewId);
+        Task<ApiResponse<object?>> GetDeletedReviewsAsync(int pageNumber, int pageSize);
     }
 }

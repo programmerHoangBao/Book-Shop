@@ -36,6 +36,16 @@ namespace back_end.Controllers
             return StatusCode(response.HttpStatus, response);
         }
 
+        [HttpGet("deleted")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> GetDeletedReviewsAsync(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var response = await _reviewService.GetDeletedReviewsAsync(pageNumber, pageSize);
+            return StatusCode(response.HttpStatus, response);
+        }
+
         [HttpDelete("{reviewId:guid}")]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> DeleteReviewAsync(Guid reviewId)

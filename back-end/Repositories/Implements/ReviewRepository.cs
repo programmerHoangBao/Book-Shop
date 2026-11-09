@@ -122,5 +122,26 @@ namespace back_end.Repositories.Implements
                     .ToList()
             };
         }
+
+        public async Task<(List<ReviewEntity> Reviews, int TotalItems)> GetDeletedReviewsAsync(
+            int pageNumber,
+            int pageSize)
+        {
+            IQueryable<ReviewEntity> query = _context.Reviews
+                .AsNoTracking()
+                .Where(review => review.IsDeleted);
+
+            int totalItems = await query.CountAsync();
+            List<ReviewEntity> reviews = await query
+                .Include(review => review.User)
+                .Include(review => review.Images)
+                .OrderByDescending(review => review.UpdatedAt)
+                .ThenByDescending(review => review.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (reviews, totalItems);
+        }
     }
 }
