@@ -80,6 +80,7 @@ namespace back_end.Services.Implements
             var response = await _client.SearchAsync<BookDocument>(s => s
                     .From((req.PageNumber - 1) * req.PageSize)
                     .Size(req.PageSize)
+                    .Sort(sort => sort.Field(book => book.Rank, SortOrder.Desc))
                     .Query(q => q
                         .Bool(b => b
                         .Must(m => m

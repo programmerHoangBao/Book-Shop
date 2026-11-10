@@ -56,5 +56,13 @@ namespace back_end.Controllers
             var response = await _bookService.GetBookDetailsAsync(bookId);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchBooksAsync(
+            [FromQuery] SearchBooksRequest request)
+        {
+            var response = await _bookService.SearchBooksAsync(request);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }
