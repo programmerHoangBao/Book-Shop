@@ -13,6 +13,7 @@ namespace back_end.Repositories
         );
 
         Task<BookEntity?> GetBookForUpdateAsync(Guid bookId);
+        Task<BookEntity?> GetDeletedBookForUpdateAsync(Guid bookId);
 
         Task<BookEntity?> GetBookDetailsAsync(Guid bookId);
 
@@ -23,5 +24,6 @@ namespace back_end.Repositories
         );
 
         Task<bool> SoftDeleteBookAsync(BookEntity book);
+        Task<bool> RestoreBookAsync(BookEntity book);
     }
 }

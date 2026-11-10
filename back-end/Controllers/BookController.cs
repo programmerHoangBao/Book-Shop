@@ -42,6 +42,14 @@ namespace back_end.Controllers
             return StatusCode(response.HttpStatus, response);
         }
 
+        [HttpPatch("{bookId:guid}/restore")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> RestoreBookAsync(Guid bookId)
+        {
+            var response = await _bookService.RestoreBookAsync(bookId);
+            return StatusCode(response.HttpStatus, response);
+        }
+
         [HttpGet("{bookId:guid}")]
         public async Task<IActionResult> GetBookDetailsAsync(Guid bookId)
         {
