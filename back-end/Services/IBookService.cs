@@ -11,6 +11,8 @@ namespace back_end.Services
         Task<ApiResponse<object?>> SoftDeleteBookAsync(Guid bookId);
         Task<ApiResponse<object?>> RestoreBookAsync(Guid bookId);
         Task<ApiResponse<List<BookDocument>>> SearchBooksAsync(SearchBooksRequest request);
+        Task<ApiResponse<CursorPaginationResponse<BookDocument>>> GetBooksAsync(
+            string? cursor, int pageSize);
         Task<ApiResponse<object?>> GetBookDetailsAsync(Guid bookId);
     }
 }
