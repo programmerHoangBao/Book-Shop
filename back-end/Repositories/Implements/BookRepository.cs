@@ -98,6 +98,24 @@ namespace back_end.Repositories.Implements
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<(List<BookEntity> Books, int TotalItems)> GetDeletedBooksAsync(
+            int pageNumber, int pageSize)
+        {
+            IQueryable<BookEntity> query = _context.Books
+                .AsNoTracking()
+                .Where(book => book.IsDeleted);
+
+            int totalItems = await query.CountAsync();
+            List<BookEntity> books = await query
+                .OrderByDescending(book => book.UpdatedAt)
+                .ThenByDescending(book => book.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (books, totalItems);
+        }
+
         public async Task<bool> UpdateBookAsync(
             BookEntity book,
             Guid categoryId,

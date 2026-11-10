@@ -13,6 +13,8 @@ namespace back_end.Services
         Task<ApiResponse<List<BookDocument>>> SearchBooksAsync(SearchBooksRequest request);
         Task<ApiResponse<CursorPaginationResponse<BookDocument>>> GetBooksAsync(
             string? cursor, int pageSize);
+        Task<ApiResponse<PaginationResponse<BookDocument>>> GetDeletedBooksAsync(
+            int pageNumber, int pageSize);
         Task<ApiResponse<object?>> GetBookDetailsAsync(Guid bookId);
     }
 }

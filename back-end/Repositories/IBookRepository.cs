@@ -17,6 +17,9 @@ namespace back_end.Repositories
 
         Task<BookEntity?> GetBookDetailsAsync(Guid bookId);
 
+        Task<(List<BookEntity> Books, int TotalItems)> GetDeletedBooksAsync(
+            int pageNumber, int pageSize);
+
         Task<bool> UpdateBookAsync(
             BookEntity book,
             Guid categoryId,

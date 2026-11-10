@@ -66,6 +66,16 @@ namespace back_end.Controllers
             return StatusCode(response.HttpStatus, response);
         }
 
+        [HttpGet("deleted")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> GetDeletedBooksAsync(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var response = await _bookService.GetDeletedBooksAsync(pageNumber, pageSize);
+            return StatusCode(response.HttpStatus, response);
+        }
+
         [HttpGet("search")]
         public async Task<IActionResult> SearchBooksAsync(
             [FromQuery] SearchBooksRequest request)
