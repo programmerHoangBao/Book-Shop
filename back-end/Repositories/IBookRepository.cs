@@ -21,5 +21,7 @@ namespace back_end.Repositories
             Guid categoryId,
             List<string> images
         );
+
+        Task<bool> SoftDeleteBookAsync(BookEntity book);
     }
 }

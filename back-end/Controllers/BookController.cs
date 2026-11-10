@@ -34,6 +34,14 @@ namespace back_end.Controllers
             return StatusCode(response.HttpStatus, response);
         }
 
+        [HttpDelete("{bookId:guid}")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> SoftDeleteBookAsync(Guid bookId)
+        {
+            var response = await _bookService.SoftDeleteBookAsync(bookId);
+            return StatusCode(response.HttpStatus, response);
+        }
+
         [HttpGet("{bookId:guid}")]
         public async Task<IActionResult> GetBookDetailsAsync(Guid bookId)
         {
