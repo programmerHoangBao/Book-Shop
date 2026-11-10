@@ -77,4 +77,10 @@ public sealed record ErrorRecord(
 
     public static readonly ErrorRecord ReviewAlreadyExists =
         new("E023", "A review for this book and order already exists.", StatusCodes.Status409Conflict);
+
+    public static readonly ErrorRecord BookUnavailable =
+        new("E024", "This book is not available for purchase.", StatusCodes.Status409Conflict);
+
+    public static readonly ErrorRecord InsufficientStock =
+        new("E025", "The requested quantity exceeds available stock.", StatusCodes.Status409Conflict);
 }
