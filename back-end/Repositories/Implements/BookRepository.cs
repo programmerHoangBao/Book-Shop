@@ -76,6 +76,14 @@ namespace back_end.Repositories.Implements
                 .FirstOrDefaultAsync(book => book.Id == bookId && !book.IsDeleted);
         }
 
+        public Task<BookEntity?> GetDeletedBookForUpdateAsync(Guid bookId)
+        {
+            return _context.Books
+                .Include(book => book.Images)
+                .Include(book => book.BookCategories)
+                .FirstOrDefaultAsync(book => book.Id == bookId && book.IsDeleted);
+        }
+
         public Task<BookEntity?> GetBookDetailsAsync(Guid bookId)
         {
             return _context.Books
@@ -134,6 +142,12 @@ namespace back_end.Repositories.Implements
         public async Task<bool> SoftDeleteBookAsync(BookEntity book)
         {
             book.IsDeleted = true;
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> RestoreBookAsync(BookEntity book)
+        {
+            book.IsDeleted = false;
             return await _context.SaveChangesAsync() > 0;
         }
     }

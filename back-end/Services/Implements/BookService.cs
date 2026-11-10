@@ -200,6 +200,33 @@ namespace back_end.Services.Implements
             return ApiResponse<object?>.Response(MessageRecord.Success);
         }
 
+        public async Task<ApiResponse<object?>> RestoreBookAsync(Guid bookId)
+        {
+            if (bookId == Guid.Empty)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            BookEntity? book = await _bookRepository.GetDeletedBookForUpdateAsync(bookId);
+            if (book == null)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+
+            if (!await _bookRepository.RestoreBookAsync(book))
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+
+            BookDocumentMessage bookDocumentMessage = _mapper.Map<BookDocumentMessage>(book);
+            await _kafkaProducer.ProduceAsync(
+                "index-book-elasticsearch",
+                bookDocumentMessage
+            );
+
+            return ApiResponse<object?>.Response(MessageRecord.Success);
+        }
+
         public async Task<ApiResponse<object?>> GetBookDetailsAsync(Guid bookId)
         {
             if (bookId == Guid.Empty)
