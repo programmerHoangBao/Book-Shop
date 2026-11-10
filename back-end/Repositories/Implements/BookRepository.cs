@@ -130,5 +130,11 @@ namespace back_end.Repositories.Implements
                 throw;
             }
         }
+
+        public async Task<bool> SoftDeleteBookAsync(BookEntity book)
+        {
+            book.IsDeleted = true;
+            return await _context.SaveChangesAsync() > 0;
+        }
     }
 }
