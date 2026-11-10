@@ -2,6 +2,7 @@ using AutoMapper;
 using back_end.DTOs;
 using back_end.DTOs.Books.Requests;
 using back_end.DTOs.Books.Responses;
+using back_end.Documents;
 using back_end.Entities;
 using back_end.Exceptions;
 using back_end.Kafka.Messages;
@@ -17,6 +18,7 @@ namespace back_end.Services.Implements
         private readonly ICategoryRepository _categoryRepository;
         private readonly IStoreRepository _storeRepository;
         private readonly IKafkaProducer _kafkaProducer;
+        private readonly IBookElasticsearchService _bookElasticsearchService;
         private readonly IMapper _mapper;
 
         public BookService(
@@ -24,6 +26,7 @@ namespace back_end.Services.Implements
             ICategoryRepository categoryRepository, 
             IStoreRepository storeRepository,
             IKafkaProducer kafkaProducer,
+            IBookElasticsearchService bookElasticsearchService,
             IMapper mapper
         )
         {
@@ -32,6 +35,7 @@ namespace back_end.Services.Implements
             _storeRepository = storeRepository;
             _mapper = mapper;
             _kafkaProducer = kafkaProducer;
+            _bookElasticsearchService = bookElasticsearchService;
         }
 
         public async Task<ApiResponse<object?>> CreateBookAsync(CreateBookRequest request)
@@ -225,6 +229,24 @@ namespace back_end.Services.Implements
             );
 
             return ApiResponse<object?>.Response(MessageRecord.Success);
+        }
+
+        public async Task<ApiResponse<List<BookDocument>>> SearchBooksAsync(
+            SearchBooksRequest request)
+        {
+            if (request.PageNumber < 1 ||
+                request.PageSize < 1 ||
+                request.PageSize > 100 ||
+                (long)(request.PageNumber - 1) * request.PageSize > int.MaxValue)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            request.IsDeleted = false;
+            List<BookDocument> books = await _bookElasticsearchService.SearchBooksAsync(request);
+
+            return ApiResponse<List<BookDocument>>.Response(
+                MessageRecord.Success, data: books);
         }
 
         public async Task<ApiResponse<object?>> GetBookDetailsAsync(Guid bookId)
