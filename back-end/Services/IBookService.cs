@@ -15,6 +15,8 @@ namespace back_end.Services
             string? cursor, int pageSize);
         Task<ApiResponse<PaginationResponse<BookDocument>>> GetDeletedBooksAsync(
             int pageNumber, int pageSize);
+        Task<ApiResponse<PaginationResponse<BookDocument>>> SearchDeletedBooksAsync(
+            SearchBooksRequest request);
         Task<ApiResponse<object?>> GetBookDetailsAsync(Guid bookId);
     }
 }
