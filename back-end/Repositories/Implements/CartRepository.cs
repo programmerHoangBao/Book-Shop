@@ -89,5 +89,25 @@ namespace back_end.Repositories.Implements
                 UnitPrice = book.Price
             });
         }
+
+        public async Task<bool> RemoveBookAsync(Guid userId, Guid bookId)
+        {
+            CartItemEntity? cartItem = await _context.CartItems
+                .Include(item => item.Cart)
+                .FirstOrDefaultAsync(item =>
+                    item.BookId == bookId &&
+                    !item.IsDeleted &&
+                    item.Cart != null &&
+                    item.Cart.UserId == userId &&
+                    !item.Cart.IsDeleted);
+
+            if (cartItem == null)
+            {
+                return false;
+            }
+
+            cartItem.IsDeleted = true;
+            return await _context.SaveChangesAsync() > 0;
+        }
     }
 }

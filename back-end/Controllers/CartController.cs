@@ -23,5 +23,12 @@ namespace back_end.Controllers
             var response = await _cartService.AddBookAsync(request);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpDelete("items/{bookId:guid}")]
+        public async Task<IActionResult> RemoveBookAsync(Guid bookId)
+        {
+            var response = await _cartService.RemoveBookAsync(bookId);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }
