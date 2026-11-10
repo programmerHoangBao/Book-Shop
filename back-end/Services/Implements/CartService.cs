@@ -84,6 +84,41 @@ namespace back_end.Services.Implements
             return ApiResponse<object?>.Response(MessageRecord.Success, data: item);
         }
 
+        public async Task<ApiResponse<object?>> UpdateQuantityAsync(
+            Guid bookId, UpdateCartItemQuantityRequest request)
+        {
+            Guid? userId = _currentUserService.GetCurrentUserId();
+            if (userId == null)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            if (bookId == Guid.Empty || request.Quantity < 1)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            var (result, item) = await _cartRepository.UpdateQuantityAsync(
+                userId.Value, bookId, request.Quantity);
+
+            switch (result)
+            {
+                case UpdateCartItemResult.CartItemNotFound:
+                    throw new BusinessException(ErrorRecord.NotFound);
+                case UpdateCartItemResult.BookUnavailable:
+                    throw new BusinessException(ErrorRecord.BookUnavailable);
+                case UpdateCartItemResult.InsufficientStock:
+                    throw new BusinessException(ErrorRecord.InsufficientStock);
+            }
+
+            if (item == null)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+
+            return ApiResponse<object?>.Response(MessageRecord.Success, data: item);
+        }
+
         public async Task<ApiResponse<object?>> RemoveBookAsync(Guid bookId)
         {
             Guid? userId = _currentUserService.GetCurrentUserId();

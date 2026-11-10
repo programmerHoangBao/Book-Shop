@@ -10,11 +10,23 @@ namespace back_end.Repositories
         InsufficientStock
     }
 
+    public enum UpdateCartItemResult
+    {
+        Success,
+        CartItemNotFound,
+        BookUnavailable,
+        InsufficientStock
+    }
+
     public interface ICartRepository
     {
         Task<(List<CartItemResponse> Items, int TotalItems)> GetBooksAsync(
             Guid userId, int pageNumber, int pageSize);
         Task<(AddBookToCartResult Result, CartItemResponse? Item)> AddBookAsync(
+            Guid userId,
+            Guid bookId,
+            int quantity);
+        Task<(UpdateCartItemResult Result, CartItemResponse? Item)> UpdateQuantityAsync(
             Guid userId,
             Guid bookId,
             int quantity);

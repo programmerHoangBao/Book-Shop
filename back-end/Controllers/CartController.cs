@@ -33,6 +33,15 @@ namespace back_end.Controllers
             return StatusCode(response.HttpStatus, response);
         }
 
+        [HttpPut("items/{bookId:guid}")]
+        public async Task<IActionResult> UpdateQuantityAsync(
+            Guid bookId,
+            [FromBody] UpdateCartItemQuantityRequest request)
+        {
+            var response = await _cartService.UpdateQuantityAsync(bookId, request);
+            return StatusCode(response.HttpStatus, response);
+        }
+
         [HttpDelete("items/{bookId:guid}")]
         public async Task<IActionResult> RemoveBookAsync(Guid bookId)
         {

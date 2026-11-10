@@ -120,6 +120,52 @@ namespace back_end.Repositories.Implements
             });
         }
 
+        public async Task<(UpdateCartItemResult Result, CartItemResponse? Item)> UpdateQuantityAsync(
+            Guid userId,
+            Guid bookId,
+            int quantity)
+        {
+            CartItemEntity? cartItem = await _context.CartItems
+                .Include(item => item.Cart)
+                .Include(item => item.Book)
+                .FirstOrDefaultAsync(item =>
+                    item.BookId == bookId &&
+                    !item.IsDeleted &&
+                    item.Cart != null &&
+                    item.Cart.UserId == userId &&
+                    !item.Cart.IsDeleted);
+
+            if (cartItem?.Book == null || cartItem.Book.IsDeleted)
+            {
+                return (UpdateCartItemResult.CartItemNotFound, null);
+            }
+
+            if (cartItem.Book.Status != BookStatus.Available)
+            {
+                return (UpdateCartItemResult.BookUnavailable, null);
+            }
+
+            int availableQuantity = await _context.Inventories
+                .Where(inventory => inventory.BookId == bookId && !inventory.IsDeleted)
+                .SumAsync(inventory => (int?)inventory.AvailableQuantity) ?? 0;
+
+            if (quantity > availableQuantity)
+            {
+                return (UpdateCartItemResult.InsufficientStock, null);
+            }
+
+            cartItem.Quantity = quantity;
+            await _context.SaveChangesAsync();
+
+            return (UpdateCartItemResult.Success, new CartItemResponse
+            {
+                BookId = cartItem.Book.Id,
+                BookName = cartItem.Book.Name,
+                Quantity = cartItem.Quantity,
+                UnitPrice = cartItem.Book.Price
+            });
+        }
+
         public async Task<bool> RemoveBookAsync(Guid userId, Guid bookId)
         {
             CartItemEntity? cartItem = await _context.CartItems
