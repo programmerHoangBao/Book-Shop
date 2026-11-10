@@ -285,6 +285,32 @@ namespace back_end.Services.Implements
                 data: response);
         }
 
+        public async Task<ApiResponse<PaginationResponse<BookDocument>>> GetDeletedBooksAsync(
+            int pageNumber, int pageSize)
+        {
+            if (pageNumber < 1 ||
+                pageSize < 1 ||
+                pageSize > 100 ||
+                (long)(pageNumber - 1) * pageSize > int.MaxValue)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            var result = await _bookRepository.GetDeletedBooksAsync(pageNumber, pageSize);
+            PaginationResponse<BookDocument> response = new()
+            {
+                Items = _mapper.Map<List<BookDocument>>(result.Books),
+                CurrentPage = pageNumber,
+                PageSize = pageSize,
+                TotalItems = result.TotalItems,
+                TotalPages = (int)Math.Ceiling((double)result.TotalItems / pageSize)
+            };
+
+            return ApiResponse<PaginationResponse<BookDocument>>.Response(
+                MessageRecord.Success,
+                data: response);
+        }
+
         private static string EncodeBookCursor(BookDocument book)
         {
             byte[] cursorBytes = JsonSerializer.SerializeToUtf8Bytes(
