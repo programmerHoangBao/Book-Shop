@@ -15,9 +15,10 @@ namespace back_end.Repositories.Implements
             _context = context;
         }
 
-        public async Task<List<CartItemResponse>> GetBooksAsync(Guid userId)
+        public async Task<(List<CartItemResponse> Items, int TotalItems)> GetBooksAsync(
+            Guid userId, int pageNumber, int pageSize)
         {
-            return await _context.CartItems
+            var query = _context.CartItems
                 .AsNoTracking()
                 .Where(item =>
                     !item.IsDeleted &&
@@ -25,8 +26,13 @@ namespace back_end.Repositories.Implements
                     item.Cart.UserId == userId &&
                     !item.Cart.IsDeleted &&
                     item.Book != null &&
-                    !item.Book.IsDeleted)
+                    !item.Book.IsDeleted);
+
+            int totalItems = await query.CountAsync();
+            List<CartItemResponse> items = await query
                 .OrderBy(item => item.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Select(item => new CartItemResponse
                 {
                     BookId = item.BookId,
@@ -35,6 +41,8 @@ namespace back_end.Repositories.Implements
                     UnitPrice = item.Book.Price
                 })
                 .ToListAsync();
+
+            return (items, totalItems);
         }
 
         public async Task<(AddBookToCartResult Result, CartItemResponse? Item)> AddBookAsync(

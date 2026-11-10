@@ -12,7 +12,8 @@ namespace back_end.Repositories
 
     public interface ICartRepository
     {
-        Task<List<CartItemResponse>> GetBooksAsync(Guid userId);
+        Task<(List<CartItemResponse> Items, int TotalItems)> GetBooksAsync(
+            Guid userId, int pageNumber, int pageSize);
         Task<(AddBookToCartResult Result, CartItemResponse? Item)> AddBookAsync(
             Guid userId,
             Guid bookId,

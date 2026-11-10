@@ -1,5 +1,6 @@
 using back_end.DTOs;
 using back_end.DTOs.Carts.Requests;
+using back_end.DTOs.Carts.Responses;
 using back_end.Exceptions;
 using back_end.Records;
 using back_end.Repositories;
@@ -17,18 +18,34 @@ namespace back_end.Services.Implements
             _currentUserService = currentUserService;
         }
 
-        public async Task<ApiResponse<object?>> GetBooksAsync()
+        public async Task<ApiResponse<PaginationResponse<CartItemResponse>>> GetBooksAsync(
+            int pageNumber, int pageSize)
         {
+            if (pageNumber < 1 || pageSize < 1 || pageSize > 100)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
             Guid? userId = _currentUserService.GetCurrentUserId();
             if (userId == null)
             {
                 throw new BusinessException(ErrorRecord.Forbidden);
             }
 
-            List<back_end.DTOs.Carts.Responses.CartItemResponse> items =
-                await _cartRepository.GetBooksAsync(userId.Value);
+            var result = await _cartRepository.GetBooksAsync(
+                userId.Value, pageNumber, pageSize);
 
-            return ApiResponse<object?>.Response(MessageRecord.Success, data: items);
+            PaginationResponse<CartItemResponse> response = new()
+            {
+                Items = result.Items,
+                CurrentPage = pageNumber,
+                PageSize = pageSize,
+                TotalItems = result.TotalItems,
+                TotalPages = (int)Math.Ceiling((double)result.TotalItems / pageSize)
+            };
+
+            return ApiResponse<PaginationResponse<CartItemResponse>>.Response(
+                MessageRecord.Success, data: response);
         }
 
         public async Task<ApiResponse<object?>> AddBookAsync(AddBookToCartRequest request)
