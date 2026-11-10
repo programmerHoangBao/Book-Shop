@@ -15,6 +15,28 @@ namespace back_end.Repositories.Implements
             _context = context;
         }
 
+        public async Task<List<CartItemResponse>> GetBooksAsync(Guid userId)
+        {
+            return await _context.CartItems
+                .AsNoTracking()
+                .Where(item =>
+                    !item.IsDeleted &&
+                    item.Cart != null &&
+                    item.Cart.UserId == userId &&
+                    !item.Cart.IsDeleted &&
+                    item.Book != null &&
+                    !item.Book.IsDeleted)
+                .OrderBy(item => item.CreatedAt)
+                .Select(item => new CartItemResponse
+                {
+                    BookId = item.BookId,
+                    BookName = item.Book!.Name,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.Book.Price
+                })
+                .ToListAsync();
+        }
+
         public async Task<(AddBookToCartResult Result, CartItemResponse? Item)> AddBookAsync(
             Guid userId,
             Guid bookId,

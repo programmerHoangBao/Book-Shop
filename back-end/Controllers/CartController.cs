@@ -17,6 +17,13 @@ namespace back_end.Controllers
             _cartService = cartService;
         }
 
+        [HttpGet("items")]
+        public async Task<IActionResult> GetBooksAsync()
+        {
+            var response = await _cartService.GetBooksAsync();
+            return StatusCode(response.HttpStatus, response);
+        }
+
         [HttpPost("items")]
         public async Task<IActionResult> AddBookAsync([FromBody] AddBookToCartRequest request)
         {
