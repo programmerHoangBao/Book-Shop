@@ -9,6 +9,8 @@ namespace back_end.Services
         Task<ApiResponse<PaginationResponse<CartItemResponse>>> GetBooksAsync(
             int pageNumber, int pageSize);
         Task<ApiResponse<object?>> AddBookAsync(AddBookToCartRequest request);
+        Task<ApiResponse<object?>> UpdateQuantityAsync(
+            Guid bookId, UpdateCartItemQuantityRequest request);
         Task<ApiResponse<object?>> RemoveBookAsync(Guid bookId);
     }
 }
