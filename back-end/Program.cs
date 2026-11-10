@@ -71,6 +71,7 @@ builder.Services.AddScoped<IStoreStaffRepository, StoreStaffRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
 
 // Add service
 builder.Services.AddScoped<IRedisService, RedisService>();
@@ -85,6 +86,7 @@ builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IBookElasticsearchService, BookElasticsearchService>();
 
 // Background Service
