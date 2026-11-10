@@ -17,6 +17,20 @@ namespace back_end.Services.Implements
             _currentUserService = currentUserService;
         }
 
+        public async Task<ApiResponse<object?>> GetBooksAsync()
+        {
+            Guid? userId = _currentUserService.GetCurrentUserId();
+            if (userId == null)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            List<back_end.DTOs.Carts.Responses.CartItemResponse> items =
+                await _cartRepository.GetBooksAsync(userId.Value);
+
+            return ApiResponse<object?>.Response(MessageRecord.Success, data: items);
+        }
+
         public async Task<ApiResponse<object?>> AddBookAsync(AddBookToCartRequest request)
         {
             Guid? userId = _currentUserService.GetCurrentUserId();
