@@ -159,5 +159,51 @@ namespace back_end.Services.Implements
 
             return response.Documents.ToList();
         }
+
+        public async Task<(List<BookDocument> Books, int TotalItems)> SearchDeletedBooksAsync(
+            SearchBooksRequest req)
+        {
+            var response = await _client.SearchAsync<BookDocument>(search => search
+                .From((req.PageNumber - 1) * req.PageSize)
+                .Size(req.PageSize)
+                .Sort(
+                    sort => sort.Field(book => book.UpdatedAt, SortOrder.Desc),
+                    sort => sort.Field(book => book.Id, SortOrder.Desc))
+                .Query(query => query
+                    .Bool(boolean => boolean
+                        .Must(must => must.MultiMatch(match => match
+                            .Query(req.Key ?? string.Empty)
+                            .Fields(new[] { "name", "author", "publisher", "description" })
+                            .Type(TextQueryType.BestFields)
+                            .Fuzziness("AUTO")))
+                        .Filter(filter =>
+                        {
+                            filter.Term(term => term
+                                .Field(book => book.IsDeleted)
+                                .Value(true));
+
+                            if (req.Book.HasValue)
+                            {
+                                filter.Term(term => term
+                                    .Field(book => book.Status)
+                                    .Value(req.Book.Value.ToString()));
+                            }
+                        }))));
+
+            if (!response.IsValidResponse)
+            {
+                _logger.LogError(
+                    "Search for deleted books failed: {DebugInformation}",
+                    response.DebugInformation);
+                return (new List<BookDocument>(), 0);
+            }
+
+            List<BookDocument> books = response.Documents.ToList();
+            int totalItems = response.HitsMetadata?.Total?.Match(
+                totalHits => (int)Math.Min(totalHits?.Value ?? 0L, int.MaxValue),
+                total => (int)Math.Min(total, int.MaxValue)) ?? books.Count;
+
+            return (books, totalItems);
+        }
     }
 }

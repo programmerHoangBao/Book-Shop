@@ -18,5 +18,8 @@ namespace back_end.Services
 
         Task<List<BookDocument>> SearchBooksAfterAsync(
             long? afterRank, Guid? afterBookId, int pageSize);
+
+        Task<(List<BookDocument> Books, int TotalItems)> SearchDeletedBooksAsync(
+            SearchBooksRequest request);
     }
 }

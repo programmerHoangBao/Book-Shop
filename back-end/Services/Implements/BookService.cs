@@ -311,6 +311,33 @@ namespace back_end.Services.Implements
                 data: response);
         }
 
+        public async Task<ApiResponse<PaginationResponse<BookDocument>>> SearchDeletedBooksAsync(
+            SearchBooksRequest request)
+        {
+            if (request.PageNumber < 1 ||
+                request.PageSize < 1 ||
+                request.PageSize > 100 ||
+                (long)(request.PageNumber - 1) * request.PageSize > int.MaxValue)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            request.IsDeleted = true;
+            var result = await _bookElasticsearchService.SearchDeletedBooksAsync(request);
+            PaginationResponse<BookDocument> response = new()
+            {
+                Items = result.Books,
+                CurrentPage = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalItems = result.TotalItems,
+                TotalPages = (int)Math.Ceiling((double)result.TotalItems / request.PageSize)
+            };
+
+            return ApiResponse<PaginationResponse<BookDocument>>.Response(
+                MessageRecord.Success,
+                data: response);
+        }
+
         private static string EncodeBookCursor(BookDocument book)
         {
             byte[] cursorBytes = JsonSerializer.SerializeToUtf8Bytes(

@@ -76,6 +76,15 @@ namespace back_end.Controllers
             return StatusCode(response.HttpStatus, response);
         }
 
+        [HttpGet("deleted/search")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> SearchDeletedBooksAsync(
+            [FromQuery] SearchBooksRequest request)
+        {
+            var response = await _bookService.SearchDeletedBooksAsync(request);
+            return StatusCode(response.HttpStatus, response);
+        }
+
         [HttpGet("search")]
         public async Task<IActionResult> SearchBooksAsync(
             [FromQuery] SearchBooksRequest request)
