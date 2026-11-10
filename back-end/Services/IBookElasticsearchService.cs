@@ -15,5 +15,8 @@ namespace back_end.Services
         Task<bool> ExistsBookAsync(Guid bookId);
 
         Task<List<BookDocument>> SearchBooksAsync(SearchBooksRequest req);
+
+        Task<List<BookDocument>> SearchBooksAfterAsync(
+            long? afterRank, Guid? afterBookId, int pageSize);
     }
 }

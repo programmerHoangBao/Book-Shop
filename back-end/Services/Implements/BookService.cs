@@ -9,6 +9,7 @@ using back_end.Kafka.Messages;
 using back_end.Kafka.Producers;
 using back_end.Records;
 using back_end.Repositories;
+using System.Text.Json;
 
 namespace back_end.Services.Implements
 {
@@ -247,6 +248,94 @@ namespace back_end.Services.Implements
 
             return ApiResponse<List<BookDocument>>.Response(
                 MessageRecord.Success, data: books);
+        }
+
+        public async Task<ApiResponse<CursorPaginationResponse<BookDocument>>> GetBooksAsync(
+            string? cursor, int pageSize)
+        {
+            if (pageSize < 1 || pageSize > 100)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            BookRankCursor? after = DecodeBookCursor(cursor);
+            List<BookDocument> books = await _bookElasticsearchService.SearchBooksAfterAsync(
+                after?.Rank,
+                after?.BookId,
+                pageSize + 1);
+
+            bool hasNextPage = books.Count > pageSize;
+            if (hasNextPage)
+            {
+                books.RemoveAt(books.Count - 1);
+            }
+
+            string? nextCursor = hasNextPage && books.Count > 0
+                ? EncodeBookCursor(books[^1])
+                : null;
+
+            CursorPaginationResponse<BookDocument> response = new()
+            {
+                Items = books,
+                NextCursor = nextCursor
+            };
+
+            return ApiResponse<CursorPaginationResponse<BookDocument>>.Response(
+                MessageRecord.Success,
+                data: response);
+        }
+
+        private static string EncodeBookCursor(BookDocument book)
+        {
+            byte[] cursorBytes = JsonSerializer.SerializeToUtf8Bytes(
+                new BookRankCursor { Rank = book.Rank, BookId = book.Id });
+
+            return Convert.ToBase64String(cursorBytes)
+                .TrimEnd('=')
+                .Replace('+', '-')
+                .Replace('/', '_');
+        }
+
+        private static BookRankCursor? DecodeBookCursor(string? cursor)
+        {
+            if (string.IsNullOrWhiteSpace(cursor))
+            {
+                return null;
+            }
+
+            if (cursor.Length > 512)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            try
+            {
+                string base64 = cursor.Replace('-', '+').Replace('_', '/');
+                base64 = base64.PadRight(base64.Length + (4 - base64.Length % 4) % 4, '=');
+
+                BookRankCursor? decoded = JsonSerializer.Deserialize<BookRankCursor>(
+                    Convert.FromBase64String(base64));
+
+                if (decoded == null || decoded.BookId == Guid.Empty)
+                {
+                    throw new FormatException("Cursor payload is invalid.");
+                }
+
+                return decoded;
+            }
+            catch (Exception exception) when (
+                exception is FormatException or JsonException or ArgumentException)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+        }
+
+        private sealed class BookRankCursor
+        {
+            public BookRankCursor() { }
+
+            public long Rank { get; set; }
+            public Guid BookId { get; set; }
         }
 
         public async Task<ApiResponse<object?>> GetBookDetailsAsync(Guid bookId)

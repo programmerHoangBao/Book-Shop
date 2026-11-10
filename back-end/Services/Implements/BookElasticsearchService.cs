@@ -126,5 +126,38 @@ namespace back_end.Services.Implements
             var books = response.Documents.ToList();
             return books;
         }
+
+        public async Task<List<BookDocument>> SearchBooksAfterAsync(
+            long? afterRank, Guid? afterBookId, int pageSize)
+        {
+            var response = await _client.SearchAsync<BookDocument>(search =>
+            {
+                search
+                    .Size(pageSize)
+                    .Sort(
+                        sort => sort.Field(book => book.Rank, SortOrder.Desc),
+                        sort => sort.Field(book => book.Id, SortOrder.Asc))
+                    .Query(query => query.Term(term => term
+                        .Field(book => book.IsDeleted)
+                        .Value(false)));
+
+                if (afterRank.HasValue && afterBookId.HasValue)
+                {
+                    search.SearchAfter(
+                        FieldValue.Long(afterRank.Value),
+                        FieldValue.String(afterBookId.Value.ToString("D")));
+                }
+            });
+
+            if (!response.IsValidResponse)
+            {
+                _logger.LogError(
+                    "Cursor search for books failed: {DebugInformation}",
+                    response.DebugInformation);
+                return new List<BookDocument>();
+            }
+
+            return response.Documents.ToList();
+        }
     }
 }
