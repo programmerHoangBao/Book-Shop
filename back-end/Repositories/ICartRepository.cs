@@ -16,5 +16,6 @@ namespace back_end.Repositories
             Guid userId,
             Guid bookId,
             int quantity);
+        Task<bool> RemoveBookAsync(Guid userId, Guid bookId);
     }
 }

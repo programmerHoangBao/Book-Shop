@@ -52,5 +52,26 @@ namespace back_end.Services.Implements
 
             return ApiResponse<object?>.Response(MessageRecord.Success, data: item);
         }
+
+        public async Task<ApiResponse<object?>> RemoveBookAsync(Guid bookId)
+        {
+            Guid? userId = _currentUserService.GetCurrentUserId();
+            if (userId == null)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            if (bookId == Guid.Empty)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            if (!await _cartRepository.RemoveBookAsync(userId.Value, bookId))
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+
+            return ApiResponse<object?>.Response(MessageRecord.Success);
+        }
     }
 }
