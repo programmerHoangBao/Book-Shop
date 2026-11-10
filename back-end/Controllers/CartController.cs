@@ -18,9 +18,11 @@ namespace back_end.Controllers
         }
 
         [HttpGet("items")]
-        public async Task<IActionResult> GetBooksAsync()
+        public async Task<IActionResult> GetBooksAsync(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
         {
-            var response = await _cartService.GetBooksAsync();
+            var response = await _cartService.GetBooksAsync(pageNumber, pageSize);
             return StatusCode(response.HttpStatus, response);
         }
 
