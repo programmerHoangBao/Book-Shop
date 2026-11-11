@@ -25,6 +25,9 @@ namespace back_end.Repositories
 
         Task<BookEntity?> GetBookDetailsAsync(Guid bookId);
 
+        Task<(List<InventoryEntity> Inventories, int TotalItems)> GetStoreInventoryBooksAsync(
+            Guid storeId, int pageNumber, int pageSize);
+
         Task<(List<BookEntity> Books, int TotalItems)> GetDeletedBooksAsync(
             int pageNumber, int pageSize);
 

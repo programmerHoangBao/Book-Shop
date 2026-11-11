@@ -169,6 +169,31 @@ namespace back_end.Repositories.Implements
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<(List<InventoryEntity> Inventories, int TotalItems)> GetStoreInventoryBooksAsync(
+            Guid storeId,
+            int pageNumber,
+            int pageSize)
+        {
+            IQueryable<InventoryEntity> query = _context.Inventories
+                .AsNoTracking()
+                .Where(inventory => inventory.StoreId == storeId &&
+                    !inventory.IsDeleted &&
+                    inventory.Book != null &&
+                    !inventory.Book.IsDeleted);
+
+            int totalItems = await query.CountAsync();
+            List<InventoryEntity> inventories = await query
+                .Include(inventory => inventory.Book!)
+                    .ThenInclude(book => book.Images)
+                .OrderBy(inventory => inventory.Book!.Name)
+                .ThenBy(inventory => inventory.BookId)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (inventories, totalItems);
+        }
+
         public async Task<(List<BookEntity> Books, int TotalItems)> GetDeletedBooksAsync(
             int pageNumber, int pageSize)
         {
