@@ -10,10 +10,51 @@ namespace back_end.Controllers
     public class BookController : ControllerBase
     {
         private readonly IBookService _bookService;
+        private readonly IBookImportService _bookImportService;
 
-        public BookController(IBookService bookService)
+        public BookController(IBookService bookService, IBookImportService bookImportService)
         {
             _bookService = bookService;
+            _bookImportService = bookImportService;
+        }
+
+        [HttpPost("import/new")]
+        [Consumes("multipart/form-data")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> ImportNewBooksAsync(
+            [FromForm] ImportBooksFileRequest request)
+        {
+            var response = await _bookImportService.ImportNewBooksAsync(request);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpPost("import/existing")]
+        [Consumes("multipart/form-data")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> ImportExistingBooksAsync(
+            [FromForm] ImportBooksFileRequest request)
+        {
+            var response = await _bookImportService.ImportExistingBooksAsync(request);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpPost("inventory/new")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> AddNewBookToInventoryAsync(
+            [FromBody] AddBookToInventoryRequest request)
+        {
+            var response = await _bookService.AddNewBookToInventoryAsync(request);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpPost("{bookId:guid}/inventory")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> AddExistingBookToInventoryAsync(
+            Guid bookId,
+            [FromBody] AddExistingBookToInventoryRequest request)
+        {
+            var response = await _bookService.AddExistingBookToInventoryAsync(bookId, request);
+            return StatusCode(response.HttpStatus, response);
         }
 
         [HttpPut("{bookId:guid}")]

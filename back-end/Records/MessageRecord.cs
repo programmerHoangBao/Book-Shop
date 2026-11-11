@@ -8,5 +8,9 @@
             new("S002", "Successful!", StatusCodes.Status200OK);
         public static readonly MessageRecord CreatedSuccessfully =
             new("S003", "Successfully created!", StatusCodes.Status201Created);
+        public static readonly MessageRecord QueuedSuccessfully =
+            new("S004", "Notification queued for creation.", StatusCodes.Status202Accepted);
+        public static readonly MessageRecord OrderQueuedSuccessfully =
+            new("S005", "Order request queued for processing.", StatusCodes.Status202Accepted);
     }
 }

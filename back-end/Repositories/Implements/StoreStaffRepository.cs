@@ -44,6 +44,19 @@ namespace back_end.Repositories.Implements
                 .FirstOrDefaultAsync();
         }
 
+        public Task<bool> IsUserAssignedToStoreAsync(Guid userId, Guid storeId)
+        {
+            return _context.StoreStaffs.AnyAsync(staff =>
+                staff.UserId == userId &&
+                staff.StoreId == storeId &&
+                !staff.IsDeleted &&
+                staff.User != null &&
+                !staff.User.IsDeleted &&
+                staff.User.Enabled &&
+                staff.Store != null &&
+                !staff.Store.IsDeleted);
+        }
+
         public async Task<bool> RemoveStoreStaffAsync(StoreStaffEntity storeStaff)
         {
             await using var transaction =

@@ -7,10 +7,26 @@ namespace back_end.Repositories
     {
         Task<BookEntity?> FindActiveBookAsync(string name, string? author, string? publisher);
 
+        Task<(BookEntity Book, InventoryEntity Inventory)> CreateBookAndAddToInventoryAsync(
+            BookEntity book,
+            Guid storeId,
+            Guid userId,
+            int quantity,
+            string reason);
+        Task<(BookEntity Book, InventoryEntity Inventory)?> AddExistingBookToInventoryAsync(
+            Guid bookId,
+            Guid storeId,
+            Guid userId,
+            int quantity,
+            string reason);
+
         Task<BookEntity?> GetBookForUpdateAsync(Guid bookId);
         Task<BookEntity?> GetDeletedBookForUpdateAsync(Guid bookId);
 
         Task<BookEntity?> GetBookDetailsAsync(Guid bookId);
+
+        Task<(List<InventoryEntity> Inventories, int TotalItems)> GetStoreInventoryBooksAsync(
+            Guid storeId, int pageNumber, int pageSize);
 
         Task<(List<BookEntity> Books, int TotalItems)> GetDeletedBooksAsync(
             int pageNumber, int pageSize);

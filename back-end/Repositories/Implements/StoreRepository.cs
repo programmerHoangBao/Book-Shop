@@ -19,9 +19,9 @@ namespace back_end.Repositories.Implements
                 await _context.Database.BeginTransactionAsync();
             try
             {
-                if (String.IsNullOrEmpty(store.CodeStore))
+                if (String.IsNullOrEmpty(store.StoreCode))
                 {
-                    store.CodeStore = await GenerateCodeStoreAsync();
+                    store.StoreCode = await GenerateCodeStoreAsync();
                 }
                 await _context.Stores.AddAsync(store);
                 var result = await _context.SaveChangesAsync();
@@ -103,7 +103,7 @@ namespace back_end.Repositories.Implements
                 key = key.Trim();
 
                 query = query.Where(s =>
-                    s.CodeStore.Contains(key) ||
+                    s.StoreCode.Contains(key) ||
                     s.Address.Contains(key)
                 );
             }
@@ -169,9 +169,9 @@ namespace back_end.Repositories.Implements
 
             var lastCode = await _context.Stores
                 .AsNoTracking()
-                .Where(s => s.CodeStore.StartsWith(prefix))
-                .OrderByDescending(s => s.CodeStore)
-                .Select(s => s.CodeStore)
+                .Where(s => s.StoreCode.StartsWith(prefix))
+                .OrderByDescending(s => s.StoreCode)
+                .Select(s => s.StoreCode)
                 .FirstOrDefaultAsync();
 
             if (lastCode == null)

@@ -1,6 +1,7 @@
 using back_end.Data;
 using back_end.DTOs.Books.Requests;
 using back_end.Entities;
+using back_end.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace back_end.Repositories.Implements
@@ -12,6 +13,109 @@ namespace back_end.Repositories.Implements
         public BookRepository(DatabaseContext context)
         {
             _context = context;
+        }
+
+        public async Task<(BookEntity Book, InventoryEntity Inventory)> CreateBookAndAddToInventoryAsync(
+            BookEntity book,
+            Guid storeId,
+            Guid userId,
+            int quantity,
+            string reason)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable);
+            try
+            {
+                book.Name = book.Name.Trim();
+                book.Author = book.Author?.Trim();
+                book.Publisher = book.Publisher?.Trim();
+                _context.Books.Add(book);
+                InventoryEntity inventory = await AddInventoryQuantityAsync(
+                    book, storeId, userId, quantity, reason);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return (book, inventory);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<(BookEntity Book, InventoryEntity Inventory)?> AddExistingBookToInventoryAsync(
+            Guid bookId,
+            Guid storeId,
+            Guid userId,
+            int quantity,
+            string reason)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable);
+            try
+            {
+                BookEntity? book = await _context.Books
+                    .FirstOrDefaultAsync(candidate => candidate.Id == bookId && !candidate.IsDeleted);
+                if (book == null)
+                {
+                    await transaction.RollbackAsync();
+                    return null;
+                }
+
+                InventoryEntity inventory = await AddInventoryQuantityAsync(
+                    book, storeId, userId, quantity, reason);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return (book, inventory);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        private async Task<InventoryEntity> AddInventoryQuantityAsync(
+            BookEntity book,
+            Guid storeId,
+            Guid userId,
+            int quantity,
+            string reason)
+        {
+            InventoryEntity? inventory = await _context.Inventories
+                .FirstOrDefaultAsync(item => item.StoreId == storeId
+                    && item.BookId == book.Id
+                    && !item.IsDeleted);
+
+            int quantityBefore = inventory?.Quantity ?? 0;
+            if (inventory == null)
+            {
+                inventory = new InventoryEntity
+                {
+                    StoreId = storeId,
+                    BookId = book.Id
+                };
+                _context.Inventories.Add(inventory);
+            }
+
+            checked
+            {
+                inventory.Quantity += quantity;
+                inventory.AvailableQuantity += quantity;
+            }
+
+            _context.InventoryTransactions.Add(new InventoryTransactionEntity
+            {
+                Inventory = inventory,
+                UserId = userId,
+                TransactionType = TransactionType.Import,
+                Quantity = quantity,
+                QuntityBefore = quantityBefore,
+                QuantityAfter = inventory.Quantity,
+                Reason = reason
+            });
+
+            return inventory;
         }
 
         public Task<BookEntity?> FindActiveBookAsync(string name, string? author, string? publisher)
@@ -63,6 +167,31 @@ namespace back_end.Repositories.Implements
                     .ThenInclude(inventory => inventory.Store)
                 .Include(book => book.Reviews.Where(review => !review.IsDeleted))
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<(List<InventoryEntity> Inventories, int TotalItems)> GetStoreInventoryBooksAsync(
+            Guid storeId,
+            int pageNumber,
+            int pageSize)
+        {
+            IQueryable<InventoryEntity> query = _context.Inventories
+                .AsNoTracking()
+                .Where(inventory => inventory.StoreId == storeId &&
+                    !inventory.IsDeleted &&
+                    inventory.Book != null &&
+                    !inventory.Book.IsDeleted);
+
+            int totalItems = await query.CountAsync();
+            List<InventoryEntity> inventories = await query
+                .Include(inventory => inventory.Book!)
+                    .ThenInclude(book => book.Images)
+                .OrderBy(inventory => inventory.Book!.Name)
+                .ThenBy(inventory => inventory.BookId)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (inventories, totalItems);
         }
 
         public async Task<(List<BookEntity> Books, int TotalItems)> GetDeletedBooksAsync(
