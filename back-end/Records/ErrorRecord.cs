@@ -92,4 +92,10 @@ public sealed record ErrorRecord(
 
     public static readonly ErrorRecord OrderNotPending =
         new("E028", "Only pending orders can be confirmed.", StatusCodes.Status409Conflict);
+
+    public static readonly ErrorRecord OrderNotConfirmed =
+        new("E029", "Only confirmed orders can be marked as in transit.", StatusCodes.Status409Conflict);
+
+    public static readonly ErrorRecord OrderNotInTransit =
+        new("E030", "Only orders in transit can be completed.", StatusCodes.Status409Conflict);
 }

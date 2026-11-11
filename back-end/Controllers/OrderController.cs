@@ -34,5 +34,21 @@ namespace back_end.Controllers
             var response = await _orderService.ConfirmAsync(orderId);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpPost("{orderId:guid}/in-transit")]
+        [Authorize(Roles = "Admin,Manager,Employee")]
+        public async Task<IActionResult> SetOrderInTransitAsync(Guid orderId)
+        {
+            var response = await _orderService.SetInTransitAsync(orderId);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpPost("{orderId:guid}/complete")]
+        [Authorize(Roles = "Admin,Manager,Employee")]
+        public async Task<IActionResult> CompleteOrderAsync(Guid orderId)
+        {
+            var response = await _orderService.CompleteAsync(orderId);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }

@@ -22,6 +22,24 @@ namespace back_end.Repositories
         StoreNotAssociated
     }
 
+    public enum SetOrderInTransitResult
+    {
+        InTransit,
+        AlreadyInTransit,
+        NotFound,
+        NotConfirmed,
+        StoreNotAssociated
+    }
+
+    public enum CompleteOrderResult
+    {
+        Completed,
+        AlreadyCompleted,
+        NotFound,
+        NotInTransit,
+        StoreNotAssociated
+    }
+
     public interface IOrderRepository
     {
         Task<(PlaceOrderResult Result, OrderEntity? Order)> PlaceOrderAsync(
@@ -30,6 +48,12 @@ namespace back_end.Repositories
             PaymentMethod paymentMethod,
             Guid orderId);
         Task<(ConfirmOrderResult Result, OrderEntity? Order)> ConfirmAsync(
+            Guid orderId,
+            Guid? storeId);
+        Task<(SetOrderInTransitResult Result, OrderEntity? Order)> SetInTransitAsync(
+            Guid orderId,
+            Guid? storeId);
+        Task<(CompleteOrderResult Result, OrderEntity? Order)> CompleteAsync(
             Guid orderId,
             Guid? storeId);
     }

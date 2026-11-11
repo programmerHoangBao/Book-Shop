@@ -229,6 +229,130 @@ namespace back_end.Repositories.Implements
                 : (ConfirmOrderResult.NotPending, order);
         }
 
+        public async Task<(SetOrderInTransitResult Result, OrderEntity? Order)> SetInTransitAsync(
+            Guid orderId,
+            Guid? storeId)
+        {
+            OrderEntity? order = await _context.Orders
+                .AsNoTracking()
+                .FirstOrDefaultAsync(candidate => candidate.Id == orderId && !candidate.IsDeleted);
+            if (order == null)
+            {
+                return (SetOrderInTransitResult.NotFound, null);
+            }
+
+            if (storeId.HasValue && !await OrderUsesStoreAsync(order, storeId.Value))
+            {
+                return (SetOrderInTransitResult.StoreNotAssociated, null);
+            }
+
+            if (order.OrderStatus == OrderStatus.Shipping)
+            {
+                return (SetOrderInTransitResult.AlreadyInTransit, order);
+            }
+            if (order.OrderStatus != OrderStatus.Confirmed)
+            {
+                return (SetOrderInTransitResult.NotConfirmed, order);
+            }
+
+            DateTime inTransitAt = DateTime.UtcNow;
+            int updatedRows = await _context.Orders
+                .Where(candidate => candidate.Id == orderId &&
+                    !candidate.IsDeleted &&
+                    candidate.OrderStatus == OrderStatus.Confirmed)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(candidate => candidate.OrderStatus, OrderStatus.Shipping)
+                    .SetProperty(candidate => candidate.UpdatedAt, inTransitAt));
+
+            if (updatedRows == 1)
+            {
+                order.OrderStatus = OrderStatus.Shipping;
+                order.UpdatedAt = inTransitAt;
+                return (SetOrderInTransitResult.InTransit, order);
+            }
+
+            order = await _context.Orders
+                .AsNoTracking()
+                .FirstOrDefaultAsync(candidate => candidate.Id == orderId && !candidate.IsDeleted);
+            if (order?.OrderStatus == OrderStatus.Shipping)
+            {
+                return (SetOrderInTransitResult.AlreadyInTransit, order);
+            }
+
+            return order == null
+                ? (SetOrderInTransitResult.NotFound, null)
+                : (SetOrderInTransitResult.NotConfirmed, order);
+        }
+
+        public async Task<(CompleteOrderResult Result, OrderEntity? Order)> CompleteAsync(
+            Guid orderId,
+            Guid? storeId)
+        {
+            OrderEntity? order = await _context.Orders
+                .AsNoTracking()
+                .FirstOrDefaultAsync(candidate => candidate.Id == orderId && !candidate.IsDeleted);
+            if (order == null)
+            {
+                return (CompleteOrderResult.NotFound, null);
+            }
+
+            if (storeId.HasValue && !await OrderUsesStoreAsync(order, storeId.Value))
+            {
+                return (CompleteOrderResult.StoreNotAssociated, null);
+            }
+
+            if (order.OrderStatus == OrderStatus.Completed)
+            {
+                return (CompleteOrderResult.AlreadyCompleted, order);
+            }
+            if (order.OrderStatus != OrderStatus.Shipping)
+            {
+                return (CompleteOrderResult.NotInTransit, order);
+            }
+
+            DateTime completedAt = DateTime.UtcNow;
+            int updatedRows = await _context.Orders
+                .Where(candidate => candidate.Id == orderId &&
+                    !candidate.IsDeleted &&
+                    candidate.OrderStatus == OrderStatus.Shipping)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(candidate => candidate.OrderStatus, OrderStatus.Completed)
+                    .SetProperty(candidate => candidate.PaymentStatus, PaymentStatus.Paid)
+                    .SetProperty(candidate => candidate.CompletedAt, completedAt)
+                    .SetProperty(candidate => candidate.UpdatedAt, completedAt));
+
+            if (updatedRows == 1)
+            {
+                order.OrderStatus = OrderStatus.Completed;
+                order.PaymentStatus = PaymentStatus.Paid;
+                order.CompletedAt = completedAt;
+                order.UpdatedAt = completedAt;
+                return (CompleteOrderResult.Completed, order);
+            }
+
+            order = await _context.Orders
+                .AsNoTracking()
+                .FirstOrDefaultAsync(candidate => candidate.Id == orderId && !candidate.IsDeleted);
+            if (order?.OrderStatus == OrderStatus.Completed)
+            {
+                return (CompleteOrderResult.AlreadyCompleted, order);
+            }
+
+            return order == null
+                ? (CompleteOrderResult.NotFound, null)
+                : (CompleteOrderResult.NotInTransit, order);
+        }
+
+        private Task<bool> OrderUsesStoreAsync(OrderEntity order, Guid storeId)
+        {
+            string reservationReason = $"Reserved for order {order.OrderCode}";
+            return _context.InventoryTransactions.AnyAsync(transaction =>
+                transaction.Reason == reservationReason &&
+                !transaction.IsDeleted &&
+                transaction.Inventory != null &&
+                transaction.Inventory.StoreId == storeId);
+        }
+
         private Task<OrderEntity?> FindOrderAsync(Guid orderId) =>
             _context.Orders
                 .AsNoTracking()
