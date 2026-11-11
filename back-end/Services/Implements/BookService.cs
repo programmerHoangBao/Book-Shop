@@ -352,7 +352,7 @@ namespace back_end.Services.Implements
                 Inventories = book.Inventories.Select(inventory => new BookDetailInventoryResponse
                 {
                     StoreId = inventory.StoreId,
-                    CodeStore = inventory.Store!.CodeStore,
+                    StoreCode = inventory.Store!.StoreCode,
                     StoreAddress = inventory.Store.Address,
                     AvailableQuantity = inventory.AvailableQuantity
                 }).ToList(),

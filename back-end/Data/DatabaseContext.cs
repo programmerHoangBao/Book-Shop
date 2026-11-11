@@ -99,7 +99,7 @@ namespace back_end.Data
 
             //Store
             modelBuilder.Entity<StoreEntity>()
-                .HasIndex(s => s.CodeStore)
+                .HasIndex(s => s.StoreCode)
                 .IsUnique();
             modelBuilder.Entity<StoreEntity>()
                 .HasIndex(s => s.Address)

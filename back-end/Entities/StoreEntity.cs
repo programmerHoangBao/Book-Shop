@@ -11,7 +11,7 @@ namespace back_end.Entities
 
         [Required]
         [MaxLength(10)]
-        public string CodeStore = string.Empty; //Example: BS01, BS02, BS03,...
+        public string StoreCode = string.Empty; //Example: BS01, BS02, BS03,...
 
         [Required]
         [MaxLength(1000)]

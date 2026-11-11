@@ -851,16 +851,16 @@ namespace back_end.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
-                    b.Property<string>("CodeStore")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("StoreCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -870,7 +870,7 @@ namespace back_end.Migrations
                     b.HasIndex("Address")
                         .IsUnique();
 
-                    b.HasIndex("CodeStore")
+                    b.HasIndex("StoreCode")
                         .IsUnique();
 
                     b.ToTable("Stores");
