@@ -102,6 +102,151 @@ namespace back_end.Services.Implements
             return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
         }
 
+        public async Task<ApiResponse<object?>> AddNewBookToInventoryAsync(
+            AddBookToInventoryRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Name) || request.Quantity <= 0 ||
+                request.CategoryId == Guid.Empty)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            if (!await _categoryRepository.CategoryExistsAsync(request.CategoryId))
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+
+            var (userId, storeId) = await ResolveInventoryTargetAsync(request.StoreId);
+
+            List<string> imageUrls = (request.ImageUrls ?? new List<string>())
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Select(url => url.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            BookEntity book = new()
+            {
+                Name = request.Name.Trim(),
+                Author = request.Author?.Trim(),
+                Publisher = request.Publisher?.Trim(),
+                Description = request.Description,
+                Price = request.Price
+            };
+            book.BookCategories.Add(new BookCategoryEntity
+            {
+                BookId = book.Id,
+                CategoryId = request.CategoryId
+            });
+
+            foreach (string imageUrl in imageUrls)
+            {
+                book.Images.Add(new BookImageEntity
+                {
+                    BookId = book.Id,
+                    ImageUrl = imageUrl
+                });
+            }
+
+            var (savedBook, inventory) = await _bookRepository.CreateBookAndAddToInventoryAsync(
+                book,
+                storeId,
+                userId,
+                request.Quantity,
+                "Stock imported");
+
+            BookDocumentMessage bookDocumentMessage = _mapper.Map<BookDocumentMessage>(savedBook);
+            await _kafkaProducer.ProduceAsync("index-book-elasticsearch", bookDocumentMessage);
+
+            AddBookToInventoryResponse response = new()
+            {
+                BookId = savedBook.Id,
+                InventoryId = inventory.Id,
+                QuantityAdded = request.Quantity,
+                Quantity = inventory.Quantity,
+                AvailableQuantity = inventory.AvailableQuantity,
+                BookCreated = true
+            };
+
+            return ApiResponse<object?>.Response(
+                MessageRecord.CreatedSuccessfully,
+                data: response);
+        }
+
+        public async Task<ApiResponse<object?>> AddExistingBookToInventoryAsync(
+            Guid bookId,
+            AddExistingBookToInventoryRequest request)
+        {
+            if (bookId == Guid.Empty || request.Quantity <= 0)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            var (userId, storeId) = await ResolveInventoryTargetAsync(request.StoreId);
+            var result = await _bookRepository.AddExistingBookToInventoryAsync(
+                bookId,
+                storeId,
+                userId,
+                request.Quantity,
+                "Stock imported");
+
+            if (result == null)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+
+            var (book, inventory) = result.Value;
+            AddBookToInventoryResponse response = new()
+            {
+                BookId = book.Id,
+                InventoryId = inventory.Id,
+                QuantityAdded = request.Quantity,
+                Quantity = inventory.Quantity,
+                AvailableQuantity = inventory.AvailableQuantity,
+                BookCreated = false
+            };
+
+            return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
+        }
+
+        private async Task<(Guid UserId, Guid StoreId)> ResolveInventoryTargetAsync(
+            Guid? requestedStoreId)
+        {
+            Guid? currentUserId = _currentUserService.GetCurrentUserId();
+            if (!currentUserId.HasValue || currentUserId.Value == Guid.Empty)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            Guid storeId;
+            RoleUser? role = _currentUserService.GetRoleCurrentUser();
+            if (role == RoleUser.Manager)
+            {
+                StoreEntity? assignedStore = await _storeStaffRepository.GetStoreByUserIdAsync(currentUserId.Value);
+                if (assignedStore == null || assignedStore.IsDeleted ||
+                    (requestedStoreId.HasValue && requestedStoreId.Value != assignedStore.Id))
+                {
+                    throw new BusinessException(ErrorRecord.Forbidden);
+                }
+                storeId = assignedStore.Id;
+            }
+            else if (role == RoleUser.Admin && requestedStoreId.HasValue && requestedStoreId.Value != Guid.Empty)
+            {
+                storeId = requestedStoreId.Value;
+            }
+            else
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            StoreEntity? store = await _storeRepository.GetStoreByIdAsync(storeId);
+            if (store == null || store.IsDeleted)
+            {
+                throw new BusinessException(ErrorRecord.StoreNotFound);
+            }
+
+            return (currentUserId.Value, storeId);
+        }
+
         public async Task<ApiResponse<object?>> SoftDeleteBookAsync(Guid bookId)
         {
             if (bookId == Guid.Empty)

@@ -7,6 +7,9 @@ namespace back_end.Services
     public interface IBookService
     {
         Task<ApiResponse<object?>> UpdateBookAsync(Guid bookId, UpdateBookRequest request);
+        Task<ApiResponse<object?>> AddNewBookToInventoryAsync(AddBookToInventoryRequest request);
+        Task<ApiResponse<object?>> AddExistingBookToInventoryAsync(
+            Guid bookId, AddExistingBookToInventoryRequest request);
         Task<ApiResponse<object?>> SoftDeleteBookAsync(Guid bookId);
         Task<ApiResponse<object?>> RestoreBookAsync(Guid bookId);
         Task<ApiResponse<List<BookDocument>>> SearchBooksAsync(SearchBooksRequest request);

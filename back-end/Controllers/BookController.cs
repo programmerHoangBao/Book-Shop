@@ -16,6 +16,25 @@ namespace back_end.Controllers
             _bookService = bookService;
         }
 
+        [HttpPost("inventory/new")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> AddNewBookToInventoryAsync(
+            [FromBody] AddBookToInventoryRequest request)
+        {
+            var response = await _bookService.AddNewBookToInventoryAsync(request);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpPost("{bookId:guid}/inventory")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> AddExistingBookToInventoryAsync(
+            Guid bookId,
+            [FromBody] AddExistingBookToInventoryRequest request)
+        {
+            var response = await _bookService.AddExistingBookToInventoryAsync(bookId, request);
+            return StatusCode(response.HttpStatus, response);
+        }
+
         [HttpPut("{bookId:guid}")]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> UpdateBookAsync(
