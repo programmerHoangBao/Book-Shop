@@ -37,6 +37,10 @@ namespace back_end.Services.Implements
 
         public async Task<ApiResponse<object?>> GetDeletedStoresAsync(int pageNumber, int pageSize)
         {
+            if (pageNumber < 1 || pageSize < 1 || pageSize > 100)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
             var result = await _storeRepository.GetDeletedStoresAsync(pageNumber, pageSize);
             List<StoreEntity> stores = result.Stores;
             int totalItems = result.TotalItems;
@@ -63,6 +67,10 @@ namespace back_end.Services.Implements
 
         public async Task<ApiResponse<object?>> GetStoreByIdAsync(Guid storeId)
         {
+            if (storeId == Guid.Empty)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
             StoreEntity? storeEntity = await _storeRepository.GetStoreByIdAsync(storeId);
             if (storeEntity == null || storeEntity.IsDeleted)
             {
@@ -74,6 +82,10 @@ namespace back_end.Services.Implements
 
         public async Task<ApiResponse<object?>> GetStoresAsync(int pageNumber, int pageSize)
         {
+            if (pageNumber < 1 || pageSize < 1 || pageSize > 100)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
             var result = await _storeRepository.GetStoresAsync(pageNumber, pageSize);
             List<StoreEntity> stores = result.Stores;
             int totalItems = result.TotalItems;

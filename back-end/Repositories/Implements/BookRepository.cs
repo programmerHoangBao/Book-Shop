@@ -14,58 +14,25 @@ namespace back_end.Repositories.Implements
             _context = context;
         }
 
-        public async Task<bool> AddBookAsync(
-            BookEntity book,
-            Guid categoryId,
-            List<string> images,
-            List<CreateBookInventoryRequest> inventories
-        )
+        public Task<BookEntity?> FindActiveBookAsync(string name, string? author, string? publisher)
         {
-            await using var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                await _context.Books.AddAsync(book);
-                await _context.BookCategories.AddAsync(new BookCategoryEntity
-                {
-                    BookId = book.Id,
-                    CategoryId = categoryId
-                });
+            string normalizedName = name.Trim().ToLower();
+            string? normalizedAuthor = author?.Trim().ToLower();
+            string? normalizedPublisher = publisher?.Trim().ToLower();
 
-                if (images.Count > 0)
-                {
-                    await _context.BookImages.AddRangeAsync(images.Select(image => new BookImageEntity
-                    {
-                        BookId = book.Id,
-                        ImageUrl = image
-                    }));
-                }
-
-                if (inventories.Count > 0)
-                {
-                    await _context.Inventories.AddRangeAsync(inventories.Select(inventory => new InventoryEntity
-                    {
-                        BookId = book.Id,
-                        StoreId = inventory.StoreId,
-                        Quantity = inventory.Quantity,
-                        AvailableQuantity = inventory.Quantity
-                    }));
-                }
-
-                var result = await _context.SaveChangesAsync();
-                if (result <= 0)
-                {
-                    await transaction.RollbackAsync();
-                    return false;
-                }
-
-                await transaction.CommitAsync();
-                return true;
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+            return _context.Books
+                .AsNoTracking()
+                .Include(book => book.Images)
+                .Include(book => book.BookCategories.Where(category => !category.IsDeleted))
+                .Where(book => !book.IsDeleted
+                    && book.Name.Trim().ToLower() == normalizedName
+                    && (book.Author == null
+                        ? normalizedAuthor == null
+                        : book.Author.Trim().ToLower() == normalizedAuthor)
+                    && (book.Publisher == null
+                        ? normalizedPublisher == null
+                        : book.Publisher.Trim().ToLower() == normalizedPublisher))
+                .FirstOrDefaultAsync();
         }
 
         public Task<BookEntity?> GetBookForUpdateAsync(Guid bookId)

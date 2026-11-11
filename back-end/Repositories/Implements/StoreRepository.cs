@@ -19,6 +19,10 @@ namespace back_end.Repositories.Implements
                 await _context.Database.BeginTransactionAsync();
             try
             {
+                if (String.IsNullOrEmpty(store.CodeStore))
+                {
+                    store.CodeStore = await GenerateCodeStoreAsync();
+                }
                 await _context.Stores.AddAsync(store);
                 var result = await _context.SaveChangesAsync();
                 if (result <= 0)
@@ -99,9 +103,8 @@ namespace back_end.Repositories.Implements
                 key = key.Trim();
 
                 query = query.Where(s =>
-                    s.Name.Contains(key) ||
-                    s.Address.Contains(key) ||
-                    s.PhoneNumber.Contains(key)
+                    s.CodeStore.Contains(key) ||
+                    s.Address.Contains(key)
                 );
             }
 
@@ -158,6 +161,27 @@ namespace back_end.Repositories.Implements
                 .Where(store => storeIds.Contains(store.Id) && !store.IsDeleted)
                 .Select(store => store.Id)
                 .ToListAsync();
+        }
+
+        public async Task<string> GenerateCodeStoreAsync()
+        {
+            const string prefix = "BS";
+
+            var lastCode = await _context.Stores
+                .AsNoTracking()
+                .Where(s => s.CodeStore.StartsWith(prefix))
+                .OrderByDescending(s => s.CodeStore)
+                .Select(s => s.CodeStore)
+                .FirstOrDefaultAsync();
+
+            if (lastCode == null)
+                return $"{prefix}01";
+
+            var lastNumber = int.Parse(lastCode.Substring(prefix.Length));
+
+            var nextNumber = lastNumber + 1;
+
+            return $"{prefix}{nextNumber}";
         }
     }
 }

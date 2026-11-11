@@ -16,14 +16,6 @@ namespace back_end.Controllers
             _bookService = bookService;
         }
 
-        [HttpPost]
-        [Authorize(Roles = "Admin,Manager")]
-        public async Task<IActionResult> CreateBookAsync([FromBody] CreateBookRequest request)
-        {
-            var response = await _bookService.CreateBookAsync(request);
-            return StatusCode(response.HttpStatus, response);
-        }
-
         [HttpPut("{bookId:guid}")]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> UpdateBookAsync(
