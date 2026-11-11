@@ -66,6 +66,7 @@ builder.Services.AddSingleton<IKafkaProducer, KafkaProducer>();
 
 // Add Repository
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IStoreRepository, StoreRepository>();
 builder.Services.AddScoped<IStoreStaffRepository, StoreStaffRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
