@@ -30,7 +30,7 @@ namespace back_end.DTOs.Books.Responses
     public class BookDetailInventoryResponse
     {
         public Guid StoreId { get; set; }
-        public string StoreName { get; set; } = string.Empty;
+        public string CodeStore { get; set; } = string.Empty;
         public string StoreAddress { get; set; } = string.Empty;
         public int AvailableQuantity { get; set; }
     }

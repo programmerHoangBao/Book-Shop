@@ -8,13 +8,14 @@ namespace back_end.Entities
     {
         [Key]
         public Guid Id { get; set; } = Guid.CreateVersion7();
+
         [Required]
-        [MaxLength(500)]
-        public string Name { get; set; } = string.Empty;
-        [MaxLength(500)]
+        [MaxLength(10)]
+        public string CodeStore = string.Empty; //Example: BS01, BS02, BS03,...
+
+        [Required]
+        [MaxLength(1000)]
         public string Address { get; set; } = string.Empty;
-        [Column(TypeName = "varchar(11)")]
-        public string PhoneNumber { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }

@@ -5,12 +5,7 @@ namespace back_end.Repositories
 {
     public interface IBookRepository
     {
-        Task<bool> AddBookAsync(
-            BookEntity book,
-            Guid categoryId,
-            List<string> images,
-            List<CreateBookInventoryRequest> inventories
-        );
+        Task<BookEntity?> FindActiveBookAsync(string name, string? author, string? publisher);
 
         Task<BookEntity?> GetBookForUpdateAsync(Guid bookId);
         Task<BookEntity?> GetDeletedBookForUpdateAsync(Guid bookId);

@@ -97,6 +97,14 @@ namespace back_end.Data
             modelBuilder.Entity<BookCategoryEntity>()
                 .HasIndex(bc => bc.CategoryId);
 
+            //Store
+            modelBuilder.Entity<StoreEntity>()
+                .HasIndex(s => s.CodeStore)
+                .IsUnique();
+            modelBuilder.Entity<StoreEntity>()
+                .HasIndex(s => s.Address)
+                .IsUnique();
+
             //Store staff
             modelBuilder.Entity<StoreStaffEntity>()
                 .HasKey(ss => new
