@@ -13,6 +13,15 @@ namespace back_end.Repositories
         InsufficientStock
     }
 
+    public enum ConfirmOrderResult
+    {
+        Confirmed,
+        AlreadyConfirmed,
+        NotFound,
+        NotPending,
+        StoreNotAssociated
+    }
+
     public interface IOrderRepository
     {
         Task<(PlaceOrderResult Result, OrderEntity? Order)> PlaceOrderAsync(
@@ -20,5 +29,8 @@ namespace back_end.Repositories
             Guid addressId,
             PaymentMethod paymentMethod,
             Guid orderId);
+        Task<(ConfirmOrderResult Result, OrderEntity? Order)> ConfirmAsync(
+            Guid orderId,
+            Guid? storeId);
     }
 }

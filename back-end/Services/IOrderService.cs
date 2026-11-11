@@ -8,5 +8,6 @@ namespace back_end.Services
         Task<ApiResponse<object?>> PlaceOrderAsync(
             PlaceOrderRequest request,
             string? idempotencyKey);
+        Task<ApiResponse<object?>> ConfirmAsync(Guid orderId);
     }
 }

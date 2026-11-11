@@ -89,4 +89,7 @@ public sealed record ErrorRecord(
 
     public static readonly ErrorRecord BookUnavailableForOrder =
         new("E027", "One or more books in the cart are unavailable.", StatusCodes.Status409Conflict);
+
+    public static readonly ErrorRecord OrderNotPending =
+        new("E028", "Only pending orders can be confirmed.", StatusCodes.Status409Conflict);
 }

@@ -14,13 +14,16 @@ namespace back_end.Services.Implements
 {
     public class OrderService : IOrderService
     {
+        private readonly IOrderRepository _orderRepository;
         private readonly ICurrentUserService _currentUserService;
         private readonly IKafkaProducer _kafkaProducer;
 
         public OrderService(
+            IOrderRepository orderRepository,
             ICurrentUserService currentUserService,
             IKafkaProducer kafkaProducer)
         {
+            _orderRepository = orderRepository;
             _currentUserService = currentUserService;
             _kafkaProducer = kafkaProducer;
         }
@@ -45,21 +48,51 @@ namespace back_end.Services.Implements
             }
 
             Guid orderId = CreateIdempotentOrderId(userId.Value, idempotencyKey.Trim());
-            await _kafkaProducer.ProduceAsync("place-order", new PlaceOrderCommandMessage
+            var (result, order) = await _orderRepository.PlaceOrderAsync(
+                userId.Value,
+                request.AddressId,
+                request.PaymentMethod,
+                orderId);
+
+            switch (result)
             {
-                OrderId = orderId,
-                UserId = userId.Value,
-                AddressId = request.AddressId,
-                PaymentMethod = request.PaymentMethod
+                case PlaceOrderResult.AddressNotFound:
+                    throw new BusinessException(ErrorRecord.NotFound);
+                case PlaceOrderResult.CartEmpty:
+                    throw new BusinessException(ErrorRecord.CartEmpty);
+                case PlaceOrderResult.BookUnavailable:
+                    throw new BusinessException(ErrorRecord.BookUnavailableForOrder);
+                case PlaceOrderResult.InsufficientStock:
+                    throw new BusinessException(ErrorRecord.InsufficientStock);
+            }
+
+            if (order == null)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+
+            await _kafkaProducer.ProduceAsync("order-placed", new OrderPlacedMessage
+            {
+                OrderId = order.Id,
+                UserId = order.UserId,
+                OrderCode = order.OrderCode,
+                TotalAmount = order.TotalAmount,
+                OrderedAt = order.OrderedAt
             });
 
             PlaceOrderResponse response = new()
             {
-                OrderId = orderId
+                OrderId = order.Id,
+                OrderCode = order.OrderCode,
+                TotalAmount = order.TotalAmount,
+                OrderStatus = order.OrderStatus,
+                IsDuplicateRequest = result == PlaceOrderResult.Duplicate
             };
 
             return ApiResponse<object?>.Response(
-                MessageRecord.OrderQueuedSuccessfully,
+                result == PlaceOrderResult.Duplicate
+                    ? MessageRecord.Success
+                    : MessageRecord.CreatedSuccessfully,
                 data: response);
         }
 

@@ -7,7 +7,7 @@ namespace back_end.Controllers
 {
     [ApiController]
     [Route("api/orders")]
-    [Authorize(Roles = "Customer")]
+    [Authorize]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
@@ -18,11 +18,20 @@ namespace back_end.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> PlaceOrderAsync(
             [FromBody] PlaceOrderRequest request,
             [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey)
         {
             var response = await _orderService.PlaceOrderAsync(request, idempotencyKey);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpPost("{orderId:guid}/confirm")]
+        [Authorize(Roles = "Admin,Manager,Employee")]
+        public async Task<IActionResult> ConfirmOrderAsync(Guid orderId)
+        {
+            var response = await _orderService.ConfirmAsync(orderId);
             return StatusCode(response.HttpStatus, response);
         }
     }

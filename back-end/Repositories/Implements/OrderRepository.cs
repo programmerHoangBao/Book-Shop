@@ -165,6 +165,70 @@ namespace back_end.Repositories.Implements
             }
         }
 
+        public async Task<(ConfirmOrderResult Result, OrderEntity? Order)> ConfirmAsync(
+            Guid orderId,
+            Guid? storeId)
+        {
+            OrderEntity? order = await _context.Orders
+                .AsNoTracking()
+                .FirstOrDefaultAsync(candidate => candidate.Id == orderId && !candidate.IsDeleted);
+            if (order == null)
+            {
+                return (ConfirmOrderResult.NotFound, null);
+            }
+
+            if (storeId.HasValue)
+            {
+                string reservationReason = $"Reserved for order {order.OrderCode}";
+                bool orderUsesStore = await _context.InventoryTransactions.AnyAsync(transaction =>
+                    transaction.Reason == reservationReason &&
+                    !transaction.IsDeleted &&
+                    transaction.Inventory != null &&
+                    transaction.Inventory.StoreId == storeId.Value);
+                if (!orderUsesStore)
+                {
+                    return (ConfirmOrderResult.StoreNotAssociated, null);
+                }
+            }
+
+            if (order.OrderStatus == OrderStatus.Confirmed)
+            {
+                return (ConfirmOrderResult.AlreadyConfirmed, order);
+            }
+            if (order.OrderStatus != OrderStatus.Pending)
+            {
+                return (ConfirmOrderResult.NotPending, order);
+            }
+
+            DateTime confirmedAt = DateTime.UtcNow;
+            int updatedRows = await _context.Orders
+                .Where(candidate => candidate.Id == orderId &&
+                    !candidate.IsDeleted &&
+                    candidate.OrderStatus == OrderStatus.Pending)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(candidate => candidate.OrderStatus, OrderStatus.Confirmed)
+                    .SetProperty(candidate => candidate.UpdatedAt, confirmedAt));
+
+            if (updatedRows == 1)
+            {
+                order.OrderStatus = OrderStatus.Confirmed;
+                order.UpdatedAt = confirmedAt;
+                return (ConfirmOrderResult.Confirmed, order);
+            }
+
+            order = await _context.Orders
+                .AsNoTracking()
+                .FirstOrDefaultAsync(candidate => candidate.Id == orderId && !candidate.IsDeleted);
+            if (order?.OrderStatus == OrderStatus.Confirmed)
+            {
+                return (ConfirmOrderResult.AlreadyConfirmed, order);
+            }
+
+            return order == null
+                ? (ConfirmOrderResult.NotFound, null)
+                : (ConfirmOrderResult.NotPending, order);
+        }
+
         private Task<OrderEntity?> FindOrderAsync(Guid orderId) =>
             _context.Orders
                 .AsNoTracking()
