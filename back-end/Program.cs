@@ -87,6 +87,7 @@ builder.Services.AddScoped<IStoreInventoryService, StoreInventoryService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IBookImportService, BookImportService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IBookElasticsearchService, BookElasticsearchService>();
@@ -95,6 +96,7 @@ builder.Services.AddScoped<IBookElasticsearchService, BookElasticsearchService>(
 builder.Services.AddHostedService<OtpEmailConsumer>();
 builder.Services.AddHostedService<DeleteFileConsumer>();
 builder.Services.AddHostedService<IndexBookElasticsearchConsumer>();
+builder.Services.AddHostedService<CreateNotificationConsumer>();
 
 // Auto mapper
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
