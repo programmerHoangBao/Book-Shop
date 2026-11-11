@@ -83,4 +83,10 @@ public sealed record ErrorRecord(
 
     public static readonly ErrorRecord InsufficientStock =
         new("E025", "The requested quantity exceeds available stock.", StatusCodes.Status409Conflict);
+
+    public static readonly ErrorRecord CartEmpty =
+        new("E026", "The cart has no books to order.", StatusCodes.Status400BadRequest);
+
+    public static readonly ErrorRecord BookUnavailableForOrder =
+        new("E027", "One or more books in the cart are unavailable.", StatusCodes.Status409Conflict);
 }
