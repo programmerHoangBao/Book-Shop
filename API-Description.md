@@ -20,6 +20,7 @@
   - [2.6. Get Store By Id](#26-get-store-by-id)
   - [2.7. Get Deleted Stores](#27-get-deleted-stores)
   - [2.8. Search stores](#28-search-stores)
+- [3. Revenue Reports](#3-revenue-reports)
 
 ## 1. Auth
 
@@ -3861,3 +3862,19 @@ sequenceDiagram
 - A `401 Unauthorized` or `403 Forbidden` response is possible if applicable authorization policies are configured elsewhere; these outcomes are not established by the supplied endpoint code.
 - The example response bodies for errors should be verified against the application's actual middleware and validation configuration.
 
+## 3. Revenue Reports
+
+All revenue report endpoints require a bearer token with the `Admin` or `Manager` role. Managers are automatically scoped to their assigned store(s); supplying a `storeId` outside that scope returns `403 Forbidden`. Admins may omit `storeId` for all stores or select one store.
+
+Revenue is calculated from completed, paid order line totals (`OrderItem.TotalPrice`), excluding shipping fees. Store revenue is allocated by the quantities reserved from each store. Date filters use UTC timestamps with an inclusive `startDate` and exclusive `endDate`. When no date range is supplied, all available completed orders are included.
+
+## Revenue endpoints
+
+| Method and route | Description | Query parameters |
+| --- | --- | --- |
+| `GET /api/revenue/by-period` | Revenue by time bucket. `period` accepts `day`, `week`, `month`, `quarter`, or `year` and defaults to `month`. Weeks start Monday. | `period`, `startDate`, `endDate`, `storeId` |
+| `GET /api/revenue/by-store` | Revenue grouped by store. | `startDate`, `endDate`, `storeId` |
+| `GET /api/revenue/by-product` | Revenue grouped by product. | `startDate`, `endDate`, `storeId` |
+| `GET /api/revenue/by-category` | Revenue grouped by category. | `startDate`, `endDate`, `storeId` |
+
+The standard API response wraps the report in `data`. The report contains `totalRevenue`, distinct `orderCount`, the applied date range, and an `items` array. Each item has a `key`, `name`, `revenue`, `orderCount`, and `quantitySold`; time report items also include `periodStart`. A book assigned to multiple categories contributes to each category report, so category totals can exceed the overall revenue.
