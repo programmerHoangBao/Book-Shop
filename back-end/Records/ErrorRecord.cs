@@ -14,6 +14,9 @@ public sealed record ErrorRecord(
     public static readonly ErrorRecord RequestNotFound =
         new("E003", "Request not found!", StatusCodes.Status404NotFound);
 
+    public static readonly ErrorRecord RevenueStoreAccessDenied =
+        new("E038", "You are not assigned to the requested store.", StatusCodes.Status403Forbidden);
+
     public static readonly ErrorRecord UserExists =
         new("E004", "User already exists!", StatusCodes.Status409Conflict);
 
