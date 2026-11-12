@@ -10,6 +10,7 @@
   - [1.5. Reset Password](#15-reset-password)
   - [1.6. Google Login](#16-google-login)
   - [1.7. Refresh Token](#17-refresh-token)
+  - [1.8. Logout](#18-logout)
 - [2. Store](#2-store)
   - [2.1. Create Store](#21-create-store)
   - [2.2. Update Store](#22-update-store)
@@ -1593,6 +1594,83 @@ sequenceDiagram
     end
 
     Note over API,Middleware: Unexpected exceptions return E002 (HTTP 500).
+```
+
+### 1.8. Logout
+
+#### API Information
+
+| Property | Description |
+|---|---|
+| **Method** | `POST` |
+| **API URL** | `http://<host>:<port>/api/auth/logout` |
+| **Content-Type** | `application/json` |
+| **Request body** | Refresh token issued during login or Google sign-in |
+
+#### Description
+
+Revokes the submitted refresh token by deleting its hashed token record from Redis. The operation is idempotent: an expired, unknown, or already revoked refresh token also returns success. The corresponding access token is a stateless JWT and remains valid until its configured expiration time.
+
+#### Request
+
+**Request Body:** `RefreshTokenRequest`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `refreshToken` | `string` | Yes | The refresh token to revoke. |
+
+```http
+POST /api/auth/logout HTTP/1.1
+Host: localhost:5070
+Content-Type: application/json
+
+{
+  "refreshToken": "<refresh-token>"
+}
+```
+
+#### Response
+
+**200 OK — Logout completed**
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": null
+}
+```
+
+**400 Bad Request — Missing refresh token**
+
+Returned when request validation fails because `refreshToken` is missing or empty.
+
+**500 Internal Server Error**
+
+Returned if an unexpected error occurs while accessing Redis.
+
+#### Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant API as Auth Controller
+    participant Service as Auth Service
+    participant Hash as Hash Utility
+    participant Redis
+
+    Client->>API: POST /api/auth/logout (refreshToken)
+    API->>API: Validate request
+    API->>Service: LogoutAsync(request)
+    Service->>Hash: Hash refresh token
+    Hash-->>Service: Token hash
+    Service->>Redis: Delete refresh_token:{hash}
+    Redis-->>Service: Delete result
+    Service-->>API: ApiResponse(S002)
+    API-->>Client: 200 OK
 ```
 
 ## 2. Store

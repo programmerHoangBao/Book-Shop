@@ -48,6 +48,13 @@ namespace back_end.Controllers
             return StatusCode(result.HttpStatus, result);
         }
 
+        [HttpPost("logout")]
+        public async Task<IActionResult> LogoutAsync([FromBody] RefreshTokenRequest req)
+        {
+            var result = await _authService.LogoutAsync(req);
+            return StatusCode(result.HttpStatus, result);
+        }
+
         [EnableRateLimiting("LoginPolicy")]
         [HttpPost("google-sign-in")]
         public async Task<IActionResult> GoogleSignInAsync([FromQuery] string idToken)
