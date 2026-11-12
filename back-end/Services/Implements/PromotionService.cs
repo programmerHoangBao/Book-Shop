@@ -18,6 +18,54 @@ namespace back_end.Services.Implements
             _promotionRepository = promotionRepository;
         }
 
+        public async Task<ApiResponse<PaginationResponse<PromotionSuggestionResponse>>> GetSuggestionsForBookAsync(
+            Guid bookId,
+            int pageNumber,
+            int pageSize)
+        {
+            if (bookId == Guid.Empty || pageNumber < 1 || pageSize < 1 || pageSize > 100 ||
+                (long)(pageNumber - 1) * pageSize > int.MaxValue)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            var result = await _promotionRepository.GetSuggestionsForBookAsync(
+                bookId,
+                pageNumber,
+                pageSize,
+                DateTime.UtcNow);
+            if (!result.BookExists)
+            {
+                throw new BusinessException(ErrorRecord.NotFound);
+            }
+
+            PaginationResponse<PromotionSuggestionResponse> page = new()
+            {
+                CurrentPage = pageNumber,
+                PageSize = pageSize,
+                TotalItems = result.TotalItems,
+                TotalPages = (int)Math.Ceiling((double)result.TotalItems / pageSize),
+                Items = result.Promotions.Select(promotion => new PromotionSuggestionResponse
+                {
+                    Id = promotion.Id,
+                    Code = promotion.Code,
+                    Name = promotion.Name,
+                    Type = promotion.Type,
+                    DiscountValue = promotion.DiscountValue,
+                    MinimumOrderValue = promotion.MinimumOrderValue,
+                    StartAt = promotion.StartAt,
+                    EndAt = promotion.EndAt,
+                    UsageLimit = promotion.UsageLimit,
+                    UsageCount = promotion.UsageCount,
+                    FreeShipping = promotion.FreeShipping
+                }).ToList()
+            };
+
+            return ApiResponse<PaginationResponse<PromotionSuggestionResponse>>.Response(
+                MessageRecord.Success,
+                data: page);
+        }
+
         public async Task<ApiResponse<PromotionResponse>> CreateAsync(CreatePromotionRequest request)
         {
             string name = request.Name?.Trim() ?? string.Empty;

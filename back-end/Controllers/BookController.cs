@@ -11,11 +11,16 @@ namespace back_end.Controllers
     {
         private readonly IBookService _bookService;
         private readonly IBookImportService _bookImportService;
+        private readonly IPromotionService _promotionService;
 
-        public BookController(IBookService bookService, IBookImportService bookImportService)
+        public BookController(
+            IBookService bookService,
+            IBookImportService bookImportService,
+            IPromotionService promotionService)
         {
             _bookService = bookService;
             _bookImportService = bookImportService;
+            _promotionService = promotionService;
         }
 
         [HttpPost("import/new")]
@@ -87,6 +92,19 @@ namespace back_end.Controllers
         public async Task<IActionResult> GetBookDetailsAsync(Guid bookId)
         {
             var response = await _bookService.GetBookDetailsAsync(bookId);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpGet("{bookId:guid}/promotions")]
+        public async Task<IActionResult> GetBookPromotionsAsync(
+            Guid bookId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var response = await _promotionService.GetSuggestionsForBookAsync(
+                bookId,
+                pageNumber,
+                pageSize);
             return StatusCode(response.HttpStatus, response);
         }
 
