@@ -15,6 +15,31 @@ namespace back_end.Repositories.Implements
             _context = context;
         }
 
+        public async Task<(List<OrderEntity> Orders, int TotalItems)> GetInvoicesAsync(
+            Guid userId,
+            OrderStatus status,
+            int pageNumber,
+            int pageSize)
+        {
+            IQueryable<OrderEntity> query = _context.Orders
+                .AsNoTracking()
+                .Where(order => order.UserId == userId &&
+                    order.OrderStatus == status &&
+                    !order.IsDeleted);
+
+            int totalItems = await query.CountAsync();
+            List<OrderEntity> orders = await query
+                .Include(order => order.Items)
+                    .ThenInclude(item => item.Book)
+                .OrderByDescending(order => order.OrderedAt)
+                .ThenByDescending(order => order.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (orders, totalItems);
+        }
+
         public async Task<(PlaceOrderResult Result, OrderEntity? Order)> PlaceOrderAsync(
             Guid userId,
             Guid addressId,

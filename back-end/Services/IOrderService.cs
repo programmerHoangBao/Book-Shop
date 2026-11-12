@@ -1,10 +1,16 @@
 using back_end.DTOs;
+using back_end.DTOs.Invoices.Responses;
 using back_end.DTOs.Orders.Requests;
+using back_end.Enums;
 
 namespace back_end.Services
 {
     public interface IOrderService
     {
+        Task<ApiResponse<PaginationResponse<InvoiceResponse>>> GetInvoicesAsync(
+            OrderStatus status,
+            int pageNumber,
+            int pageSize);
         Task<ApiResponse<object?>> PlaceOrderAsync(
             PlaceOrderRequest request,
             string? idempotencyKey);

@@ -1,4 +1,5 @@
 using back_end.DTOs;
+using back_end.DTOs.Invoices.Responses;
 using back_end.DTOs.Orders.Requests;
 using back_end.DTOs.Orders.Responses;
 using back_end.Entities;
@@ -30,6 +31,66 @@ namespace back_end.Services.Implements
             _currentUserService = currentUserService;
             _kafkaProducer = kafkaProducer;
             _storeStaffRepository = storeStaffRepository;
+        }
+
+        public async Task<ApiResponse<PaginationResponse<InvoiceResponse>>> GetInvoicesAsync(
+            OrderStatus status,
+            int pageNumber,
+            int pageSize)
+        {
+            if (!Enum.IsDefined(status) || pageNumber < 1 || pageSize < 1 || pageSize > 100 ||
+                (long)(pageNumber - 1) * pageSize > int.MaxValue)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            Guid? userId = _currentUserService.GetCurrentUserId();
+            if (!userId.HasValue || userId.Value == Guid.Empty ||
+                _currentUserService.GetRoleCurrentUser() != RoleUser.Customer)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            var result = await _orderRepository.GetInvoicesAsync(
+                userId.Value,
+                status,
+                pageNumber,
+                pageSize);
+
+            PaginationResponse<InvoiceResponse> page = new()
+            {
+                CurrentPage = pageNumber,
+                PageSize = pageSize,
+                TotalItems = result.TotalItems,
+                TotalPages = (int)Math.Ceiling((double)result.TotalItems / pageSize),
+                Items = result.Orders.Select(order => new InvoiceResponse
+                {
+                    InvoiceId = order.Id,
+                    OrderCode = order.OrderCode,
+                    Subtotal = order.Subtotal,
+                    DiscountAmount = order.DiscountAmount,
+                    ShippingFee = order.ShippingFee,
+                    TotalAmount = order.TotalAmount,
+                    PaymentMethod = order.PaymentMethod,
+                    PaymentStatus = order.PaymentStatus,
+                    OrderStatus = order.OrderStatus,
+                    OrderedAt = order.OrderedAt,
+                    CompletedAt = order.CompletedAt,
+                    Items = order.Items.Select(item => new InvoiceItemResponse
+                    {
+                        BookId = item.BookId,
+                        BookName = item.Book.Name,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice,
+                        DiscountAmount = item.DiscountAmount,
+                        TotalPrice = item.TotalPrice
+                    }).ToList()
+                }).ToList()
+            };
+
+            return ApiResponse<PaginationResponse<InvoiceResponse>>.Response(
+                MessageRecord.Success,
+                data: page);
         }
 
         public async Task<ApiResponse<object?>> PlaceOrderAsync(
