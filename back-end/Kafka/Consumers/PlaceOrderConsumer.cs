@@ -131,6 +131,7 @@ namespace back_end.Kafka.Consumers
                 PlaceOrderResult.CartEmpty => "Your cart is empty, so the order could not be placed.",
                 PlaceOrderResult.BookUnavailable => "One or more books in your cart are unavailable. Please review your cart and try again.",
                 PlaceOrderResult.InsufficientStock => "There is not enough stock to fulfill your cart. Please review the quantities and try again.",
+                PlaceOrderResult.InvalidPromotion => "The promotion code is invalid, expired, no longer available, or does not apply to the items in your cart. Please review the code and try again.",
                 _ => "The order could not be placed. Please try again."
             };
 
@@ -156,7 +157,8 @@ namespace back_end.Kafka.Consumers
                 command.UserId,
                 command.AddressId,
                 command.PaymentMethod,
-                command.OrderId);
+                command.OrderId,
+                command.PromotionCode);
 
             if (placementResult is PlaceOrderResult.Created or PlaceOrderResult.Duplicate)
             {

@@ -10,7 +10,8 @@ namespace back_end.Repositories
         AddressNotFound,
         CartEmpty,
         BookUnavailable,
-        InsufficientStock
+        InsufficientStock,
+        InvalidPromotion
     }
 
     public enum ConfirmOrderResult
@@ -51,7 +52,8 @@ namespace back_end.Repositories
             Guid userId,
             Guid addressId,
             PaymentMethod paymentMethod,
-            Guid orderId);
+            Guid orderId,
+            string? promotionCode);
         Task<(ConfirmOrderResult Result, OrderEntity? Order)> ConfirmAsync(
             Guid orderId,
             Guid? storeId);

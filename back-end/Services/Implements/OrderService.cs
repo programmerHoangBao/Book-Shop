@@ -106,6 +106,7 @@ namespace back_end.Services.Implements
             if (request.AddressId == Guid.Empty ||
                 !Enum.IsDefined(request.PaymentMethod) ||
                 request.PaymentMethod != PaymentMethod.CashOnDelivery ||
+                (request.PromotionCode?.Trim().Length ?? 0) > 6 ||
                 string.IsNullOrWhiteSpace(idempotencyKey) ||
                 idempotencyKey.Length > 128)
             {
@@ -118,7 +119,10 @@ namespace back_end.Services.Implements
                 OrderId = orderId,
                 UserId = userId.Value,
                 AddressId = request.AddressId,
-                PaymentMethod = request.PaymentMethod
+                PaymentMethod = request.PaymentMethod,
+                PromotionCode = string.IsNullOrWhiteSpace(request.PromotionCode)
+                    ? null
+                    : request.PromotionCode.Trim().ToUpperInvariant()
             });
 
             PlaceOrderResponse response = new()

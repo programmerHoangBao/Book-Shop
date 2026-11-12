@@ -44,7 +44,8 @@ namespace back_end.Repositories.Implements
             Guid userId,
             Guid addressId,
             PaymentMethod paymentMethod,
-            Guid orderId)
+            Guid orderId,
+            string? promotionCode)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -104,6 +105,88 @@ namespace back_end.Repositories.Implements
                     return (PlaceOrderResult.BookUnavailable, null);
                 }
 
+                DateTime now = DateTime.UtcNow;
+                PromotionEntity? promotion = null;
+                decimal discountAmount = 0;
+                if (!string.IsNullOrWhiteSpace(promotionCode))
+                {
+                    string normalizedCode = promotionCode.Trim().ToUpperInvariant();
+                    promotion = await _context.Promotions
+                        .AsNoTracking()
+                        .Include(candidate => candidate.PromotionBooks.Where(book => !book.IsDeleted))
+                        .Include(candidate => candidate.PromotionCatatogies.Where(category => !category.IsDeleted))
+                        .FirstOrDefaultAsync(candidate =>
+                            candidate.Code != null && candidate.Code.ToUpper() == normalizedCode &&
+                            candidate.IsActive && !candidate.IsDeleted &&
+                            candidate.StartAt <= now && candidate.EndAt > now &&
+                            (candidate.UsageLimit == 0 || candidate.UsageCount < candidate.UsageLimit));
+
+                    if (promotion == null || orderLines.Sum(line => line.Book.Price * line.Quantity) < promotion.MinimumOrderValue)
+                    {
+                        await transaction.RollbackAsync();
+                        return (PlaceOrderResult.InvalidPromotion, null);
+                    }
+
+                    List<Guid> promotionBookIds = promotion.PromotionBooks
+                        .Select(target => target.BookId)
+                        .ToList();
+                    List<Guid> promotionCategoryIds = promotion.PromotionCatatogies
+                        .Select(target => target.CategoryId)
+                        .ToList();
+                    bool hasTargetRestrictions = promotionBookIds.Count > 0 || promotionCategoryIds.Count > 0;
+                    List<Guid> applicableBookIds = new();
+                    List<Guid> orderBookIds = orderLines.Select(line => line.Book.Id).ToList();
+
+                    if (!hasTargetRestrictions)
+                    {
+                        applicableBookIds = orderLines.Select(line => line.Book.Id).ToList();
+                    }
+                    else
+                    {
+                        HashSet<Guid> booksInPromotionCategories = promotionCategoryIds.Count == 0
+                            ? new HashSet<Guid>()
+                            : (await _context.BookCategories
+                                .Where(category => !category.IsDeleted &&
+                                    category.Category != null &&
+                                    !category.Category.IsDeleted && category.Category.IsActive &&
+                                    promotionCategoryIds.Contains(category.CategoryId) &&
+                                    orderBookIds.Contains(category.BookId))
+                                .Select(category => category.BookId)
+                                .Distinct()
+                                .ToListAsync())
+                                .ToHashSet();
+
+                        applicableBookIds = orderLines
+                            .Where(line => promotionBookIds.Contains(line.Book.Id) ||
+                                booksInPromotionCategories.Contains(line.Book.Id))
+                            .Select(line => line.Book.Id)
+                            .ToList();
+                    }
+
+                    decimal eligibleSubtotal = orderLines
+                        .Where(line => applicableBookIds.Contains(line.Book.Id))
+                        .Sum(line => line.Book.Price * line.Quantity);
+                    if ((hasTargetRestrictions && eligibleSubtotal <= 0) ||
+                        (promotion.Type != PromotionType.FreeShipping && eligibleSubtotal <= 0))
+                    {
+                        await transaction.RollbackAsync();
+                        return (PlaceOrderResult.InvalidPromotion, null);
+                    }
+
+                    discountAmount = promotion.Type switch
+                    {
+                        PromotionType.PercentageDiscount => decimal.Round(
+                            eligibleSubtotal * promotion.DiscountValue / 100m,
+                            2,
+                            MidpointRounding.AwayFromZero),
+                        PromotionType.FixedAmountDiscount => Math.Min(
+                            eligibleSubtotal,
+                            promotion.DiscountValue),
+                        PromotionType.FreeShipping => 0,
+                        _ => 0
+                    };
+                }
+
                 OrderEntity order = new()
                 {
                     Id = orderId,
@@ -148,9 +231,35 @@ namespace back_end.Repositories.Implements
                     }
                 }
 
-                order.DiscountAmount = 0;
+                order.DiscountAmount = discountAmount;
                 order.ShippingFee = 0;
-                order.TotalAmount = order.Subtotal;
+                order.TotalAmount = Math.Max(0, order.Subtotal - order.DiscountAmount + order.ShippingFee);
+
+                if (promotion != null)
+                {
+                    int updatedPromotions = await _context.Promotions
+                        .Where(candidate => candidate.Id == promotion.Id &&
+                            candidate.IsActive && !candidate.IsDeleted &&
+                            candidate.StartAt <= now && candidate.EndAt > now &&
+                            (candidate.UsageLimit == 0 || candidate.UsageCount < candidate.UsageLimit))
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(candidate => candidate.UsageCount,
+                                candidate => candidate.UsageCount + 1)
+                            .SetProperty(candidate => candidate.UpdatedAt, now));
+
+                    if (updatedPromotions == 0)
+                    {
+                        await transaction.RollbackAsync();
+                        return (PlaceOrderResult.InvalidPromotion, null);
+                    }
+
+                    _context.PromotionUsages.Add(new PromotionUsageEntity
+                    {
+                        PromotionId = promotion.Id,
+                        UserId = userId,
+                        OrderId = order.Id
+                    });
+                }
 
                 foreach (var reservation in reservations)
                 {
