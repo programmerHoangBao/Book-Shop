@@ -253,6 +253,22 @@ namespace back_end.Services.Implements
             );
         }
 
+        public async Task<ApiResponse<object?>> LogoutAsync(RefreshTokenRequest req)
+        {
+            string refreshTokenHash = HashUtility.HashBySHA256(
+                req.RefreshToken,
+                _securitySetting.SHASecrectKey
+            );
+            var redisKey = $"refresh_token:{refreshTokenHash}";
+
+            // Treat an already-expired or previously revoked token as logged out.
+            await _redisService.DeleteAsync(redisKey);
+
+            return ApiResponse<object?>.Response(
+                messageRecord: MessageRecord.Success
+            );
+        }
+
         public async Task<ApiResponse<object?>> RegisterAsync(RegisterRequest req)
         {
             UserEntity? user = await _userRepository.GetUserByEmailAsync(req.Email);
