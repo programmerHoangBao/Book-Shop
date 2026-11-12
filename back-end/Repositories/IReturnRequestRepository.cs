@@ -12,6 +12,15 @@ namespace back_end.Repositories
         InvalidItems
     }
 
+    public enum ConfirmReturnRequestResult
+    {
+        Approved,
+        AlreadyApproved,
+        NotFound,
+        NotPending,
+        StoreNotAssociated
+    }
+
     public interface IReturnRequestRepository
     {
         Task<(CreateReturnRequestResult Result, ReturnRequestEntity? ReturnRequest)> CreateAsync(
@@ -19,5 +28,9 @@ namespace back_end.Repositories
             Guid orderId,
             ReturnRequestEntity returnRequest,
             DateTime requestedAt);
+        Task<(ConfirmReturnRequestResult Result, ReturnRequestEntity? ReturnRequest)> ConfirmAsync(
+            Guid returnRequestId,
+            Guid? storeId,
+            DateTime approvedAt);
     }
 }

@@ -91,5 +91,61 @@ namespace back_end.Repositories.Implements
                 throw;
             }
         }
+
+        public async Task<(ConfirmReturnRequestResult Result, ReturnRequestEntity? ReturnRequest)> ConfirmAsync(
+            Guid returnRequestId,
+            Guid? storeId,
+            DateTime approvedAt)
+        {
+            ReturnRequestEntity? returnRequest = await _context.ReturnRequests
+                .AsNoTracking()
+                .Include(candidate => candidate.Order)
+                .FirstOrDefaultAsync(candidate => candidate.Id == returnRequestId);
+            if (returnRequest == null || returnRequest.Order == null || returnRequest.Order.IsDeleted)
+            {
+                return (ConfirmReturnRequestResult.NotFound, null);
+            }
+
+            if (storeId.HasValue)
+            {
+                string reservationReason = $"Reserved for order {returnRequest.Order.OrderCode}";
+                bool returnBelongsToStore = await _context.InventoryTransactions.AnyAsync(inventoryTransaction =>
+                    inventoryTransaction.Reason == reservationReason &&
+                    !inventoryTransaction.IsDeleted &&
+                    inventoryTransaction.Inventory != null &&
+                    inventoryTransaction.Inventory.StoreId == storeId.Value);
+                if (!returnBelongsToStore)
+                {
+                    return (ConfirmReturnRequestResult.StoreNotAssociated, null);
+                }
+            }
+
+            int updatedRows = await _context.ReturnRequests
+                .Where(candidate => candidate.Id == returnRequestId &&
+                    candidate.Status == ReturnRequestStatus.Pending)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(candidate => candidate.Status, ReturnRequestStatus.Approved)
+                    .SetProperty(candidate => candidate.ApprovedAt, approvedAt));
+
+            if (updatedRows == 1)
+            {
+                returnRequest.Status = ReturnRequestStatus.Approved;
+                returnRequest.ApprovedAt = approvedAt;
+                return (ConfirmReturnRequestResult.Approved, returnRequest);
+            }
+
+            returnRequest = await _context.ReturnRequests
+                .AsNoTracking()
+                .Include(candidate => candidate.Order)
+                .FirstOrDefaultAsync(candidate => candidate.Id == returnRequestId);
+            if (returnRequest?.Status == ReturnRequestStatus.Approved)
+            {
+                return (ConfirmReturnRequestResult.AlreadyApproved, returnRequest);
+            }
+
+            return returnRequest == null
+                ? (ConfirmReturnRequestResult.NotFound, null)
+                : (ConfirmReturnRequestResult.NotPending, returnRequest);
+        }
     }
 }

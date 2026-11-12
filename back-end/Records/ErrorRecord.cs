@@ -116,4 +116,7 @@ public sealed record ErrorRecord(
 
     public static readonly ErrorRecord ReturnItemsInvalid =
         new("E036", "The requested return items or quantities are invalid.", StatusCodes.Status400BadRequest);
+
+    public static readonly ErrorRecord ReturnRequestNotPending =
+        new("E037", "Only pending return requests can be confirmed.", StatusCodes.Status409Conflict);
 }

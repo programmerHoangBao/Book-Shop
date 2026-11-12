@@ -15,13 +15,16 @@ namespace back_end.Services.Implements
         private const int MaximumEvidenceUrlLength = 2048;
         private readonly IReturnRequestRepository _returnRequestRepository;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IStoreStaffRepository _storeStaffRepository;
 
         public ReturnRequestService(
             IReturnRequestRepository returnRequestRepository,
-            ICurrentUserService currentUserService)
+            ICurrentUserService currentUserService,
+            IStoreStaffRepository storeStaffRepository)
         {
             _returnRequestRepository = returnRequestRepository;
             _currentUserService = currentUserService;
+            _storeStaffRepository = storeStaffRepository;
         }
 
         public async Task<ApiResponse<object?>> CreateAsync(
@@ -105,6 +108,69 @@ namespace back_end.Services.Implements
             };
 
             return ApiResponse<object?>.Response(MessageRecord.CreatedSuccessfully, data: response);
+        }
+
+        public async Task<ApiResponse<object?>> ConfirmAsync(Guid returnRequestId)
+        {
+            if (returnRequestId == Guid.Empty)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            Guid? userId = _currentUserService.GetCurrentUserId();
+            RoleUser? role = _currentUserService.GetRoleCurrentUser();
+            if (!userId.HasValue || userId.Value == Guid.Empty)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            Guid? storeId = null;
+            if (role is RoleUser.Manager or RoleUser.Employee)
+            {
+                StoreEntity? store = await _storeStaffRepository.GetStoreByUserIdAsync(userId.Value);
+                if (store == null || store.IsDeleted)
+                {
+                    throw new BusinessException(ErrorRecord.Forbidden);
+                }
+
+                storeId = store.Id;
+            }
+            else if (role != RoleUser.Admin)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            DateTime approvedAt = DateTime.UtcNow;
+            var (result, returnRequest) = await _returnRequestRepository.ConfirmAsync(
+                returnRequestId,
+                storeId,
+                approvedAt);
+
+            switch (result)
+            {
+                case ConfirmReturnRequestResult.NotFound:
+                    throw new BusinessException(ErrorRecord.NotFound);
+                case ConfirmReturnRequestResult.NotPending:
+                    throw new BusinessException(ErrorRecord.ReturnRequestNotPending);
+                case ConfirmReturnRequestResult.StoreNotAssociated:
+                    throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            if (returnRequest == null)
+            {
+                throw new BusinessException(ErrorRecord.Failed);
+            }
+
+            ConfirmReturnResponse response = new()
+            {
+                ReturnRequestId = returnRequest.Id,
+                OrderId = returnRequest.OrderId,
+                Status = returnRequest.Status,
+                ApprovedAt = returnRequest.ApprovedAt ?? approvedAt,
+                WasAlreadyApproved = result == ConfirmReturnRequestResult.AlreadyApproved
+            };
+
+            return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
         }
     }
 }
