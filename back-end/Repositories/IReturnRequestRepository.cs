@@ -23,6 +23,10 @@ namespace back_end.Repositories
 
     public interface IReturnRequestRepository
     {
+        Task<(List<ReturnRequestEntity> ReturnRequests, int TotalItems)> GetForCustomerAsync(
+            Guid userId,
+            int pageNumber,
+            int pageSize);
         Task<(CreateReturnRequestResult Result, ReturnRequestEntity? ReturnRequest)> CreateAsync(
             Guid userId,
             Guid orderId,

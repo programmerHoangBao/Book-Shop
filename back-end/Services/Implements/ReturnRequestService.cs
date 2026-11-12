@@ -27,6 +27,66 @@ namespace back_end.Services.Implements
             _storeStaffRepository = storeStaffRepository;
         }
 
+        public async Task<ApiResponse<PaginationResponse<ReturnRequestResponse>>> GetForCurrentCustomerAsync(
+            int pageNumber,
+            int pageSize)
+        {
+            if (pageNumber < 1 || pageSize < 1 || pageSize > 100 ||
+                (long)(pageNumber - 1) * pageSize > int.MaxValue)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            Guid? userId = _currentUserService.GetCurrentUserId();
+            if (!userId.HasValue || userId.Value == Guid.Empty ||
+                _currentUserService.GetRoleCurrentUser() != RoleUser.Customer)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            var result = await _returnRequestRepository.GetForCustomerAsync(
+                userId.Value,
+                pageNumber,
+                pageSize);
+
+            PaginationResponse<ReturnRequestResponse> page = new()
+            {
+                CurrentPage = pageNumber,
+                PageSize = pageSize,
+                TotalItems = result.TotalItems,
+                TotalPages = (int)Math.Ceiling((double)result.TotalItems / pageSize),
+                Items = result.ReturnRequests.Select(returnRequest => new ReturnRequestResponse
+                {
+                    Id = returnRequest.Id,
+                    OrderId = returnRequest.OrderId,
+                    OrderCode = returnRequest.Order?.OrderCode ?? string.Empty,
+                    Status = returnRequest.Status,
+                    Reason = returnRequest.Reason,
+                    BankAccountName = returnRequest.BankAccountName,
+                    BankAccountNumber = returnRequest.BankAccountNumber,
+                    BankName = returnRequest.BankName,
+                    RequestedAt = returnRequest.RequestedAt,
+                    ApprovedAt = returnRequest.ApprovedAt,
+                    RejectedAt = returnRequest.RejectedAt,
+                    CompletedAt = returnRequest.CompletedAt,
+                    Items = returnRequest.Items.Select(item => new ReturnRequestListItemResponse
+                    {
+                        OrderItemId = item.OrderItemId,
+                        BookId = item.OrderItem?.BookId ?? Guid.Empty,
+                        BookName = item.OrderItem?.Book?.Name ?? string.Empty,
+                        Quantity = item.Quantity
+                    }).ToList(),
+                    EvidenceImageUrls = returnRequest.Evidences
+                        .Select(evidence => evidence.ImageUrl)
+                        .ToList()
+                }).ToList()
+            };
+
+            return ApiResponse<PaginationResponse<ReturnRequestResponse>>.Response(
+                MessageRecord.Success,
+                data: page);
+        }
+
         public async Task<ApiResponse<object?>> CreateAsync(
             Guid orderId,
             CreateReturnRequest request)

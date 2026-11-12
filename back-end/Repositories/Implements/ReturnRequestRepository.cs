@@ -14,6 +14,31 @@ namespace back_end.Repositories.Implements
             _context = context;
         }
 
+        public async Task<(List<ReturnRequestEntity> ReturnRequests, int TotalItems)> GetForCustomerAsync(
+            Guid userId,
+            int pageNumber,
+            int pageSize)
+        {
+            IQueryable<ReturnRequestEntity> query = _context.ReturnRequests
+                .AsNoTracking()
+                .Where(returnRequest => returnRequest.UserId == userId);
+
+            int totalItems = await query.CountAsync();
+            List<ReturnRequestEntity> returnRequests = await query
+                .Include(returnRequest => returnRequest.Order)
+                .Include(returnRequest => returnRequest.Items)
+                    .ThenInclude(item => item.OrderItem)
+                        .ThenInclude(orderItem => orderItem!.Book)
+                .Include(returnRequest => returnRequest.Evidences)
+                .OrderByDescending(returnRequest => returnRequest.RequestedAt)
+                .ThenByDescending(returnRequest => returnRequest.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (returnRequests, totalItems);
+        }
+
         public async Task<(CreateReturnRequestResult Result, ReturnRequestEntity? ReturnRequest)> CreateAsync(
             Guid userId,
             Guid orderId,
