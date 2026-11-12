@@ -98,4 +98,25 @@ public sealed record ErrorRecord(
 
     public static readonly ErrorRecord OrderNotInTransit =
         new("E030", "Only orders in transit can be completed.", StatusCodes.Status409Conflict);
+
+    public static readonly ErrorRecord PromotionCodeExists =
+        new("E031", "Promotion code already exists.", StatusCodes.Status409Conflict);
+
+    public static readonly ErrorRecord OrderCannotBeCancelled =
+        new("E032", "Only pending or confirmed orders can be cancelled.", StatusCodes.Status409Conflict);
+
+    public static readonly ErrorRecord ReturnOrderNotCompleted =
+        new("E033", "Return requests are only allowed for completed orders.", StatusCodes.Status409Conflict);
+
+    public static readonly ErrorRecord ReturnWindowExpired =
+        new("E034", "The return request window has expired.", StatusCodes.Status409Conflict);
+
+    public static readonly ErrorRecord ReturnRequestAlreadyExists =
+        new("E035", "A return request already exists for this order.", StatusCodes.Status409Conflict);
+
+    public static readonly ErrorRecord ReturnItemsInvalid =
+        new("E036", "The requested return items or quantities are invalid.", StatusCodes.Status400BadRequest);
+
+    public static readonly ErrorRecord ReturnRequestNotPending =
+        new("E037", "Only pending return requests can be confirmed.", StatusCodes.Status409Conflict);
 }

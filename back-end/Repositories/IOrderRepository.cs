@@ -10,7 +10,8 @@ namespace back_end.Repositories
         AddressNotFound,
         CartEmpty,
         BookUnavailable,
-        InsufficientStock
+        InsufficientStock,
+        InvalidPromotion
     }
 
     public enum ConfirmOrderResult
@@ -40,13 +41,26 @@ namespace back_end.Repositories
         StoreNotAssociated
     }
 
+    public enum CancelOrderResult
+    {
+        Cancelled,
+        NotFound,
+        NotCancellable
+    }
+
     public interface IOrderRepository
     {
+        Task<(List<OrderEntity> Orders, int TotalItems)> GetInvoicesAsync(
+            Guid userId,
+            OrderStatus status,
+            int pageNumber,
+            int pageSize);
         Task<(PlaceOrderResult Result, OrderEntity? Order)> PlaceOrderAsync(
             Guid userId,
             Guid addressId,
             PaymentMethod paymentMethod,
-            Guid orderId);
+            Guid orderId,
+            string? promotionCode);
         Task<(ConfirmOrderResult Result, OrderEntity? Order)> ConfirmAsync(
             Guid orderId,
             Guid? storeId);
@@ -56,5 +70,6 @@ namespace back_end.Repositories
         Task<(CompleteOrderResult Result, OrderEntity? Order)> CompleteAsync(
             Guid orderId,
             Guid? storeId);
+        Task<(CancelOrderResult Result, DateTime? CancelledAt)> CancelAsync(Guid orderId, Guid userId);
     }
 }

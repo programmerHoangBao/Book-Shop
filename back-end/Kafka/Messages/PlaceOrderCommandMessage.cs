@@ -8,5 +8,6 @@ namespace back_end.Kafka.Messages
         public Guid UserId { get; set; }
         public Guid AddressId { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
+        public string? PromotionCode { get; set; }
     }
 }

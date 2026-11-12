@@ -15,11 +15,165 @@ namespace back_end.Repositories.Implements
             _context = context;
         }
 
+        public async Task<(List<OrderEntity> Orders, int TotalItems)> GetInvoicesAsync(
+            Guid userId,
+            OrderStatus status,
+            int pageNumber,
+            int pageSize)
+        {
+            IQueryable<OrderEntity> query = _context.Orders
+                .AsNoTracking()
+                .Where(order => order.UserId == userId &&
+                    order.OrderStatus == status &&
+                    !order.IsDeleted);
+
+            int totalItems = await query.CountAsync();
+            List<OrderEntity> orders = await query
+                .Include(order => order.Items)
+                    .ThenInclude(item => item.Book)
+                .OrderByDescending(order => order.OrderedAt)
+                .ThenByDescending(order => order.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (orders, totalItems);
+        }
+
+        public async Task<(CancelOrderResult Result, DateTime? CancelledAt)> CancelAsync(
+            Guid orderId,
+            Guid userId)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                OrderEntity? order = await _context.Orders
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(candidate => candidate.Id == orderId &&
+                        candidate.UserId == userId &&
+                        !candidate.IsDeleted);
+                if (order == null)
+                {
+                    await transaction.RollbackAsync();
+                    return (CancelOrderResult.NotFound, null);
+                }
+
+                if (order.OrderStatus is not (OrderStatus.Pending or OrderStatus.Confirmed))
+                {
+                    await transaction.RollbackAsync();
+                    return (CancelOrderResult.NotCancellable, null);
+                }
+
+                DateTime cancelledAt = DateTime.UtcNow;
+                int updatedOrders = await _context.Orders
+                    .Where(candidate => candidate.Id == orderId &&
+                        candidate.UserId == userId &&
+                        !candidate.IsDeleted &&
+                        (candidate.OrderStatus == OrderStatus.Pending ||
+                         candidate.OrderStatus == OrderStatus.Confirmed))
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(candidate => candidate.OrderStatus, OrderStatus.Cancelled)
+                        .SetProperty(candidate => candidate.CancelledAt, cancelledAt)
+                        .SetProperty(candidate => candidate.UpdatedAt, cancelledAt));
+
+                if (updatedOrders == 0)
+                {
+                    await transaction.RollbackAsync();
+                    return (CancelOrderResult.NotCancellable, null);
+                }
+
+                string reservationReason = $"Reserved for order {order.OrderCode}";
+                var reservations = await _context.InventoryTransactions
+                    .Where(inventoryTransaction =>
+                        inventoryTransaction.Reason == reservationReason &&
+                        inventoryTransaction.TransactionType == TransactionType.Adjustment &&
+                        !inventoryTransaction.IsDeleted)
+                    .GroupBy(inventoryTransaction => inventoryTransaction.InventoryId)
+                    .Select(group => new
+                    {
+                        InventoryId = group.Key,
+                        Quantity = group.Sum(inventoryTransaction => inventoryTransaction.Quantity)
+                    })
+                    .ToListAsync();
+
+                foreach (var reservation in reservations)
+                {
+                    var inventory = await _context.Inventories
+                        .Where(candidate => candidate.Id == reservation.InventoryId)
+                        .Select(candidate => new
+                        {
+                            candidate.Quantity,
+                            candidate.ReservedQuantity
+                        })
+                        .FirstOrDefaultAsync();
+                    if (inventory == null)
+                    {
+                        throw new InvalidOperationException("Reserved inventory for the order was not found.");
+                    }
+
+                    int updatedInventory = await _context.Inventories
+                        .Where(candidate => candidate.Id == reservation.InventoryId &&
+                            candidate.ReservedQuantity >= reservation.Quantity)
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(candidate => candidate.ReservedQuantity,
+                                candidate => candidate.ReservedQuantity - reservation.Quantity)
+                            .SetProperty(candidate => candidate.AvailableQuantity,
+                                candidate => candidate.AvailableQuantity + reservation.Quantity)
+                            .SetProperty(candidate => candidate.UpdatedAt, cancelledAt));
+                    if (updatedInventory == 0)
+                    {
+                        throw new InvalidOperationException("Reserved inventory could not be released.");
+                    }
+
+                    _context.InventoryTransactions.Add(new InventoryTransactionEntity
+                    {
+                        InventoryId = reservation.InventoryId,
+                        UserId = userId,
+                        TransactionType = TransactionType.Adjustment,
+                        Quantity = reservation.Quantity,
+                        QuntityBefore = inventory.Quantity,
+                        QuantityAfter = inventory.Quantity,
+                        Reason = $"Released reservation for cancelled order {order.OrderCode}"
+                    });
+                }
+
+                List<PromotionUsageEntity> promotionUsages = await _context.PromotionUsages
+                    .Where(usage => usage.OrderId == orderId && !usage.IsDeleted)
+                    .ToListAsync();
+                foreach (PromotionUsageEntity usage in promotionUsages)
+                {
+                    int updatedPromotions = await _context.Promotions
+                        .Where(promotion => promotion.Id == usage.PromotionId && promotion.UsageCount > 0)
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(promotion => promotion.UsageCount,
+                                promotion => promotion.UsageCount - 1)
+                            .SetProperty(promotion => promotion.UpdatedAt, cancelledAt));
+                    if (updatedPromotions == 0)
+                    {
+                        throw new InvalidOperationException("Promotion usage count could not be released.");
+                    }
+
+                    usage.IsDeleted = true;
+                    usage.UpdatedAt = cancelledAt;
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return (CancelOrderResult.Cancelled, cancelledAt);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
         public async Task<(PlaceOrderResult Result, OrderEntity? Order)> PlaceOrderAsync(
             Guid userId,
             Guid addressId,
             PaymentMethod paymentMethod,
-            Guid orderId)
+            Guid orderId,
+            string? promotionCode)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -79,6 +233,88 @@ namespace back_end.Repositories.Implements
                     return (PlaceOrderResult.BookUnavailable, null);
                 }
 
+                DateTime now = DateTime.UtcNow;
+                PromotionEntity? promotion = null;
+                decimal discountAmount = 0;
+                if (!string.IsNullOrWhiteSpace(promotionCode))
+                {
+                    string normalizedCode = promotionCode.Trim().ToUpperInvariant();
+                    promotion = await _context.Promotions
+                        .AsNoTracking()
+                        .Include(candidate => candidate.PromotionBooks.Where(book => !book.IsDeleted))
+                        .Include(candidate => candidate.PromotionCatatogies.Where(category => !category.IsDeleted))
+                        .FirstOrDefaultAsync(candidate =>
+                            candidate.Code != null && candidate.Code.ToUpper() == normalizedCode &&
+                            candidate.IsActive && !candidate.IsDeleted &&
+                            candidate.StartAt <= now && candidate.EndAt > now &&
+                            (candidate.UsageLimit == 0 || candidate.UsageCount < candidate.UsageLimit));
+
+                    if (promotion == null || orderLines.Sum(line => line.Book.Price * line.Quantity) < promotion.MinimumOrderValue)
+                    {
+                        await transaction.RollbackAsync();
+                        return (PlaceOrderResult.InvalidPromotion, null);
+                    }
+
+                    List<Guid> promotionBookIds = promotion.PromotionBooks
+                        .Select(target => target.BookId)
+                        .ToList();
+                    List<Guid> promotionCategoryIds = promotion.PromotionCatatogies
+                        .Select(target => target.CategoryId)
+                        .ToList();
+                    bool hasTargetRestrictions = promotionBookIds.Count > 0 || promotionCategoryIds.Count > 0;
+                    List<Guid> applicableBookIds = new();
+                    List<Guid> orderBookIds = orderLines.Select(line => line.Book.Id).ToList();
+
+                    if (!hasTargetRestrictions)
+                    {
+                        applicableBookIds = orderLines.Select(line => line.Book.Id).ToList();
+                    }
+                    else
+                    {
+                        HashSet<Guid> booksInPromotionCategories = promotionCategoryIds.Count == 0
+                            ? new HashSet<Guid>()
+                            : (await _context.BookCategories
+                                .Where(category => !category.IsDeleted &&
+                                    category.Category != null &&
+                                    !category.Category.IsDeleted && category.Category.IsActive &&
+                                    promotionCategoryIds.Contains(category.CategoryId) &&
+                                    orderBookIds.Contains(category.BookId))
+                                .Select(category => category.BookId)
+                                .Distinct()
+                                .ToListAsync())
+                                .ToHashSet();
+
+                        applicableBookIds = orderLines
+                            .Where(line => promotionBookIds.Contains(line.Book.Id) ||
+                                booksInPromotionCategories.Contains(line.Book.Id))
+                            .Select(line => line.Book.Id)
+                            .ToList();
+                    }
+
+                    decimal eligibleSubtotal = orderLines
+                        .Where(line => applicableBookIds.Contains(line.Book.Id))
+                        .Sum(line => line.Book.Price * line.Quantity);
+                    if ((hasTargetRestrictions && eligibleSubtotal <= 0) ||
+                        (promotion.Type != PromotionType.FreeShipping && eligibleSubtotal <= 0))
+                    {
+                        await transaction.RollbackAsync();
+                        return (PlaceOrderResult.InvalidPromotion, null);
+                    }
+
+                    discountAmount = promotion.Type switch
+                    {
+                        PromotionType.PercentageDiscount => decimal.Round(
+                            eligibleSubtotal * promotion.DiscountValue / 100m,
+                            2,
+                            MidpointRounding.AwayFromZero),
+                        PromotionType.FixedAmountDiscount => Math.Min(
+                            eligibleSubtotal,
+                            promotion.DiscountValue),
+                        PromotionType.FreeShipping => 0,
+                        _ => 0
+                    };
+                }
+
                 OrderEntity order = new()
                 {
                     Id = orderId,
@@ -123,9 +359,35 @@ namespace back_end.Repositories.Implements
                     }
                 }
 
-                order.DiscountAmount = 0;
+                order.DiscountAmount = discountAmount;
                 order.ShippingFee = 0;
-                order.TotalAmount = order.Subtotal;
+                order.TotalAmount = Math.Max(0, order.Subtotal - order.DiscountAmount + order.ShippingFee);
+
+                if (promotion != null)
+                {
+                    int updatedPromotions = await _context.Promotions
+                        .Where(candidate => candidate.Id == promotion.Id &&
+                            candidate.IsActive && !candidate.IsDeleted &&
+                            candidate.StartAt <= now && candidate.EndAt > now &&
+                            (candidate.UsageLimit == 0 || candidate.UsageCount < candidate.UsageLimit))
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(candidate => candidate.UsageCount,
+                                candidate => candidate.UsageCount + 1)
+                            .SetProperty(candidate => candidate.UpdatedAt, now));
+
+                    if (updatedPromotions == 0)
+                    {
+                        await transaction.RollbackAsync();
+                        return (PlaceOrderResult.InvalidPromotion, null);
+                    }
+
+                    _context.PromotionUsages.Add(new PromotionUsageEntity
+                    {
+                        PromotionId = promotion.Id,
+                        UserId = userId,
+                        OrderId = order.Id
+                    });
+                }
 
                 foreach (var reservation in reservations)
                 {

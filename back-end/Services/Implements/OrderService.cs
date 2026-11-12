@@ -1,4 +1,5 @@
 using back_end.DTOs;
+using back_end.DTOs.Invoices.Responses;
 using back_end.DTOs.Orders.Requests;
 using back_end.DTOs.Orders.Responses;
 using back_end.Entities;
@@ -32,6 +33,66 @@ namespace back_end.Services.Implements
             _storeStaffRepository = storeStaffRepository;
         }
 
+        public async Task<ApiResponse<PaginationResponse<InvoiceResponse>>> GetInvoicesAsync(
+            OrderStatus status,
+            int pageNumber,
+            int pageSize)
+        {
+            if (!Enum.IsDefined(status) || pageNumber < 1 || pageSize < 1 || pageSize > 100 ||
+                (long)(pageNumber - 1) * pageSize > int.MaxValue)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            Guid? userId = _currentUserService.GetCurrentUserId();
+            if (!userId.HasValue || userId.Value == Guid.Empty ||
+                _currentUserService.GetRoleCurrentUser() != RoleUser.Customer)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            var result = await _orderRepository.GetInvoicesAsync(
+                userId.Value,
+                status,
+                pageNumber,
+                pageSize);
+
+            PaginationResponse<InvoiceResponse> page = new()
+            {
+                CurrentPage = pageNumber,
+                PageSize = pageSize,
+                TotalItems = result.TotalItems,
+                TotalPages = (int)Math.Ceiling((double)result.TotalItems / pageSize),
+                Items = result.Orders.Select(order => new InvoiceResponse
+                {
+                    InvoiceId = order.Id,
+                    OrderCode = order.OrderCode,
+                    Subtotal = order.Subtotal,
+                    DiscountAmount = order.DiscountAmount,
+                    ShippingFee = order.ShippingFee,
+                    TotalAmount = order.TotalAmount,
+                    PaymentMethod = order.PaymentMethod,
+                    PaymentStatus = order.PaymentStatus,
+                    OrderStatus = order.OrderStatus,
+                    OrderedAt = order.OrderedAt,
+                    CompletedAt = order.CompletedAt,
+                    Items = order.Items.Select(item => new InvoiceItemResponse
+                    {
+                        BookId = item.BookId,
+                        BookName = item.Book.Name,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice,
+                        DiscountAmount = item.DiscountAmount,
+                        TotalPrice = item.TotalPrice
+                    }).ToList()
+                }).ToList()
+            };
+
+            return ApiResponse<PaginationResponse<InvoiceResponse>>.Response(
+                MessageRecord.Success,
+                data: page);
+        }
+
         public async Task<ApiResponse<object?>> PlaceOrderAsync(
             PlaceOrderRequest request,
             string? idempotencyKey)
@@ -45,6 +106,7 @@ namespace back_end.Services.Implements
             if (request.AddressId == Guid.Empty ||
                 !Enum.IsDefined(request.PaymentMethod) ||
                 request.PaymentMethod != PaymentMethod.CashOnDelivery ||
+                (request.PromotionCode?.Trim().Length ?? 0) > 6 ||
                 string.IsNullOrWhiteSpace(idempotencyKey) ||
                 idempotencyKey.Length > 128)
             {
@@ -57,7 +119,10 @@ namespace back_end.Services.Implements
                 OrderId = orderId,
                 UserId = userId.Value,
                 AddressId = request.AddressId,
-                PaymentMethod = request.PaymentMethod
+                PaymentMethod = request.PaymentMethod,
+                PromotionCode = string.IsNullOrWhiteSpace(request.PromotionCode)
+                    ? null
+                    : request.PromotionCode.Trim().ToUpperInvariant()
             });
 
             PlaceOrderResponse response = new()
@@ -194,6 +259,39 @@ namespace back_end.Services.Implements
                 OrderStatus = order.OrderStatus,
                 PaymentStatus = order.PaymentStatus,
                 WasAlreadyCompleted = result == CompleteOrderResult.AlreadyCompleted
+            };
+
+            return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
+        }
+
+        public async Task<ApiResponse<object?>> CancelAsync(Guid orderId)
+        {
+            if (orderId == Guid.Empty)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            Guid? userId = _currentUserService.GetCurrentUserId();
+            if (!userId.HasValue || userId.Value == Guid.Empty ||
+                _currentUserService.GetRoleCurrentUser() != RoleUser.Customer)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            var (result, cancelledAt) = await _orderRepository.CancelAsync(orderId, userId.Value);
+            switch (result)
+            {
+                case CancelOrderResult.NotFound:
+                    throw new BusinessException(ErrorRecord.NotFound);
+                case CancelOrderResult.NotCancellable:
+                    throw new BusinessException(ErrorRecord.OrderCannotBeCancelled);
+            }
+
+            CancelOrderResponse response = new()
+            {
+                OrderId = orderId,
+                OrderStatus = OrderStatus.Cancelled,
+                CancelledAt = cancelledAt ?? DateTime.UtcNow
             };
 
             return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
