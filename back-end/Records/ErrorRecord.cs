@@ -101,4 +101,7 @@ public sealed record ErrorRecord(
 
     public static readonly ErrorRecord PromotionCodeExists =
         new("E031", "Promotion code already exists.", StatusCodes.Status409Conflict);
+
+    public static readonly ErrorRecord OrderCannotBeCancelled =
+        new("E032", "Only pending or confirmed orders can be cancelled.", StatusCodes.Status409Conflict);
 }

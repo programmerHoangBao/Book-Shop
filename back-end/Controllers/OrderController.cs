@@ -50,5 +50,13 @@ namespace back_end.Controllers
             var response = await _orderService.CompleteAsync(orderId);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpPost("{orderId:guid}/cancel")]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> CancelOrderAsync(Guid orderId)
+        {
+            var response = await _orderService.CancelAsync(orderId);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }

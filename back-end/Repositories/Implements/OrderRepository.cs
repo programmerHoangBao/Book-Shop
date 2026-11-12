@@ -40,6 +40,134 @@ namespace back_end.Repositories.Implements
             return (orders, totalItems);
         }
 
+        public async Task<(CancelOrderResult Result, DateTime? CancelledAt)> CancelAsync(
+            Guid orderId,
+            Guid userId)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                OrderEntity? order = await _context.Orders
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(candidate => candidate.Id == orderId &&
+                        candidate.UserId == userId &&
+                        !candidate.IsDeleted);
+                if (order == null)
+                {
+                    await transaction.RollbackAsync();
+                    return (CancelOrderResult.NotFound, null);
+                }
+
+                if (order.OrderStatus is not (OrderStatus.Pending or OrderStatus.Confirmed))
+                {
+                    await transaction.RollbackAsync();
+                    return (CancelOrderResult.NotCancellable, null);
+                }
+
+                DateTime cancelledAt = DateTime.UtcNow;
+                int updatedOrders = await _context.Orders
+                    .Where(candidate => candidate.Id == orderId &&
+                        candidate.UserId == userId &&
+                        !candidate.IsDeleted &&
+                        (candidate.OrderStatus == OrderStatus.Pending ||
+                         candidate.OrderStatus == OrderStatus.Confirmed))
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(candidate => candidate.OrderStatus, OrderStatus.Cancelled)
+                        .SetProperty(candidate => candidate.CancelledAt, cancelledAt)
+                        .SetProperty(candidate => candidate.UpdatedAt, cancelledAt));
+
+                if (updatedOrders == 0)
+                {
+                    await transaction.RollbackAsync();
+                    return (CancelOrderResult.NotCancellable, null);
+                }
+
+                string reservationReason = $"Reserved for order {order.OrderCode}";
+                var reservations = await _context.InventoryTransactions
+                    .Where(inventoryTransaction =>
+                        inventoryTransaction.Reason == reservationReason &&
+                        inventoryTransaction.TransactionType == TransactionType.Adjustment &&
+                        !inventoryTransaction.IsDeleted)
+                    .GroupBy(inventoryTransaction => inventoryTransaction.InventoryId)
+                    .Select(group => new
+                    {
+                        InventoryId = group.Key,
+                        Quantity = group.Sum(inventoryTransaction => inventoryTransaction.Quantity)
+                    })
+                    .ToListAsync();
+
+                foreach (var reservation in reservations)
+                {
+                    var inventory = await _context.Inventories
+                        .Where(candidate => candidate.Id == reservation.InventoryId)
+                        .Select(candidate => new
+                        {
+                            candidate.Quantity,
+                            candidate.ReservedQuantity
+                        })
+                        .FirstOrDefaultAsync();
+                    if (inventory == null)
+                    {
+                        throw new InvalidOperationException("Reserved inventory for the order was not found.");
+                    }
+
+                    int updatedInventory = await _context.Inventories
+                        .Where(candidate => candidate.Id == reservation.InventoryId &&
+                            candidate.ReservedQuantity >= reservation.Quantity)
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(candidate => candidate.ReservedQuantity,
+                                candidate => candidate.ReservedQuantity - reservation.Quantity)
+                            .SetProperty(candidate => candidate.AvailableQuantity,
+                                candidate => candidate.AvailableQuantity + reservation.Quantity)
+                            .SetProperty(candidate => candidate.UpdatedAt, cancelledAt));
+                    if (updatedInventory == 0)
+                    {
+                        throw new InvalidOperationException("Reserved inventory could not be released.");
+                    }
+
+                    _context.InventoryTransactions.Add(new InventoryTransactionEntity
+                    {
+                        InventoryId = reservation.InventoryId,
+                        UserId = userId,
+                        TransactionType = TransactionType.Adjustment,
+                        Quantity = reservation.Quantity,
+                        QuntityBefore = inventory.Quantity,
+                        QuantityAfter = inventory.Quantity,
+                        Reason = $"Released reservation for cancelled order {order.OrderCode}"
+                    });
+                }
+
+                List<PromotionUsageEntity> promotionUsages = await _context.PromotionUsages
+                    .Where(usage => usage.OrderId == orderId && !usage.IsDeleted)
+                    .ToListAsync();
+                foreach (PromotionUsageEntity usage in promotionUsages)
+                {
+                    int updatedPromotions = await _context.Promotions
+                        .Where(promotion => promotion.Id == usage.PromotionId && promotion.UsageCount > 0)
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(promotion => promotion.UsageCount,
+                                promotion => promotion.UsageCount - 1)
+                            .SetProperty(promotion => promotion.UpdatedAt, cancelledAt));
+                    if (updatedPromotions == 0)
+                    {
+                        throw new InvalidOperationException("Promotion usage count could not be released.");
+                    }
+
+                    usage.IsDeleted = true;
+                    usage.UpdatedAt = cancelledAt;
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return (CancelOrderResult.Cancelled, cancelledAt);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
         public async Task<(PlaceOrderResult Result, OrderEntity? Order)> PlaceOrderAsync(
             Guid userId,
             Guid addressId,

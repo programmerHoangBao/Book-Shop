@@ -264,6 +264,39 @@ namespace back_end.Services.Implements
             return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
         }
 
+        public async Task<ApiResponse<object?>> CancelAsync(Guid orderId)
+        {
+            if (orderId == Guid.Empty)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            Guid? userId = _currentUserService.GetCurrentUserId();
+            if (!userId.HasValue || userId.Value == Guid.Empty ||
+                _currentUserService.GetRoleCurrentUser() != RoleUser.Customer)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            var (result, cancelledAt) = await _orderRepository.CancelAsync(orderId, userId.Value);
+            switch (result)
+            {
+                case CancelOrderResult.NotFound:
+                    throw new BusinessException(ErrorRecord.NotFound);
+                case CancelOrderResult.NotCancellable:
+                    throw new BusinessException(ErrorRecord.OrderCannotBeCancelled);
+            }
+
+            CancelOrderResponse response = new()
+            {
+                OrderId = orderId,
+                OrderStatus = OrderStatus.Cancelled,
+                CancelledAt = cancelledAt ?? DateTime.UtcNow
+            };
+
+            return ApiResponse<object?>.Response(MessageRecord.Success, data: response);
+        }
+
         private async Task<(Guid UserId, Guid? StoreId)> ResolveStoreScopeAsync()
         {
             Guid? userId = _currentUserService.GetCurrentUserId();

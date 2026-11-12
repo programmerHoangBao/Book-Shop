@@ -41,6 +41,13 @@ namespace back_end.Repositories
         StoreNotAssociated
     }
 
+    public enum CancelOrderResult
+    {
+        Cancelled,
+        NotFound,
+        NotCancellable
+    }
+
     public interface IOrderRepository
     {
         Task<(List<OrderEntity> Orders, int TotalItems)> GetInvoicesAsync(
@@ -63,5 +70,6 @@ namespace back_end.Repositories
         Task<(CompleteOrderResult Result, OrderEntity? Order)> CompleteAsync(
             Guid orderId,
             Guid? storeId);
+        Task<(CancelOrderResult Result, DateTime? CancelledAt)> CancelAsync(Guid orderId, Guid userId);
     }
 }
