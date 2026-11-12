@@ -98,4 +98,7 @@ public sealed record ErrorRecord(
 
     public static readonly ErrorRecord OrderNotInTransit =
         new("E030", "Only orders in transit can be completed.", StatusCodes.Status409Conflict);
+
+    public static readonly ErrorRecord PromotionCodeExists =
+        new("E031", "Promotion code already exists.", StatusCodes.Status409Conflict);
 }
