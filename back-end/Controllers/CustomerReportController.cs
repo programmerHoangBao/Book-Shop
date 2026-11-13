@@ -30,5 +30,14 @@ namespace back_end.Controllers
             var response = await _service.GetReturningCustomersAsync(startDate, endDate);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpGet("purchase-frequency")]
+        public async Task<IActionResult> GetPurchaseFrequencyAsync(
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
+        {
+            var response = await _service.GetPurchaseFrequencyAsync(startDate, endDate);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }

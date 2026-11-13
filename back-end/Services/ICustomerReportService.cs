@@ -7,5 +7,6 @@ namespace back_end.Services
     {
         Task<ApiResponse<CustomerCountReportResponse>> GetNewCustomersAsync(DateTime? startDate, DateTime? endDate);
         Task<ApiResponse<CustomerCountReportResponse>> GetReturningCustomersAsync(DateTime? startDate, DateTime? endDate);
+        Task<ApiResponse<CustomerPurchaseFrequencyResponse>> GetPurchaseFrequencyAsync(DateTime? startDate, DateTime? endDate);
     }
 }

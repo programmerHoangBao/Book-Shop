@@ -3932,5 +3932,6 @@ All customer report endpoints require an administrator bearer token and return s
 | --- | --- | --- |
 | `GET /api/customer-reports/new-customers` | Count non-deleted customer accounts created within the selected range. | `startDate`, `endDate` |
 | `GET /api/customer-reports/returning-customers` | Count non-deleted customers with a completed purchase during the selected range and at least one completed purchase before the range. | `startDate`, `endDate` |
+| `GET /api/customer-reports/purchase-frequency` | Count completed purchases per customer during the selected range and report the average and distribution. | `startDate`, `endDate` |
 
-The response data contains the effective `startDate`, `endDate`, and `customerCount`.
+Count report data contains the effective `startDate`, `endDate`, and `customerCount`. Purchase frequency data contains the effective date range, total completed orders, purchasing customer count, average completed purchases per customer (rounded to two decimal places), and a `frequencyDistribution` array grouped by completed order count. Only non-deleted customers and orders with `Completed` status are included in purchase reports.

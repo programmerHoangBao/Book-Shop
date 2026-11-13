@@ -59,6 +59,48 @@ namespace back_end.Services.Implements
                 });
         }
 
+        public async Task<ApiResponse<CustomerPurchaseFrequencyResponse>> GetPurchaseFrequencyAsync(
+            DateTime? startDate,
+            DateTime? endDate)
+        {
+            var (start, end) = ResolveDateRange(startDate, endDate);
+            var purchasesByCustomer = await _context.Orders.AsNoTracking()
+                .Where(order => !order.IsDeleted && order.OrderStatus == OrderStatus.Completed &&
+                    order.CompletedAt >= start && order.CompletedAt < end &&
+                    order.User != null && order.User.Role == RoleUser.Customer && !order.User.IsDeleted)
+                .GroupBy(order => order.UserId)
+                .Select(group => group.Count())
+                .ToListAsync();
+
+            var distribution = purchasesByCustomer
+                .GroupBy(orderCount => orderCount)
+                .OrderBy(group => group.Key)
+                .Select(group => new CustomerPurchaseFrequencyItem
+                {
+                    CompletedOrderCount = group.Key,
+                    CustomerCount = group.Count()
+                })
+                .ToList();
+
+            int totalOrders = purchasesByCustomer.Sum();
+            int customerCount = purchasesByCustomer.Count;
+            var report = new CustomerPurchaseFrequencyResponse
+            {
+                StartDate = start,
+                EndDate = end,
+                TotalCompletedOrders = totalOrders,
+                PurchasingCustomerCount = customerCount,
+                AveragePurchasesPerCustomer = customerCount == 0
+                    ? 0
+                    : Math.Round((decimal)totalOrders / customerCount, 2),
+                FrequencyDistribution = distribution
+            };
+
+            return ApiResponse<CustomerPurchaseFrequencyResponse>.Response(
+                MessageRecord.Success,
+                data: report);
+        }
+
         private static (DateTime Start, DateTime End) ResolveDateRange(DateTime? startDate, DateTime? endDate)
         {
             DateTime now = DateTime.UtcNow;
