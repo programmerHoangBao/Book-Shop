@@ -21,6 +21,7 @@
   - [2.7. Get Deleted Stores](#27-get-deleted-stores)
   - [2.8. Search stores](#28-search-stores)
 - [3. Revenue Reports](#3-revenue-reports)
+- [6. Customer Reports](#6-customer-reports)
 
 ## 1. Auth
 
@@ -3922,3 +3923,15 @@ Example success response:
   }
 }
 ```
+
+## 6. Customer Reports
+
+All customer report endpoints require an administrator bearer token and return system-wide results. Date ranges use UTC timestamps with an inclusive `startDate` and exclusive `endDate`. If omitted, the range defaults to the trailing 30 days.
+
+| Method and route | Description | Query parameters |
+| --- | --- | --- |
+| `GET /api/customer-reports/new-customers` | Count non-deleted customer accounts created within the selected range. | `startDate`, `endDate` |
+| `GET /api/customer-reports/returning-customers` | Count non-deleted customers with a completed purchase during the selected range and at least one completed purchase before the range. | `startDate`, `endDate` |
+| `GET /api/customer-reports/purchase-frequency` | Count completed purchases per customer during the selected range and report the average and distribution. | `startDate`, `endDate` |
+
+Count report data contains the effective `startDate`, `endDate`, and `customerCount`. Purchase frequency data contains the effective date range, total completed orders, purchasing customer count, average completed purchases per customer (rounded to two decimal places), and a `frequencyDistribution` array grouped by completed order count. Only non-deleted customers and orders with `Completed` status are included in purchase reports.
