@@ -1,44 +1,45 @@
 # USE CASE DOCUMENT
-## BOOK SHOP — NỀN TẢNG BÁN SÁCH TRỰC TUYẾN
 
-| Item | Value |
-|---|---|
-| Document | Use Case Document |
-| Project | Book Shop |
-| Version | 1.0 |
-| Status | Draft for Review |
-| Based On | Software Requirements Specification v1.0 |
-| Owner | Founder & CEO — Book Shop |
-| Prepared By | Business Analysis |
-| Reviewers | TBD |
-| Approval Date | TBD |
+## BOOK SHOP — ONLINE BOOKSTORE PLATFORM
+
+| Item          | Value                                    |
+| ------------- | ---------------------------------------- |
+| Document      | Use Case Document                        |
+| Project       | Book Shop                                |
+| Version       | 1.0                                      |
+| Status        | Draft for Review                         |
+| Based On      | Software Requirements Specification v1.0 |
+| Owner         | Founder & CEO — Book Shop                |
+| Prepared By   | Business Analysis                        |
+| Reviewers     | TBD                                      |
+| Approval Date | TBD                                      |
 
 ---
 
-# 1. GIỚI THIỆU
+# 1. INTRODUCTION
 
-## 1.1. Mục đích
+## 1.1. Purpose
 
-Use Case Document mô tả cách các Actor tương tác với hệ thống **Book Shop — Nền tảng bán sách trực tuyến** để thực hiện các chức năng nghiệp vụ được xác định trong Software Requirements Specification (SRS).
+The Use Case Document describes how Actors interact with the **Book Shop — Online Bookstore Platform** to perform the business functions defined in the Software Requirements Specification (SRS).
 
-Tài liệu này được sử dụng làm cơ sở cho:
+This document serves as a basis for:
 
-- Phân tích nghiệp vụ.
-- Thiết kế chức năng.
-- Thiết kế UI/UX.
-- Thiết kế API.
-- Thiết kế database.
-- Viết test case.
-- System Testing.
+- Business analysis.
+- Functional design.
+- UI/UX design.
+- API design.
+- Database design.
+- Test case development.
+- System testing.
 - User Acceptance Testing (UAT).
 
-Use Case Document tập trung vào **hành vi và tương tác giữa Actor với hệ thống**, không mô tả chi tiết kiến trúc, framework, database engine hoặc implementation.
+The Use Case Document focuses on **Actor behavior and interactions with the system**; it does not describe the architecture, frameworks, database engine, or implementation details.
 
 ---
 
-# 2. PHẠM VI
+# 2. SCOPE
 
-Use Case Document bao phủ các module:
+The Use Case Document covers the following modules:
 
 1. Account Management
 2. Product & Category Management
@@ -57,7 +58,7 @@ Use Case Document bao phủ các module:
 15. Customer Chatbot
 16. Business Reporting
 
-Các module trên tương ứng với phạm vi chức năng được xác định trong SRS.
+These modules correspond to the functional scope defined in the SRS.
 
 ---
 
@@ -65,27 +66,27 @@ Các module trên tương ứng với phạm vi chức năng được xác đị
 
 ## 3.1. Actor Overview
 
-| Actor | Description | Main Responsibilities |
-|---|---|---|
-| Guest | Người chưa đăng nhập | Xem, tìm kiếm, lọc và khám phá sách |
-| Customer | Khách hàng có tài khoản | Mua sách, quản lý tài khoản, đơn hàng, đánh giá, chatbot |
-| Employee | Nhân viên | Xử lý, xác nhận và cập nhật đơn hàng |
-| Store Manager | Quản lý cửa hàng | Quản lý tồn kho và hoạt động cửa hàng được phân công |
-| Administrator | Quản trị viên | Quản lý toàn hệ thống và báo cáo |
-| Third-party Shipping Provider | Đơn vị vận chuyển bên thứ ba | Vận chuyển đơn và cung cấp trạng thái giao hàng |
-| Email Service | Dịch vụ email | Gửi thông báo email |
+| Actor                         | Description                   | Main Responsibilities                                                                |
+| ----------------------------- | ----------------------------- | ------------------------------------------------------------------------------------ |
+| Guest                         | Unauthenticated user          | Browse, search, filter, and discover books                                           |
+| Customer                      | Registered customer           | Purchase books; manage their account and orders; submit reviews; and use the chatbot |
+| Employee                      | Staff member                  | Process, confirm, and update orders                                                  |
+| Store Manager                 | Store manager                 | Manage inventory and assigned store operations                                       |
+| Administrator                 | Administrator                 | Manage the entire system and reports                                                 |
+| Third-party Shipping Provider | Third-party shipping provider | Ship orders and provide delivery status updates                                      |
+| Email Service                 | Email service                 | Send email notifications                                                             |
 
-SRS xác định Guest, Customer, Employee, Store Manager và Administrator là các nhóm người dùng chính.
+The SRS identifies Guest, Customer, Employee, Store Manager, and Administrator as the primary user groups.
 
-Third-party Shipping Provider được xem là external actor vì Book Shop chuyển đơn cho bên thứ ba vận chuyển và nhận thông tin trạng thái giao hàng từ bên thứ ba.
+The Third-party Shipping Provider is considered an external actor because Book Shop forwards orders to the shipping provider and receives delivery-status information from that provider.
 
 ---
 
 # 4. ACTOR GENERALIZATION
 
-Trong phiên bản SRS hiện tại, **không định nghĩa quan hệ kế thừa giữa các Actor**.
+The current SRS version **does not define inheritance relationships between Actors**.
 
-Do đó Use Case Model không giả định:
+Therefore, the Use Case Model does not assume:
 
 ```text
 Administrator
@@ -97,21 +98,21 @@ Store Manager
 Employee
 ```
 
-hoặc bất kỳ actor hierarchy nào khác.
+or any other actor hierarchy.
 
-Thay vào đó, authorization được xử lý dựa trên responsibility và permission của từng actor.
+Instead, authorization is handled according to each Actor's responsibilities and permissions.
 
-Nguyên tắc:
+Principle:
 
-> Người dùng chỉ được thực hiện công việc phù hợp với trách nhiệm được cấp.
+> Users may only perform tasks that are appropriate to their assigned responsibilities.
 
-Điều này tương ứng với BR-008 và ma trận phân quyền trong SRS.
+This corresponds to BR-008 and the authorization matrix in the SRS.
 
 ---
 
 # 5. USE CASE DIAGRAM — SYSTEM OVERVIEW
 
-Diagram tổng thể dưới đây thể hiện các nhóm chức năng chính và Actor tương tác với hệ thống.
+The overview diagram below shows the main functional groups and the Actors that interact with the system.
 
 ```mermaid
 flowchart LR
@@ -205,232 +206,232 @@ flowchart LR
 
 ## 6.1. Account Management
 
-| ID | Use Case | Primary Actor |
-|---|---|---|
-| UC-ACC-001 | Register Account | Guest |
-| UC-ACC-002 | Register with Google | Guest |
-| UC-ACC-003 | Login | Customer |
-| UC-ACC-004 | Login with Google | Customer |
-| UC-ACC-005 | Verify Account | Customer |
-| UC-ACC-006 | Reset Password | Customer |
-| UC-ACC-007 | Manage Personal Information | Customer |
-| UC-ACC-008 | Manage Shipping Address | Customer |
-| UC-ACC-009 | View Purchase History | Customer |
+| ID         | Use Case                    | Primary Actor |
+| ---------- | --------------------------- | ------------- |
+| UC-ACC-001 | Register Account            | Guest         |
+| UC-ACC-002 | Register with Google        | Guest         |
+| UC-ACC-003 | Login                       | Customer      |
+| UC-ACC-004 | Login with Google           | Customer      |
+| UC-ACC-005 | Verify Account              | Customer      |
+| UC-ACC-006 | Reset Password              | Customer      |
+| UC-ACC-007 | Manage Personal Information | Customer      |
+| UC-ACC-008 | Manage Shipping Address     | Customer      |
+| UC-ACC-009 | View Purchase History       | Customer      |
 
-Các use case trên được ánh xạ từ FR-ACC-001 đến FR-ACC-007. SRS cũng bổ sung đăng ký và đăng nhập bằng Google.
+The use cases above are mapped from FR-ACC-001 through FR-ACC-007. The SRS also includes registration and login with Google.
 
 ---
 
 # 7. UC-ACC-001 — REGISTER ACCOUNT
 
-| Field | Description |
-|---|---|
-| Use Case ID | UC-ACC-001 |
-| Name | Register Account |
-| Primary Actor | Guest |
-| Goal | Tạo tài khoản Customer mới |
-| Related Requirement | FR-ACC-001 |
-| Trigger | Guest chọn chức năng Register |
-| Priority | Must Have |
+| Field               | Description                         |
+| ------------------- | ----------------------------------- |
+| Use Case ID         | UC-ACC-001                          |
+| Name                | Register Account                    |
+| Primary Actor       | Guest                               |
+| Goal                | Create a new Customer account       |
+| Related Requirement | FR-ACC-001                          |
+| Trigger             | Guest selects the Register function |
+| Priority            | Must Have                           |
 
 ### Preconditions
 
-- Guest chưa có tài khoản hoặc đang ở màn hình đăng ký.
-- Hệ thống đang hoạt động.
+- The Guest does not have an account or is on the registration screen.
+- The system is operational.
 
 ### Main Flow
 
-1. Guest mở chức năng đăng ký.
-2. Hệ thống hiển thị form đăng ký.
-3. Guest nhập thông tin cần thiết.
-4. Guest gửi thông tin đăng ký.
-5. Hệ thống kiểm tra dữ liệu.
-6. Hệ thống tạo tài khoản.
-7. Hệ thống yêu cầu xác minh tài khoản nếu cần.
-8. Hệ thống thông báo đăng ký thành công.
+1. The Guest opens the registration function.
+2. The system displays the registration form.
+3. The Guest enters the required information.
+4. The Guest submits the registration information.
+5. The system validates the data.
+6. The system creates the account.
+7. The system requests account verification if required.
+8. The system notifies the Guest that registration was successful.
 
 ### Alternative Flow
 
-**A1 — Dữ liệu không hợp lệ**
+**A1 — Invalid Data**
 
-1. Hệ thống phát hiện dữ liệu không hợp lệ.
-2. Hệ thống thông báo lỗi.
-3. Guest chỉnh sửa thông tin.
-4. Use Case tiếp tục từ bước 4.
+1. The system detects invalid data.
+2. The system displays an error message.
+3. The Guest corrects the information.
+4. The use case resumes from Step 4.
 
-**A2 — Tài khoản đã tồn tại**
+**A2 — Account Already Exists**
 
-1. Hệ thống phát hiện tài khoản đã tồn tại.
-2. Hệ thống thông báo cho Guest.
-3. Use Case kết thúc.
+1. The system detects that the account already exists.
+2. The system notifies the Guest.
+3. The use case ends.
 
 ### Postconditions
 
-- Tài khoản Customer được tạo thành công hoặc yêu cầu đăng ký bị từ chối.
+- The Customer account is successfully created, or the registration request is rejected.
 
 ---
 
 # 8. UC-ACC-002 — REGISTER WITH GOOGLE
 
-| Field | Description |
-|---|---|
-| Use Case ID | UC-ACC-002 |
-| Name | Register with Google |
-| Primary Actor | Guest |
-| Goal | Đăng ký tài khoản thông qua Google |
-| Related Requirement | FR-ACC-001 |
-| Priority | Must Have |
+| Field               | Description                          |
+| ------------------- | ------------------------------------ |
+| Use Case ID         | UC-ACC-002                           |
+| Name                | Register with Google                 |
+| Primary Actor       | Guest                                |
+| Goal                | Register for an account using Google |
+| Related Requirement | FR-ACC-001                           |
+| Priority            | Must Have                            |
 
 ### Main Flow
 
-1. Guest chọn đăng ký bằng Google.
-2. Hệ thống chuyển Guest sang quy trình xác thực Google.
-3. Guest xác thực với Google.
-4. Google trả kết quả xác thực.
-5. Hệ thống kiểm tra thông tin tài khoản.
-6. Hệ thống tạo hoặc liên kết tài khoản Customer.
-7. Hệ thống thông báo kết quả.
+1. The Guest selects Register with Google.
+2. The system redirects the Guest to Google's authentication process.
+3. The Guest authenticates with Google.
+4. Google returns the authentication result.
+5. The system checks the account information.
+6. The system creates or links a Customer account.
+7. The system displays the result.
 
 ### Alternative Flow
 
 **A1 — Google authentication failed**
 
-1. Google trả kết quả không hợp lệ.
-2. Hệ thống từ chối đăng ký.
-3. Hệ thống hiển thị lỗi.
+1. Google returns an invalid result.
+2. The system rejects the registration.
+3. The system displays an error message.
 
 ---
 
 # 9. UC-ACC-003 — LOGIN
 
-| Field | Description |
-|---|---|
-| Use Case ID | UC-ACC-003 |
-| Name | Login |
-| Primary Actor | Customer |
-| Goal | Truy cập tài khoản |
-| Related Requirement | FR-ACC-002 |
-| Priority | Must Have |
+| Field               | Description        |
+| ------------------- | ------------------ |
+| Use Case ID         | UC-ACC-003         |
+| Name                | Login              |
+| Primary Actor       | Customer           |
+| Goal                | Access the account |
+| Related Requirement | FR-ACC-002         |
+| Priority            | Must Have          |
 
 ### Main Flow
 
-1. Customer mở màn hình Login.
-2. Customer nhập thông tin đăng nhập.
-3. Customer gửi yêu cầu.
-4. Hệ thống xác thực thông tin.
-5. Hệ thống cho phép truy cập tài khoản.
-6. Hệ thống tạo phiên đăng nhập.
+1. The Customer opens the Login screen.
+2. The Customer enters their login credentials.
+3. The Customer submits the request.
+4. The system authenticates the information.
+5. The system grants access to the account.
+6. The system creates a login session.
 
 ### Alternative Flow
 
 **A1 — Invalid credentials**
 
-1. Hệ thống xác định thông tin đăng nhập không hợp lệ.
-2. Hệ thống thông báo lỗi.
-3. Customer có thể thử lại.
+1. The system determines that the login credentials are invalid.
+2. The system displays an error message.
+3. The Customer may try again.
 
 ---
 
 # 10. UC-ACC-004 — LOGIN WITH GOOGLE
 
-| Field | Description |
-|---|---|
-| Use Case ID | UC-ACC-004 |
-| Name | Login with Google |
-| Primary Actor | Customer |
-| Goal | Đăng nhập bằng Google |
-| Related Requirement | FR-ACC-002 |
-| Priority | Must Have |
+| Field               | Description        |
+| ------------------- | ------------------ |
+| Use Case ID         | UC-ACC-004         |
+| Name                | Login with Google  |
+| Primary Actor       | Customer           |
+| Goal                | Log in with Google |
+| Related Requirement | FR-ACC-002         |
+| Priority            | Must Have          |
 
 ### Main Flow
 
-1. Customer chọn Login with Google.
-2. Hệ thống yêu cầu Google authentication.
-3. Customer xác thực.
-4. Google trả kết quả.
-5. Hệ thống xác thực tài khoản.
-6. Hệ thống cho phép Customer truy cập hệ thống.
+1. The Customer selects Login with Google.
+2. The system requests authentication from Google.
+3. The Customer authenticates.
+4. Google returns the result.
+5. The system authenticates the account.
+6. The system grants the Customer access to the system.
 
 ---
 
 # 11. UC-ACC-005 — VERIFY ACCOUNT
 
-| Field | Description |
-|---|---|
-| Use Case ID | UC-ACC-005 |
-| Name | Verify Account |
-| Primary Actor | Customer |
-| Goal | Xác minh tài khoản |
-| Related Requirement | FR-ACC-003 |
-| Method | OTP |
+| Field               | Description        |
+| ------------------- | ------------------ |
+| Use Case ID         | UC-ACC-005         |
+| Name                | Verify Account     |
+| Primary Actor       | Customer           |
+| Goal                | Verify the account |
+| Related Requirement | FR-ACC-003         |
+| Method              | OTP                |
 
 ### Main Flow
 
-1. Hệ thống yêu cầu xác minh tài khoản.
-2. Hệ thống gửi OTP.
-3. Customer nhập OTP.
-4. Hệ thống kiểm tra OTP.
-5. Nếu OTP hợp lệ, hệ thống xác minh tài khoản.
-6. Hệ thống thông báo kết quả.
+1. The system requests account verification.
+2. The system sends an OTP.
+3. The Customer enters the OTP.
+4. The system validates the OTP.
+5. If the OTP is valid, the system verifies the account.
+6. The system displays the result.
 
 ### Alternative Flow
 
-- OTP không hợp lệ.
-- OTP hết hạn.
-- Customer nhập lại OTP.
+- The OTP is invalid.
+- The OTP has expired.
+- The Customer enters the OTP again.
 
 ---
 
 # 12. UC-ACC-006 — RESET PASSWORD
 
-| Field | Description |
-|---|---|
-| Use Case ID | UC-ACC-006 |
-| Name | Reset Password |
-| Primary Actor | Customer |
-| Goal | Khôi phục quyền truy cập tài khoản |
-| Related Requirement | FR-ACC-004 |
+| Field               | Description                   |
+| ------------------- | ----------------------------- |
+| Use Case ID         | UC-ACC-006                    |
+| Name                | Reset Password                |
+| Primary Actor       | Customer                      |
+| Goal                | Recover access to the account |
+| Related Requirement | FR-ACC-004                    |
 
 ### Main Flow
 
-1. Customer chọn Forgot Password.
-2. Customer cung cấp email.
-3. Hệ thống gửi OTP.
-4. Customer nhập OTP.
-5. Hệ thống xác thực OTP.
-6. Customer cung cấp mật khẩu mới.
-7. Hệ thống cập nhật mật khẩu.
-8. Hệ thống thông báo thành công.
+1. The Customer selects Forgot Password.
+2. The Customer provides their email address.
+3. The system sends an OTP.
+4. The Customer enters the OTP.
+5. The system verifies the OTP.
+6. The Customer provides a new password.
+7. The system updates the password.
+8. The system displays a success message.
 
 ---
 
 # 13. UC-ACC-007 — MANAGE PERSONAL INFORMATION
 
-| Field | Description |
-|---|---|
-| Use Case ID | UC-ACC-007 |
-| Primary Actor | Customer |
-| Related Requirement | FR-ACC-005 |
+| Field               | Description |
+| ------------------- | ----------- |
+| Use Case ID         | UC-ACC-007  |
+| Primary Actor       | Customer    |
+| Related Requirement | FR-ACC-005  |
 
 ### Main Flow
 
-1. Customer mở Profile.
-2. Hệ thống hiển thị thông tin hiện tại.
-3. Customer chỉnh sửa thông tin.
-4. Customer lưu thay đổi.
-5. Hệ thống kiểm tra dữ liệu.
-6. Hệ thống cập nhật thông tin.
-7. Hệ thống thông báo kết quả.
+1. The Customer opens Profile.
+2. The system displays the current information.
+3. The Customer edits their information.
+4. The Customer saves the changes.
+5. The system validates the data.
+6. The system updates the information.
+7. The system displays the result.
 
 ---
 
 # 14. UC-ACC-008 — MANAGE SHIPPING ADDRESS
 
-| Field | Description |
-|---|---|
-| Use Case ID | UC-ACC-008 |
-| Primary Actor | Customer |
-| Related Requirement | FR-ACC-006 |
+| Field               | Description |
+| ------------------- | ----------- |
+| Use Case ID         | UC-ACC-008  |
+| Primary Actor       | Customer    |
+| Related Requirement | FR-ACC-006  |
 
 ### Supported Operations
 
@@ -443,19 +444,19 @@ Các use case trên được ánh xạ từ FR-ACC-001 đến FR-ACC-007. SRS c�
 
 # 15. UC-ACC-009 — VIEW PURCHASE HISTORY
 
-| Field | Description |
-|---|---|
-| Use Case ID | UC-ACC-009 |
-| Primary Actor | Customer |
-| Related Requirement | FR-ACC-007 |
+| Field               | Description |
+| ------------------- | ----------- |
+| Use Case ID         | UC-ACC-009  |
+| Primary Actor       | Customer    |
+| Related Requirement | FR-ACC-007  |
 
 ### Main Flow
 
-1. Customer mở Purchase History.
-2. Hệ thống lấy các đơn hàng của Customer.
-3. Hệ thống hiển thị danh sách.
-4. Customer chọn một đơn hàng.
-5. Hệ thống hiển thị chi tiết.
+1. The Customer opens Purchase History.
+2. The system retrieves the Customer's orders.
+3. The system displays the list.
+4. The Customer selects an order.
+5. The system displays the details.
 
 ---
 
@@ -498,16 +499,16 @@ flowchart LR
 
 # 17. PRODUCT USE CASES
 
-| ID | Use Case | Actor | Requirement |
-|---|---|---|---|
-| UC-PROD-001 | Add Book | Administrator | FR-PROD-001 |
-| UC-PROD-002 | View Book | All authorized users | FR-PROD-002 |
-| UC-PROD-003 | Edit Book | Administrator | FR-PROD-003 |
-| UC-PROD-004 | Stop Selling Book | Administrator | FR-PROD-004 |
-| UC-PROD-005 | Reactivate Book | Administrator | FR-PROD-005 |
-| UC-PROD-006 | View Book Detail | Guest/Customer | FR-PROD-006 |
-| UC-PROD-007 | Add Book to Cart | Customer | FR-PROD-007 |
-| UC-PROD-008 | Buy Now | Customer | FR-PROD-008 |
+| ID          | Use Case          | Actor                | Requirement |
+| ----------- | ----------------- | -------------------- | ----------- |
+| UC-PROD-001 | Add Book          | Administrator        | FR-PROD-001 |
+| UC-PROD-002 | View Book         | All authorized users | FR-PROD-002 |
+| UC-PROD-003 | Edit Book         | Administrator        | FR-PROD-003 |
+| UC-PROD-004 | Stop Selling Book | Administrator        | FR-PROD-004 |
+| UC-PROD-005 | Reactivate Book   | Administrator        | FR-PROD-005 |
+| UC-PROD-006 | View Book Detail  | Guest/Customer       | FR-PROD-006 |
+| UC-PROD-007 | Add Book to Cart  | Customer             | FR-PROD-007 |
+| UC-PROD-008 | Buy Now           | Customer             | FR-PROD-008 |
 
 ---
 
@@ -515,25 +516,25 @@ flowchart LR
 
 ### Preconditions
 
-- Actor đã đăng nhập.
-- Actor có quyền Administrator.
+- The Actor is logged in.
+- The Actor has Administrator privileges.
 
 ### Main Flow
 
-1. Administrator mở Product Management.
-2. Chọn Add Book.
-3. Nhập thông tin sách.
-4. Hệ thống kiểm tra dữ liệu.
-5. Administrator xác nhận.
-6. Hệ thống tạo sách.
-7. Hệ thống hiển thị kết quả.
+1. The Administrator opens Product Management.
+2. The Administrator selects Add Book.
+3. The Administrator enters the book information.
+4. The system validates the data.
+5. The Administrator confirms.
+6. The system creates the book.
+7. The system displays the result.
 
 ### Business Rules
 
-- Selling Price không được nhỏ hơn 0.
-- Các thông tin bắt buộc phải được cung cấp.
+- The Selling Price must not be less than 0.
+- All required information must be provided.
 
-Business Rule BR-001 yêu cầu hệ thống từ chối giá bán nhỏ hơn 0.
+Business Rule BR-001 requires the system to reject selling prices below 0.
 
 ---
 
@@ -570,14 +571,14 @@ flowchart LR
 
 ### Use Cases
 
-| ID | Use Case | Actor |
-|---|---|---|
-| UC-SEARCH-001 | Search Books | Guest, Customer |
-| UC-SEARCH-002 | Filter Books | Guest, Customer |
-| UC-SEARCH-003 | Sort Books | Guest, Customer |
+| ID            | Use Case         | Actor           |
+| ------------- | ---------------- | --------------- |
+| UC-SEARCH-001 | Search Books     | Guest, Customer |
+| UC-SEARCH-002 | Filter Books     | Guest, Customer |
+| UC-SEARCH-003 | Sort Books       | Guest, Customer |
 | UC-SEARCH-004 | View Book Detail | Guest, Customer |
 
-Search hỗ trợ tên sách, tác giả, nhà xuất bản, thể loại và từ khóa liên quan. Filter hỗ trợ giá, thể loại, nhà xuất bản, đánh giá và tình trạng còn hàng.
+Search supports book titles, authors, publishers, categories, and related keywords. Filter supports price, category, publisher, rating, and availability.
 
 ---
 
@@ -610,23 +611,23 @@ flowchart LR
 
 ## 20.2. Use Case List
 
-| ID | Use Case | Actor | Requirement |
-|---|---|---|---|
-| UC-CART-001 | Add Product | Customer | FR-CART-001 |
-| UC-CART-002 | Change Quantity | Customer | FR-CART-002 |
-| UC-CART-003 | Remove Product | Customer | FR-CART-003 |
-| UC-CART-004 | View Cart Total | Customer | FR-CART-004 |
+| ID          | Use Case              | Actor           | Requirement |
+| ----------- | --------------------- | --------------- | ----------- |
+| UC-CART-001 | Add Product           | Customer        | FR-CART-001 |
+| UC-CART-002 | Change Quantity       | Customer        | FR-CART-002 |
+| UC-CART-003 | Remove Product        | Customer        | FR-CART-003 |
+| UC-CART-004 | View Cart Total       | Customer        | FR-CART-004 |
 | UC-CART-005 | Check Available Stock | Customer/System | FR-CART-005 |
 
 ### Important Business Rule
 
-Customer không được đặt số lượng vượt quá số lượng hàng có thể bán.
+Customers must not order quantities greater than the available sellable quantity.
 
 ```text
 Requested Quantity <= Available Quantity
 ```
 
-Quy tắc này được xác định tại BR-002 và FR-CART-005.
+This rule is defined in BR-002 and FR-CART-005.
 
 ---
 
@@ -676,58 +677,58 @@ flowchart LR
 
 # 22. UC-ORDER-001 — CREATE ORDER
 
-| Field | Description |
-|---|---|
-| Use Case ID | UC-ORDER-001 |
-| Name | Create Order |
-| Primary Actor | Customer |
+| Field                | Description                 |
+| -------------------- | --------------------------- |
+| Use Case ID          | UC-ORDER-001                |
+| Name                 | Create Order                |
+| Primary Actor        | Customer                    |
 | Related Requirements | FR-ORDER-001 → FR-ORDER-005 |
-| Priority | Must Have |
+| Priority             | Must Have                   |
 
 ### Preconditions
 
-- Customer đã đăng nhập.
-- Sản phẩm được chọn tồn tại.
-- Sản phẩm có thể bán.
-- Customer có địa chỉ giao hàng hợp lệ.
+- The Customer is logged in.
+- The selected product exists.
+- The product is available for sale.
+- The Customer has a valid shipping address.
 
 ### Main Flow
 
-1. Customer chọn sản phẩm.
-2. Customer thêm sản phẩm vào Cart hoặc chọn Buy Now.
-3. Customer mở Checkout.
-4. Hệ thống hiển thị sản phẩm và số lượng.
-5. Customer chọn địa chỉ giao hàng.
-6. Customer chọn phương thức thanh toán COD.
-7. Customer áp dụng promotion nếu có.
-8. Hệ thống kiểm tra promotion.
-9. Hệ thống kiểm tra tồn kho.
-10. Hệ thống tính tổng tiền.
-11. Hệ thống hiển thị tổng tiền.
-12. Customer xác nhận đơn.
-13. Hệ thống tạo Order.
-14. Order được tạo với trạng thái **Chờ xác nhận**.
-15. Hệ thống thông báo kết quả.
+1. The Customer selects a product.
+2. The Customer adds the product to the Cart or selects Buy Now.
+3. The Customer opens Checkout.
+4. The system displays the products and quantities.
+5. The Customer selects a shipping address.
+6. The Customer selects Cash on Delivery (COD) as the payment method.
+7. The Customer applies a promotion, if available.
+8. The system validates the promotion.
+9. The system checks inventory.
+10. The system calculates the total amount.
+11. The system displays the total amount.
+12. The Customer confirms the order.
+13. The system creates the Order.
+14. The Order is created with the status **Pending Confirmation**.
+15. The system displays the result.
 
 ### Alternative Flow
 
-**A1 — Không đủ tồn kho**
+**A1 — Insufficient Stock**
 
-1. Hệ thống phát hiện Available Quantity không đủ.
-2. Hệ thống từ chối tạo đơn.
-3. Hệ thống thông báo số lượng có thể mua.
+1. The system detects that the Available Quantity is insufficient.
+2. The system rejects the order creation request.
+3. The system notifies the Customer of the quantity available for purchase.
 
-**A2 — Promotion không hợp lệ**
+**A2 — Invalid Promotion**
 
-1. Hệ thống kiểm tra promotion.
-2. Promotion không thỏa điều kiện.
-3. Hệ thống không áp dụng promotion.
-4. Customer có thể tiếp tục với giá không giảm.
+1. The system validates the promotion.
+2. The promotion does not meet the required conditions.
+3. The system does not apply the promotion.
+4. The Customer may continue without the discount.
 
-**A3 — Customer không xác nhận**
+**A3 — Customer Does Not Confirm**
 
-1. Customer quay lại Cart.
-2. Order chưa được tạo.
+1. The Customer returns to the Cart.
+2. The Order is not created.
 
 ---
 
@@ -735,7 +736,7 @@ flowchart LR
 
 ### Main Flow
 
-Hệ thống xác định:
+The system determines:
 
 ```text
 Total
@@ -745,9 +746,9 @@ Product Price × Quantity
 + Supported Additional Charges
 ```
 
-Hệ thống phải hiển thị tổng tiền rõ ràng trước khi Customer xác nhận đơn.
+The system must clearly display the total amount before the Customer confirms the order.
 
-Yêu cầu này tương ứng với FR-ORDER-002 và BR-009.
+This requirement corresponds to FR-ORDER-002 and BR-009.
 
 ---
 
@@ -755,13 +756,13 @@ Yêu cầu này tương ứng với FR-ORDER-002 và BR-009.
 
 ### Main Flow
 
-1. Customer kiểm tra thông tin checkout.
-2. Customer xác nhận Order.
-3. Hệ thống kiểm tra lại điều kiện cần thiết.
-4. Hệ thống tạo Order.
-5. Hệ thống đặt trạng thái **Chờ xác nhận**.
-6. Hệ thống cập nhật dữ liệu liên quan.
-7. Hệ thống gửi notification.
+1. The Customer reviews the checkout information.
+2. The Customer confirms the Order.
+3. The system rechecks the required conditions.
+4. The system creates the Order.
+5. The system sets the status to **Pending Confirmation**.
+6. The system updates the related data.
+7. The system sends a notification.
 
 ---
 
@@ -786,53 +787,53 @@ stateDiagram-v2
     Refunded --> [*]
 ```
 
-Lifecycle tối thiểu của Order trong SRS là:
+The minimum Order lifecycle defined in the SRS is:
 
 ```text
-Chờ xác nhận
+Pending Confirmation
       ↓
-Đang vận chuyển
+Shipping
       ↓
-Hoàn tất
+Completed
 ```
 
-và Order có thể chuyển sang trạng thái Hủy theo điều kiện nghiệp vụ.
+The Order may also transition to the Cancelled status, subject to business conditions.
 
 ---
 
 # 26. UC-ORDER-004 — CUSTOMER CANCEL ORDER
 
-| Field | Description |
-|---|---|
-| Use Case ID | UC-ORDER-004 |
-| Primary Actor | Customer |
+| Field               | Description  |
+| ------------------- | ------------ |
+| Use Case ID         | UC-ORDER-004 |
+| Primary Actor       | Customer     |
 | Related Requirement | FR-ORDER-007 |
 
 ### Preconditions
 
-Customer có Order.
+The Customer has an Order.
 
 ### Main Flow
 
-1. Customer mở Order Detail.
-2. Customer chọn Cancel Order.
-3. Hệ thống kiểm tra Order Status.
-4. Hệ thống kiểm tra Cancellation Policy.
-5. Nếu được phép, hệ thống hủy Order.
-6. Hệ thống cập nhật dữ liệu liên quan.
-7. Hệ thống gửi notification.
+1. The Customer opens Order Details.
+2. The Customer selects Cancel Order.
+3. The system checks the Order Status.
+4. The system checks the Cancellation Policy.
+5. If permitted, the system cancels the Order.
+6. The system updates the related data.
+7. The system sends a notification.
 
 ### Exception
 
-Nếu:
+If:
 
 ```text
-Order Status = Đang vận chuyển
+Order Status = Shipping
 ```
 
-hệ thống phải từ chối thao tác hủy.
+the system must reject the cancellation request.
 
-Điều này được quy định trực tiếp tại FR-ORDER-007 và BR-010.
+This is explicitly specified in FR-ORDER-007 and BR-010.
 
 ---
 
@@ -867,15 +868,15 @@ flowchart LR
 
 ## Use Cases
 
-| ID | Use Case | Actor |
-|---|---|---|
-| UC-ORDER-005 | Search Order | Employee |
-| UC-ORDER-006 | Confirm Order | Employee |
-| UC-ORDER-007 | Process Order | Employee |
-| UC-ORDER-008 | Cancel Order | Employee |
+| ID           | Use Case                   | Actor    |
+| ------------ | -------------------------- | -------- |
+| UC-ORDER-005 | Search Order               | Employee |
+| UC-ORDER-006 | Confirm Order              | Employee |
+| UC-ORDER-007 | Process Order              | Employee |
+| UC-ORDER-008 | Cancel Order               | Employee |
 | UC-ORDER-009 | Confirm Delivery Completed | Employee |
 
-Employee có trách nhiệm tìm kiếm, xác nhận, xử lý đơn, chuyển đơn cho bên vận chuyển và xác nhận trạng thái giao hàng.
+Employees are responsible for searching for, confirming, and processing orders, forwarding orders to the shipping provider, and confirming delivery status.
 
 ---
 
@@ -909,16 +910,16 @@ flowchart LR
 
 ### Main Flow
 
-1. Customer chọn COD.
-2. Hệ thống ghi nhận phương thức thanh toán COD.
-3. Order được xác nhận.
-4. Order được chuyển cho bên vận chuyển.
-5. Bên vận chuyển giao hàng.
-6. Customer thanh toán khi nhận hàng.
-7. Book Shop nhận thông tin/thanh toán.
-8. Employee xác nhận hoàn tất Order.
+1. The Customer selects COD.
+2. The system records COD as the payment method.
+3. The Order is confirmed.
+4. The Order is handed over to the shipping provider.
+5. The shipping provider delivers the order.
+6. The Customer pays upon delivery.
+7. Book Shop receives the payment information/payment.
+8. The Employee confirms that the Order is completed.
 
-Version 1.0 chỉ hỗ trợ COD và không hỗ trợ payment gateway online.
+Version 1.0 supports COD only and does not support online payment gateways.
 
 ---
 
@@ -975,16 +976,16 @@ flowchart LR
 
 ## Use Case List
 
-| ID | Use Case | Actor |
-|---|---|---|
-| UC-RETURN-001 | Create Return Request | Customer |
-| UC-RETURN-002 | Check Return Request | Employee / Store Manager / Admin |
-| UC-RETURN-003 | Approve Return | Authorized Staff |
-| UC-RETURN-004 | Reject Return | Authorized Staff |
-| UC-RETURN-005 | Receive Returned Product | Authorized Staff |
-| UC-RETURN-006 | Inspect Returned Product | Authorized Staff |
-| UC-RETURN-007 | Process Refund | Authorized Staff |
-| UC-RETURN-008 | Update Order & Inventory | System |
+| ID            | Use Case                 | Actor                            |
+| ------------- | ------------------------ | -------------------------------- |
+| UC-RETURN-001 | Create Return Request    | Customer                         |
+| UC-RETURN-002 | Check Return Request     | Employee / Store Manager / Admin |
+| UC-RETURN-003 | Approve Return           | Authorized Staff                 |
+| UC-RETURN-004 | Reject Return            | Authorized Staff                 |
+| UC-RETURN-005 | Receive Returned Product | Authorized Staff                 |
+| UC-RETURN-006 | Inspect Returned Product | Authorized Staff                 |
+| UC-RETURN-007 | Process Refund           | Authorized Staff                 |
+| UC-RETURN-008 | Update Order & Inventory | System                           |
 
 ---
 
@@ -992,30 +993,30 @@ flowchart LR
 
 ### Preconditions
 
-- Order ở trạng thái **Hoàn tất**.
-- Customer đã nhận hàng.
-- Không quá 3 ngày kể từ khi nhận hàng.
+- The Order has the status **Completed**.
+- The Customer has received the product.
+- No more than 3 days have elapsed since delivery.
 
 ### Main Flow
 
-1. Customer mở Order Detail.
-2. Customer chọn Return/Refund.
-3. Hệ thống kiểm tra điều kiện.
-4. Customer cung cấp minh chứng.
-5. Customer cung cấp thông tin tài khoản ngân hàng.
-6. Customer gửi request.
-7. Hệ thống tạo Return Request.
-8. Hệ thống thông báo kết quả.
+1. The Customer opens Order Details.
+2. The Customer selects Return/Refund.
+3. The system checks the eligibility conditions.
+4. The Customer provides supporting evidence.
+5. The Customer provides bank account information.
+6. The Customer submits the request.
+7. The system creates a Return Request.
+8. The system displays the result.
 
 ### Exception
 
-Nếu Order chưa hoàn tất hoặc quá thời hạn 3 ngày:
+If the Order is not completed or the 3-day period has expired:
 
 ```text
 Return Request = Rejected
 ```
 
-SRS quy định Customer chỉ có thể yêu cầu trả hàng sau khi nhận hàng và Order ở trạng thái Hoàn tất, trong thời gian không quá 3 ngày.
+The SRS specifies that a Customer may request a return only after receiving the product and while the Order is in the Completed status, within 3 days of receipt.
 
 ---
 
@@ -1088,18 +1089,18 @@ flowchart LR
 
 ## Inventory Use Cases
 
-| ID | Use Case | Actor |
-|---|---|---|
-| UC-INV-001 | View Inventory | Store Manager, Admin |
-| UC-INV-002 | Stocktaking | Store Manager, Admin |
-| UC-INV-003 | Import Stock | Store Manager, Admin |
-| UC-INV-004 | Export Stock | Store Manager, Admin |
-| UC-INV-005 | Transfer Stock | Store Manager, Admin |
-| UC-INV-006 | Receive Stock | Store Manager, Admin |
+| ID         | Use Case               | Actor                |
+| ---------- | ---------------------- | -------------------- |
+| UC-INV-001 | View Inventory         | Store Manager, Admin |
+| UC-INV-002 | Stocktaking            | Store Manager, Admin |
+| UC-INV-003 | Import Stock           | Store Manager, Admin |
+| UC-INV-004 | Export Stock           | Store Manager, Admin |
+| UC-INV-005 | Transfer Stock         | Store Manager, Admin |
+| UC-INV-006 | Receive Stock          | Store Manager, Admin |
 | UC-INV-007 | View Inventory History | Store Manager, Admin |
-| UC-INV-008 | Update Inventory | System |
+| UC-INV-008 | Update Inventory       | System               |
 
-Inventory phải quản lý Current Quantity, Reserved Quantity, Available Quantity, Damaged Quantity và Pending Incoming Quantity.
+Inventory must track Current Quantity, Reserved Quantity, Available Quantity, Damaged Quantity, and Pending Incoming Quantity.
 
 ---
 
@@ -1141,7 +1142,7 @@ flowchart LR
     Admin --> Business
 ```
 
-Store Manager chỉ được thao tác trong phạm vi cửa hàng được phân công.
+A Store Manager may perform operations only within their assigned store.
 
 ---
 
@@ -1184,14 +1185,14 @@ flowchart LR
 
 ### Promotion Validation
 
-Promotion phải được kiểm tra theo:
+Promotions must be validated based on:
 
 - Product.
 - Order value.
 - Effective time.
 - Usage count.
 
-Promotion hết hạn không được áp dụng.
+Expired promotions must not be applied.
 
 ---
 
@@ -1237,9 +1238,9 @@ flowchart LR
 
 ### Business Rule
 
-Customer có thể đánh giá từ **1 đến 5 sao**.
+Customers can rate products from **1 to 5 stars**.
 
-Book Shop có thể yêu cầu Customer phải mua sản phẩm trước khi đánh giá.
+Book Shop may require Customers to have purchased a product before submitting a review.
 
 ---
 
@@ -1291,7 +1292,7 @@ flowchart LR
     Promo --> Email
 ```
 
-SRS yêu cầu notification cho các sự kiện đăng ký, đặt hàng, thanh toán, xác nhận đơn, giao hàng, hủy đơn, hoàn tiền và khuyến mãi; kênh là trong hệ thống và Email.
+The SRS requires notifications for registration, order placement, payment, order confirmation, delivery, cancellation, refunds, and promotions. The supported channels are in-app notifications and email.
 
 ---
 
@@ -1315,10 +1316,10 @@ flowchart LR
 
 ## Use Cases
 
-| ID | Use Case | Actor |
-|---|---|---|
-| UC-CHAT-001 | Find Books | Customer |
-| UC-CHAT-002 | Suggest Books | Customer |
+| ID          | Use Case                 | Actor    |
+| ----------- | ------------------------ | -------- |
+| UC-CHAT-001 | Find Books               | Customer |
+| UC-CHAT-002 | Suggest Books            | Customer |
 | UC-CHAT-003 | Answer Product Questions | Customer |
 
 Personalized recommendation is **not mandatory for version 1.0**.
@@ -1362,7 +1363,7 @@ flowchart LR
 
 ### Revenue Report
 
-Có thể xem theo:
+Reports can be viewed by:
 
 - Day
 - Week
@@ -1393,7 +1394,7 @@ Có thể xem theo:
 - Returning Customers
 - Purchase Frequency
 
-Các loại báo cáo trên được xác định trong FR-REPORT-001 đến FR-REPORT-004.
+These report types are defined in FR-REPORT-001 through FR-REPORT-004.
 
 ---
 
@@ -1401,7 +1402,7 @@ Các loại báo cáo trên được xác định trong FR-REPORT-001 đến FR-
 
 ## 39.1. Order Relationship
 
-Một Order có các hành vi bắt buộc:
+An Order has the following mandatory behaviors:
 
 ```mermaid
 flowchart TD
@@ -1421,7 +1422,7 @@ flowchart TD
     Create --> Confirm
 ```
 
-Trong tài liệu Use Case, các chức năng bắt buộc có thể biểu diễn bằng:
+In the Use Case Document, mandatory functions can be represented using:
 
 ```text
 Create Order
@@ -1436,7 +1437,7 @@ Create Order
 
 ## 39.2. Promotion Relationship
 
-Promotion là chức năng tùy chọn trong checkout:
+Promotion is an optional function during checkout:
 
 ```mermaid
 flowchart LR
@@ -1452,7 +1453,7 @@ flowchart LR
     Validate --> Calculate
 ```
 
-Vì Customer **có thể** áp dụng promotion hoặc không, `Apply Promotion` được xem là hành vi tùy chọn của Checkout.
+Because the Customer **may or may not** apply a promotion, `Apply Promotion` is considered an optional behavior of Checkout.
 
 ---
 
@@ -1489,7 +1490,7 @@ flowchart TD
 
 # 40. AUTHORIZATION MODEL
 
-Authorization không phải là một Use Case độc lập mà là **cross-cutting business behavior** áp dụng cho các Use Case cần quyền.
+Authorization is not an independent Use Case; it is a **cross-cutting business behavior** that applies to Use Cases requiring permission.
 
 ```mermaid
 flowchart LR
@@ -1513,7 +1514,7 @@ flowchart LR
     Authorization --> UC5
 ```
 
-Ví dụ:
+For example:
 
 ```text
 Administrator
@@ -1533,13 +1534,13 @@ Employee
     → Return/Refund according to permission
 ```
 
-Ma trận quyền này được xây dựng từ authorization matrix của SRS.
+This permission matrix is based on the authorization matrix in the SRS.
 
 ---
 
 # 41. COMPLETE CUSTOMER JOURNEY
 
-Use Case flow quan trọng nhất của Customer:
+The most important Customer Use Case flow:
 
 ```mermaid
 flowchart TD
@@ -1566,9 +1567,9 @@ flowchart TD
 
     Confirm["Confirm Order"]
 
-    Pending["Order: Chờ xác nhận"]
-    Shipping["Order: Đang vận chuyển"]
-    Completed["Order: Hoàn tất"]
+    Pending["Order: Pending Confirmation"]
+    Shipping["Order: Shipping"]
+    Completed["Order: Completed"]
 
     Track["Track Order"]
 
@@ -1658,7 +1659,7 @@ flowchart TD
     Report --> Email
 ```
 
-Administrator có quyền quản lý toàn bộ các hoạt động mà Book Shop cho phép, bao gồm user, product, category, order, inventory, store, promotion, review và report.
+The Administrator can manage all activities permitted by Book Shop, including users, products, categories, orders, inventory, stores, promotions, reviews, and reports.
 
 ---
 
@@ -1730,108 +1731,108 @@ flowchart TD
 
 # 45. USE CASE TRACEABILITY MATRIX
 
-| Use Case | SRS Requirement |
-|---|---|
-| UC-ACC-001 Register Account | FR-ACC-001 |
-| UC-ACC-002 Register with Google | FR-ACC-001 |
-| UC-ACC-003 Login | FR-ACC-002 |
-| UC-ACC-004 Login with Google | FR-ACC-002 |
-| UC-ACC-005 Verify Account | FR-ACC-003 |
-| UC-ACC-006 Reset Password | FR-ACC-004 |
-| UC-ACC-007 Manage Personal Information | FR-ACC-005 |
-| UC-ACC-008 Manage Shipping Address | FR-ACC-006 |
-| UC-ACC-009 View Purchase History | FR-ACC-007 |
-| UC-PROD-001 Add Book | FR-PROD-001 |
-| UC-PROD-002 View Book | FR-PROD-002 |
-| UC-PROD-003 Edit Book | FR-PROD-003 |
-| UC-PROD-004 Stop Selling Book | FR-PROD-004 |
-| UC-PROD-005 Reactivate Book | FR-PROD-005 |
-| UC-SEARCH-001 Search Books | FR-SEARCH-001 |
-| UC-SEARCH-002 Filter Books | FR-SEARCH-002 |
-| UC-SEARCH-003 Sort Books | FR-SEARCH-003 |
-| UC-PROD-006 View Book Detail | FR-PROD-006 |
-| UC-PROD-007 Add Book to Cart | FR-PROD-007 |
-| UC-PROD-008 Buy Now | FR-PROD-008 |
-| UC-CART-001 Add Product | FR-CART-001 |
-| UC-CART-002 Change Quantity | FR-CART-002 |
-| UC-CART-003 Remove Product | FR-CART-003 |
-| UC-CART-004 View Cart Total | FR-CART-004 |
-| UC-CART-005 Check Available Stock | FR-CART-005 |
-| UC-ORDER-001 Create Order | FR-ORDER-001 |
-| UC-ORDER-002 Calculate Order Total | FR-ORDER-002 |
-| UC-ORDER-003 Check Inventory Before Order | FR-ORDER-003 |
-| UC-ORDER-004 Apply Promotion | FR-ORDER-004 |
-| UC-ORDER-005 Confirm Order | FR-ORDER-005 |
-| UC-PAY-001 Pay by COD | FR-PAY-001 |
-| UC-PAY-002 Confirm Payment | FR-PAY-002 |
-| UC-ORDER-006 View Customer Order | FR-ORDER-006 |
-| UC-ORDER-007 Customer Cancel Order | FR-ORDER-007 |
-| UC-ORDER-008 Search Order | FR-ORDER-008 |
-| UC-ORDER-009 Confirm Order | FR-ORDER-009 |
-| UC-ORDER-010 Process Order | FR-ORDER-010 |
-| UC-ORDER-011 Employee Cancel Order | FR-ORDER-011 |
-| UC-RETURN-001 Create Return Request | FR-RETURN-001 |
-| UC-RETURN-002 Check Return Request | FR-RETURN-002 |
-| UC-RETURN-003 Approve/Reject Return | FR-RETURN-003 |
-| UC-RETURN-004 Receive Returned Product | FR-RETURN-004 |
-| UC-RETURN-005 Process Refund | FR-RETURN-005 |
-| UC-RETURN-006 Update Order & Inventory | FR-RETURN-006 |
-| UC-INV-001 View Inventory | FR-INV-001 |
-| UC-INV-002 Update Inventory | FR-INV-002 |
-| UC-INV-003 Validate Available Stock | FR-INV-003 |
-| UC-STORE-001 View Store Inventory | FR-STORE-001 |
-| UC-STORE-002 Stocktaking | FR-STORE-002 |
-| UC-STORE-003 Import Stock | FR-STORE-003 |
-| UC-STORE-004 Export Stock | FR-STORE-004 |
-| UC-STORE-005 Transfer Stock | FR-STORE-005 |
-| UC-STORE-006 Receive Stock | FR-STORE-006 |
-| UC-STORE-007 View Inventory History | FR-STORE-007 |
-| UC-PROMO-001 Percentage Promotion | FR-PROMO-001 |
-| UC-PROMO-002 Fixed Amount Promotion | FR-PROMO-002 |
-| UC-PROMO-003 Discount Code | FR-PROMO-003 |
-| UC-PROMO-004 Free Shipping | FR-PROMO-004 |
-| UC-PROMO-005 Flash Sale | FR-PROMO-005 |
-| UC-PROMO-006 Category Promotion | FR-PROMO-006 |
-| UC-PROMO-007 Validate Promotion | FR-PROMO-007 |
-| UC-REVIEW-001 Rate Product | FR-REVIEW-001 |
-| UC-REVIEW-002 Write Review | FR-REVIEW-002 |
-| UC-REVIEW-003 Check Review Eligibility | FR-REVIEW-003 |
-| UC-REVIEW-004 Moderate Review | FR-REVIEW-004 |
-| UC-NOTI-001 Send Notification | FR-NOTI-001 |
-| UC-CHAT-001 Find Books | FR-CHAT-001 |
-| UC-CHAT-002 Suggest Books | FR-CHAT-002 |
-| UC-CHAT-003 Answer Product Questions | FR-CHAT-003 |
-| UC-REPORT-001 Revenue Report | FR-REPORT-001 |
-| UC-REPORT-002 Order Report | FR-REPORT-002 |
-| UC-REPORT-003 Inventory Report | FR-REPORT-003 |
-| UC-REPORT-004 Customer Report | FR-REPORT-004 |
+| Use Case                                  | SRS Requirement |
+| ----------------------------------------- | --------------- |
+| UC-ACC-001 Register Account               | FR-ACC-001      |
+| UC-ACC-002 Register with Google           | FR-ACC-001      |
+| UC-ACC-003 Login                          | FR-ACC-002      |
+| UC-ACC-004 Login with Google              | FR-ACC-002      |
+| UC-ACC-005 Verify Account                 | FR-ACC-003      |
+| UC-ACC-006 Reset Password                 | FR-ACC-004      |
+| UC-ACC-007 Manage Personal Information    | FR-ACC-005      |
+| UC-ACC-008 Manage Shipping Address        | FR-ACC-006      |
+| UC-ACC-009 View Purchase History          | FR-ACC-007      |
+| UC-PROD-001 Add Book                      | FR-PROD-001     |
+| UC-PROD-002 View Book                     | FR-PROD-002     |
+| UC-PROD-003 Edit Book                     | FR-PROD-003     |
+| UC-PROD-004 Stop Selling Book             | FR-PROD-004     |
+| UC-PROD-005 Reactivate Book               | FR-PROD-005     |
+| UC-SEARCH-001 Search Books                | FR-SEARCH-001   |
+| UC-SEARCH-002 Filter Books                | FR-SEARCH-002   |
+| UC-SEARCH-003 Sort Books                  | FR-SEARCH-003   |
+| UC-PROD-006 View Book Detail              | FR-PROD-006     |
+| UC-PROD-007 Add Book to Cart              | FR-PROD-007     |
+| UC-PROD-008 Buy Now                       | FR-PROD-008     |
+| UC-CART-001 Add Product                   | FR-CART-001     |
+| UC-CART-002 Change Quantity               | FR-CART-002     |
+| UC-CART-003 Remove Product                | FR-CART-003     |
+| UC-CART-004 View Cart Total               | FR-CART-004     |
+| UC-CART-005 Check Available Stock         | FR-CART-005     |
+| UC-ORDER-001 Create Order                 | FR-ORDER-001    |
+| UC-ORDER-002 Calculate Order Total        | FR-ORDER-002    |
+| UC-ORDER-003 Check Inventory Before Order | FR-ORDER-003    |
+| UC-ORDER-004 Apply Promotion              | FR-ORDER-004    |
+| UC-ORDER-005 Confirm Order                | FR-ORDER-005    |
+| UC-PAY-001 Pay by COD                     | FR-PAY-001      |
+| UC-PAY-002 Confirm Payment                | FR-PAY-002      |
+| UC-ORDER-006 View Customer Order          | FR-ORDER-006    |
+| UC-ORDER-007 Customer Cancel Order        | FR-ORDER-007    |
+| UC-ORDER-008 Search Order                 | FR-ORDER-008    |
+| UC-ORDER-009 Confirm Order                | FR-ORDER-009    |
+| UC-ORDER-010 Process Order                | FR-ORDER-010    |
+| UC-ORDER-011 Employee Cancel Order        | FR-ORDER-011    |
+| UC-RETURN-001 Create Return Request       | FR-RETURN-001   |
+| UC-RETURN-002 Check Return Request        | FR-RETURN-002   |
+| UC-RETURN-003 Approve/Reject Return       | FR-RETURN-003   |
+| UC-RETURN-004 Receive Returned Product    | FR-RETURN-004   |
+| UC-RETURN-005 Process Refund              | FR-RETURN-005   |
+| UC-RETURN-006 Update Order & Inventory    | FR-RETURN-006   |
+| UC-INV-001 View Inventory                 | FR-INV-001      |
+| UC-INV-002 Update Inventory               | FR-INV-002      |
+| UC-INV-003 Validate Available Stock       | FR-INV-003      |
+| UC-STORE-001 View Store Inventory         | FR-STORE-001    |
+| UC-STORE-002 Stocktaking                  | FR-STORE-002    |
+| UC-STORE-003 Import Stock                 | FR-STORE-003    |
+| UC-STORE-004 Export Stock                 | FR-STORE-004    |
+| UC-STORE-005 Transfer Stock               | FR-STORE-005    |
+| UC-STORE-006 Receive Stock                | FR-STORE-006    |
+| UC-STORE-007 View Inventory History       | FR-STORE-007    |
+| UC-PROMO-001 Percentage Promotion         | FR-PROMO-001    |
+| UC-PROMO-002 Fixed Amount Promotion       | FR-PROMO-002    |
+| UC-PROMO-003 Discount Code                | FR-PROMO-003    |
+| UC-PROMO-004 Free Shipping                | FR-PROMO-004    |
+| UC-PROMO-005 Flash Sale                   | FR-PROMO-005    |
+| UC-PROMO-006 Category Promotion           | FR-PROMO-006    |
+| UC-PROMO-007 Validate Promotion           | FR-PROMO-007    |
+| UC-REVIEW-001 Rate Product                | FR-REVIEW-001   |
+| UC-REVIEW-002 Write Review                | FR-REVIEW-002   |
+| UC-REVIEW-003 Check Review Eligibility    | FR-REVIEW-003   |
+| UC-REVIEW-004 Moderate Review             | FR-REVIEW-004   |
+| UC-NOTI-001 Send Notification             | FR-NOTI-001     |
+| UC-CHAT-001 Find Books                    | FR-CHAT-001     |
+| UC-CHAT-002 Suggest Books                 | FR-CHAT-002     |
+| UC-CHAT-003 Answer Product Questions      | FR-CHAT-003     |
+| UC-REPORT-001 Revenue Report              | FR-REPORT-001   |
+| UC-REPORT-002 Order Report                | FR-REPORT-002   |
+| UC-REPORT-003 Inventory Report            | FR-REPORT-003   |
+| UC-REPORT-004 Customer Report             | FR-REPORT-004   |
 
-Các nhóm requirement này khớp với Traceability Matrix trong SRS.
+These requirement groups are consistent with the Traceability Matrix in the SRS.
 
 ---
 
 # 46. BUSINESS RULE TRACEABILITY
 
-| Rule | Affected Use Cases |
-|---|---|
-| BR-001 — Selling Price >= 0 | UC-PROD-001 |
-| BR-002 — Cannot order beyond available stock | UC-CART-005, UC-ORDER-003 |
-| BR-003 — Expired promotion cannot be applied | UC-PROMO-007, UC-ORDER-004 |
-| BR-004 — Cannot use points beyond balance | TBD — Loyalty not defined |
-| BR-005 — Review must comply with policy | UC-REVIEW-003, UC-REVIEW-004 |
-| BR-006 — Cancellation requires valid condition | UC-ORDER-007, UC-ORDER-011 |
-| BR-007 — Refund follows return policy | UC-RETURN-001 → UC-RETURN-006 |
-| BR-008 — Authorization by responsibility | All protected Use Cases |
-| BR-009 — Total must be shown before order | UC-ORDER-002, UC-ORDER-005 |
-| BR-010 — Cannot cancel during shipping | UC-ORDER-007 |
+| Rule                                           | Affected Use Cases            |
+| ---------------------------------------------- | ----------------------------- |
+| BR-001 — Selling Price >= 0                    | UC-PROD-001                   |
+| BR-002 — Cannot order beyond available stock   | UC-CART-005, UC-ORDER-003     |
+| BR-003 — Expired promotion cannot be applied   | UC-PROMO-007, UC-ORDER-004    |
+| BR-004 — Cannot use points beyond balance      | TBD — Loyalty not defined     |
+| BR-005 — Review must comply with policy        | UC-REVIEW-003, UC-REVIEW-004  |
+| BR-006 — Cancellation requires valid condition | UC-ORDER-007, UC-ORDER-011    |
+| BR-007 — Refund follows return policy          | UC-RETURN-001 → UC-RETURN-006 |
+| BR-008 — Authorization by responsibility       | All protected Use Cases       |
+| BR-009 — Total must be shown before order      | UC-ORDER-002, UC-ORDER-005    |
+| BR-010 — Cannot cancel during shipping         | UC-ORDER-007                  |
 
-BR-004 về loyalty points chưa có module tương ứng trong SRS và cần được làm rõ trước khi triển khai.
+BR-004 concerning loyalty points does not yet have a corresponding module in the SRS and must be clarified before implementation.
 
 ---
 
 # 47. OUT OF SCOPE USE CASES
 
-Các Use Case sau **không được đưa vào Use Case Model của version 1.0**:
+The following Use Cases are **not included in the Version 1.0 Use Case Model**:
 
 ```text
 Marketplace for Third-party Sellers
@@ -1844,61 +1845,61 @@ Online Banking Payment
 Other undefined BRD features
 ```
 
-Các nội dung này nằm ngoài phạm vi version 1.0 theo SRS.
+These items are outside the scope of Version 1.0 according to the SRS.
 
 ---
 
 # 48. OPEN QUESTIONS
 
-Các vấn đề sau cần được xác nhận trước khi chuyển sang Functional Specification / Technical Design.
+The following issues must be confirmed before proceeding to the Functional Specification / Technical Design.
 
 ## OQ-001 — Chatbot
 
-Cần xác định:
+The following points need to be determined:
 
-- Chatbot chỉ trả lời thông tin sách hay được truy cập Order?
-- Chatbot có thể thực hiện đặt hàng không?
-- Có lưu lịch sử hội thoại không?
-- Có chuyển tiếp hội thoại cho nhân viên CSKH không?
+- Does the chatbot only answer questions about books, or can it also access Orders?
+- Can the chatbot place orders?
+- Is conversation history stored?
+- Can conversations be transferred to customer support staff?
 
-Các vấn đề này cũng đã được SRS đánh dấu là cần làm rõ.
+The SRS also marks these issues as requiring clarification.
 
 ## OQ-002 — Review Eligibility
 
-Cần xác định chính sách:
+The policy needs to be determined:
 
 ```text
-Customer đã mua sản phẩm
+The Customer has purchased the product
         ↓
-Có được đánh giá?
+Is the Customer allowed to submit a review?
 ```
 
-hay tất cả Customer đều được phép đánh giá.
+or are all Customers allowed to submit reviews?
 
 ## OQ-003 — Cancellation Policy
 
-Cần xác định chính xác các trạng thái mà Customer/Employee được phép hủy.
+The exact statuses in which Customers/Employees are allowed to cancel orders must be determined.
 
-SRS mới xác định chắc chắn rằng Customer **không được hủy khi Order đang vận chuyển**.
+The SRS only explicitly establishes that Customers **cannot cancel an Order while it is being shipped**.
 
 ## OQ-004 — Refund
 
-Cần xác định:
+The following points need to be determined:
 
-- Ai có quyền approve refund?
-- Refund SLA là bao lâu?
-- Refund qua tài khoản ngân hàng được thực hiện thủ công hay qua hệ thống?
-- Hệ thống chỉ ghi nhận refund hay trực tiếp thực hiện giao dịch?
+- Who is authorized to approve a refund?
+- What is the refund SLA?
+- Are refunds to bank accounts processed manually or through the system?
+- Does the system only record the refund, or does it execute the transaction directly?
 
 ## OQ-005 — Reporting Permission
 
-SRS hiện có một số quyền Report của Employee ở trạng thái TBD. Vì vậy cần xác định chính xác Employee được xem loại báo cáo nào.
+Some Employee reporting permissions in the SRS are currently marked as TBD. Therefore, the specific report types that Employees may view must be determined.
 
 ## OQ-006 — Loyalty / Points
 
-BRD có đề cập điểm thưởng nhưng SRS chưa có module Loyalty.
+The BRD mentions reward points, but the SRS does not yet include a Loyalty module.
 
-Cần quyết định:
+A decision is required:
 
 ```text
 Loyalty / Point
@@ -1910,7 +1911,7 @@ Loyalty / Point
 
 # 49. USE CASE MODEL — SUMMARY
 
-Mô hình Use Case của Book Shop có thể được nhìn ở 5 nhóm Actor chính:
+The Book Shop Use Case Model can be viewed through five main Actor groups:
 
 ```mermaid
 flowchart TB
@@ -1974,11 +1975,11 @@ flowchart TB
 
 ---
 
-# 50. KẾT LUẬN
+# 50. CONCLUSION
 
-Use Case Document chuyển các Functional Requirements trong SRS thành mô hình tương tác giữa Actor và hệ thống.
+The Use Case Document translates the Functional Requirements in the SRS into a model of interactions between Actors and the system.
 
-Các luồng nghiệp vụ quan trọng nhất của Book Shop là:
+The most important business flows in Book Shop are:
 
 ```text
 Guest
@@ -2012,8 +2013,8 @@ Review
 Return / Refund (if eligible)
 ```
 
-Use Case Model này bám theo các requirement, business rules, authorization matrix, order lifecycle và return/refund lifecycle đã được định nghĩa trong SRS v1.0.
+This Use Case Model follows the requirements, business rules, authorization matrix, Order lifecycle, and return/refund lifecycle defined in SRS Version 1.0.
 
-Tài liệu Use Case **không bổ sung các chức năng kỹ thuật chưa được xác định trong SRS**, đặc biệt là payment gateway online, internal shipping management, mobile application hoặc các chức năng ngoài phạm vi version 1.0.
+The Use Case Document **does not introduce technical functions that have not been defined in the SRS**, particularly online payment gateways, internal shipping management, mobile applications, or functions outside the scope of Version 1.0.
 
 **End of Document**
