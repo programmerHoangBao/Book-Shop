@@ -33,6 +33,27 @@ namespace back_end.Services.Implements
             _storeStaffRepository = storeStaffRepository;
         }
 
+        public async Task<ApiResponse<OrderSummaryResponse>> GetSummaryAsync()
+        {
+            Guid? userId = _currentUserService.GetCurrentUserId();
+            RoleUser? role = _currentUserService.GetRoleCurrentUser();
+            if (!userId.HasValue || userId.Value == Guid.Empty)
+                throw new BusinessException(ErrorRecord.Forbidden);
+
+            List<Guid>? storeIds = null;
+            if (role == RoleUser.Manager)
+            {
+                storeIds = await _storeStaffRepository.GetStoreIdsByUserIdAsync(userId.Value);
+            }
+            else if (role != RoleUser.Admin)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            var summary = await _orderRepository.GetSummaryAsync(storeIds);
+            return ApiResponse<OrderSummaryResponse>.Response(MessageRecord.Success, data: summary);
+        }
+
         public async Task<ApiResponse<PaginationResponse<InvoiceResponse>>> GetInvoicesAsync(
             OrderStatus status,
             int pageNumber,
