@@ -21,6 +21,8 @@
   - [2.7. Get Deleted Stores](#27-get-deleted-stores)
   - [2.8. Search stores](#28-search-stores)
 - [3. Revenue Reports](#3-revenue-reports)
+- [4. Order Summary](#4-order-summary)
+- [5. Merchandise Reports](#5-merchandise-reports)
 - [6. Customer Reports](#6-customer-reports)
 
 ## 1. Auth
@@ -3880,19 +3882,6 @@ Revenue is calculated from completed, paid order line totals (`OrderItem.TotalPr
 
 The standard API response wraps the report in `data`. The report contains `totalRevenue`, distinct `orderCount`, the applied date range, and an `items` array. Each item has a `key`, `name`, `revenue`, `orderCount`, and `quantitySold`; time report items also include `periodStart`. A book assigned to multiple categories contributes to each category report, so category totals can exceed the overall revenue.
 
-## 5. Merchandise Reports
-
-All merchandise report endpoints require a bearer token with the `Admin` or `Manager` role. Administrators receive system-wide results. Managers are scoped to their active assigned store(s); inventory totals and sales quantities include only those stores. Soft-deleted inventory, stores, books, and orders are excluded.
-
-| Method and route | Description | Query parameters |
-| --- | --- | --- |
-| `GET /api/merchandise/reports/low-stock` | Books with positive combined available stock at or below the threshold. | `threshold` (default `5`; range `0`–`1,000,000`) |
-| `GET /api/merchandise/reports/out-of-stock` | Books whose combined available stock is zero or less in the caller's scope. | None |
-| `GET /api/merchandise/reports/best-selling` | Top books by completed-order units sold in the trailing period. | `periodDays` (default `30`; range `1`–`3,650`), `limit` (default `10`; range `1`–`100`) |
-| `GET /api/merchandise/reports/slow-moving` | Books with units sold at or below the configured maximum during the trailing period. | `periodDays` (default `30`; range `1`–`3,650`), `maximumUnitsSold` (default `5`; range `0`–`1,000,000`) |
-
-Each response wraps an array in `data`. Items include `bookId`, `name`, `author`, `availableQuantity`, and `quantitySold`; `availableQuantity` is `null` on the best-selling report. Inventory reports include the available stock total; sales reports include completed units sold in the selected trailing period. Sales are associated with stores using each order's inventory reservation records.
-
 ## 4. Order Summary
 
 ### Get Order Summary
@@ -3903,9 +3892,9 @@ Each response wraps an array in `data`. Items include `bookId`, `name`, `author`
 | URL | `/api/orders/summary` |
 | Authorization | Bearer token with the `Admin` or `Manager` role |
 
-Returns counts for orders that are not soft-deleted. `newOrders` counts `Pending` orders; `inProgressOrders` combines `Confirmed` and `Shipping`; `completedOrders` and `cancelledOrders` count their corresponding statuses.
+Returns counts for orders that are not soft-deleted. `newOrders` counts `Pending` orders; `inProgressOrders` combines `Confirmed` and `Shipping`; `completedOrders` and `cancelledOrders` count their corresponding statuses. The report has no date filter.
 
-Admins see the entire system. Managers see orders with inventory reserved from one or more active stores assigned to them. An order supplied by multiple managed stores is counted once. A manager with no active store assignments receives zero counts.
+Administrators see all orders. Managers see orders with inventory reserved from at least one active store assigned to them. An order supplied by multiple managed stores is counted once. Managers with no active store assignments receive zero counts. Other authenticated roles receive `403 Forbidden`.
 
 Example success response:
 
@@ -3924,14 +3913,71 @@ Example success response:
 }
 ```
 
+## 5. Merchandise Reports
+
+All merchandise report endpoints require a bearer token with the `Admin` or `Manager` role. Administrators receive system-wide results. Managers are scoped to active assigned stores. Inventory counts sum `AvailableQuantity` across the caller's scope. Sales reports include completed orders in the trailing time window and use the order inventory reservation records to determine store attribution. Soft-deleted records are excluded. A manager with no active store assignments receives empty report results.
+
+| Method and route | Description | Query parameters |
+| --- | --- | --- |
+| `GET /api/merchandise/reports/low-stock` | Books with positive combined available stock at or below the threshold. | `threshold` (default `5`; range `0`–`1,000,000`) |
+| `GET /api/merchandise/reports/out-of-stock` | Books with zero or less combined available stock. | None |
+| `GET /api/merchandise/reports/best-selling` | Top books by completed-order units sold in the trailing period. | `periodDays` (default `30`; range `1`–`3,650`), `limit` (default `10`; range `1`–`100`) |
+| `GET /api/merchandise/reports/slow-moving` | Books with inventory and `Available` or `OutOfStock` status, with units sold at or below the configured maximum during the trailing period. | `periodDays` (default `30`; range `1`–`3,650`), `maximumUnitsSold` (default `5`; range `0`–`1,000,000`) |
+
+Each response wraps an array in `data`. Items contain `bookId`, `name`, `author`, `availableQuantity`, and `quantitySold`. `availableQuantity` is `null` for best-selling results. `quantitySold` is zero for inventory results. Low-stock results require available stock greater than zero; out-of-stock results require available stock at or below zero. Inventory reports include books with `Available` or `OutOfStock` status. Invalid query values return `400 Bad Request`.
+
+Example low-stock response:
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": [
+    {
+      "bookId": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Example Book",
+      "author": "A. Writer",
+      "availableQuantity": 3,
+      "quantitySold": 0
+    }
+  ]
+}
+```
+
 ## 6. Customer Reports
 
-All customer report endpoints require an administrator bearer token and return system-wide results. Date ranges use UTC timestamps with an inclusive `startDate` and exclusive `endDate`. If omitted, the range defaults to the trailing 30 days.
+All customer report endpoints require a bearer token with the `Admin` role and return system-wide results. Managers and other roles receive `403 Forbidden`. These endpoints include non-deleted customer accounts. Purchase reports include non-deleted orders with `Completed` status and non-deleted customer accounts.
+
+Date filters use UTC timestamps. `startDate` is inclusive and `endDate` is exclusive. Each may be supplied independently. When both are omitted, the effective window is the trailing 30 days. If only `startDate` is supplied, `endDate` defaults to the current UTC time. If only `endDate` is supplied, `startDate` defaults to 30 days before it. The API returns the effective range. `startDate` must be earlier than `endDate`.
 
 | Method and route | Description | Query parameters |
 | --- | --- | --- |
 | `GET /api/customer-reports/new-customers` | Count non-deleted customer accounts created within the selected range. | `startDate`, `endDate` |
-| `GET /api/customer-reports/returning-customers` | Count non-deleted customers with a completed purchase during the selected range and at least one completed purchase before the range. | `startDate`, `endDate` |
-| `GET /api/customer-reports/purchase-frequency` | Count completed purchases per customer during the selected range and report the average and distribution. | `startDate`, `endDate` |
+| `GET /api/customer-reports/returning-customers` | Count customers with at least one completed purchase during the selected range and at least one earlier completed purchase before the range. | `startDate`, `endDate` |
+| `GET /api/customer-reports/purchase-frequency` | Summarize completed purchases per customer during the selected range. | `startDate`, `endDate` |
 
-Count report data contains the effective `startDate`, `endDate`, and `customerCount`. Purchase frequency data contains the effective date range, total completed orders, purchasing customer count, average completed purchases per customer (rounded to two decimal places), and a `frequencyDistribution` array grouped by completed order count. Only non-deleted customers and orders with `Completed` status are included in purchase reports.
+The two count endpoints return `startDate`, `endDate`, and `customerCount` in `data`. Purchase frequency returns the effective date range, `totalCompletedOrders`, `purchasingCustomerCount`, `averagePurchasesPerCustomer` (rounded to two decimal places; zero when there are no purchasers), and `frequencyDistribution`. Each distribution item groups customers by their exact `completedOrderCount` and reports that bucket's `customerCount`. An invalid date range returns `400 Bad Request`.
+
+Example purchase frequency response:
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": {
+    "startDate": "2026-10-01T00:00:00Z",
+    "endDate": "2026-11-01T00:00:00Z",
+    "totalCompletedOrders": 12,
+    "purchasingCustomerCount": 8,
+    "averagePurchasesPerCustomer": 1.5,
+    "frequencyDistribution": [
+      { "completedOrderCount": 1, "customerCount": 4 },
+      { "completedOrderCount": 2, "customerCount": 4 }
+    ]
+  }
+}
+```
