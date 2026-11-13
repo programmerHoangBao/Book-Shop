@@ -3931,5 +3931,6 @@ All customer report endpoints require an administrator bearer token and return s
 | Method and route | Description | Query parameters |
 | --- | --- | --- |
 | `GET /api/customer-reports/new-customers` | Count non-deleted customer accounts created within the selected range. | `startDate`, `endDate` |
+| `GET /api/customer-reports/returning-customers` | Count non-deleted customers with a completed purchase during the selected range and at least one completed purchase before the range. | `startDate`, `endDate` |
 
 The response data contains the effective `startDate`, `endDate`, and `customerCount`.

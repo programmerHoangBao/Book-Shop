@@ -34,6 +34,31 @@ namespace back_end.Services.Implements
                 });
         }
 
+        public async Task<ApiResponse<CustomerCountReportResponse>> GetReturningCustomersAsync(
+            DateTime? startDate,
+            DateTime? endDate)
+        {
+            var (start, end) = ResolveDateRange(startDate, endDate);
+            int count = await _context.Users.AsNoTracking()
+                .Where(user => user.Role == RoleUser.Customer && !user.IsDeleted &&
+                    _context.Orders.Any(order => order.UserId == user.Id && !order.IsDeleted &&
+                        order.OrderStatus == OrderStatus.Completed &&
+                        order.CompletedAt >= start && order.CompletedAt < end) &&
+                    _context.Orders.Any(previousOrder => previousOrder.UserId == user.Id &&
+                        !previousOrder.IsDeleted && previousOrder.OrderStatus == OrderStatus.Completed &&
+                        previousOrder.CompletedAt < start))
+                .CountAsync();
+
+            return ApiResponse<CustomerCountReportResponse>.Response(
+                MessageRecord.Success,
+                data: new CustomerCountReportResponse
+                {
+                    StartDate = start,
+                    EndDate = end,
+                    CustomerCount = count
+                });
+        }
+
         private static (DateTime Start, DateTime End) ResolveDateRange(DateTime? startDate, DateTime? endDate)
         {
             DateTime now = DateTime.UtcNow;

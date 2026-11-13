@@ -21,5 +21,14 @@ namespace back_end.Controllers
             var response = await _service.GetNewCustomersAsync(startDate, endDate);
             return StatusCode(response.HttpStatus, response);
         }
+
+        [HttpGet("returning-customers")]
+        public async Task<IActionResult> GetReturningCustomersAsync(
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
+        {
+            var response = await _service.GetReturningCustomersAsync(startDate, endDate);
+            return StatusCode(response.HttpStatus, response);
+        }
     }
 }
