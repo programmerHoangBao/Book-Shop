@@ -1,485 +1,447 @@
 # BUSINESS REQUIREMENTS DOCUMENT (BRD)
 
-# BOOK SHOP -- NỀN TẢNG BÁN SÁCH TRỰC TUYẾN
+# BOOK SHOP — ONLINE BOOKSTORE PLATFORM
 
-**Phiên bản:** 1.0\
-**Trạng thái:** Draft for Review\
-**Chủ sở hữu:** Founder & CEO -- Book Shop
-
----
-
-## Mục lục
-
-1. [Tổng quan dự án](#1-tổng-quan-dự-án)
-2. [Mục tiêu kinh doanh](#2-mục-tiêu-kinh-doanh)
-3. [Phạm vi và đối tượng sử dụng](#3-phạm-vi-và-đối-tượng-sử-dụng)
-4. [Sản phẩm, tìm kiếm và trải nghiệm mua hàng](#4-sản-phẩm-tìm-kiếm-và-trải-nghiệm-mua-hàng)
-5. [Tài khoản, giỏ hàng, đặt hàng và thanh toán](#5-tài-khoản-giỏ-hàng-đặt-hàng-và-thanh-toán)
-6. [Đơn hàng và chăm sóc khách hàng](#6-đơn-hàng-và-chăm-sóc-khách-hàng)
-7. [Tồn kho, cửa hàng và khuyến mãi](#7-tồn-kho-cửa-hàng-và-khuyến-mãi)
-8. [Đánh giá và chatbot](#8-đánh-giá-và-chatbot)
-9. [Quy tắc kinh doanh, báo cáo và bảo mật](#9-quy-tắc-kinh-doanh-báo-cáo-và-bảo-mật)
-10. [Tiêu chí thành công và nghiệm thu](#10-tiêu-chí-thành-công-và-nghiệm-thu)
-
-## 1. TỔNG QUAN DỰ ÁN
-
-### 1.1. Bối cảnh
-
-Book Shop là chuỗi cửa hàng bán sách đang mở rộng từ mô hình bán hàng
-tại cửa hàng vật lý sang bán hàng trực tuyến.
-
-Website Book Shop được xây dựng nhằm tạo một kênh bán hàng trực tuyến,
-đồng thời hỗ trợ Book Shop quản lý thống nhất khách hàng, sách, đơn
-hàng, thanh toán, giao hàng, tồn kho và hoạt động kinh doanh.
-
-### 1.2. Vấn đề cần giải quyết
-
-Book Shop hiện cần một nền tảng giúp:
-
-- Tiếp cận khách hàng ngoài khu vực cửa hàng.
-- Giúp khách hàng tìm và mua sách thuận tiện.
-- Giảm các thao tác xử lý thủ công.
-- Theo dõi hàng hóa và đơn hàng chính xác hơn.
-- Có thông tin phục vụ quản lý và ra quyết định.
-
-### 1.3. Tầm nhìn
-
-Xây dựng một nền tảng bán sách đa kênh, kết nối khách hàng, website, cửa
-hàng, kho hàng và hoạt động kinh doanh của Book Shop.
+**Version:** 1.0\
+**Status:** Draft for Review\
+**Owner:** Founder & CEO — Book Shop
 
 ---
 
-## 2. MỤC TIÊU KINH DOANH
+## Table of Contents
 
-Dự án hướng tới các mục tiêu:
+1. [Project Overview](#1-project-overview)
+2. [Business Objectives](#2-business-objectives)
+3. [Scope and Users](#3-scope-and-users)
+4. [Products, Search, and Shopping Experience](#4-products-search-and-shopping-experience)
+5. [Accounts, Cart, Orders, and Payment](#5-accounts-cart-orders-and-payment)
+6. [Orders and Customer Support](#6-orders-and-customer-support)
+7. [Inventory, Stores, and Promotions](#7-inventory-stores-and-promotions)
+8. [Reviews and Chatbot](#8-reviews-and-chatbot)
+9. [Business Rules, Reports, and Security](#9-business-rules-reports-and-security)
+10. [Success and Acceptance Criteria](#10-success-and-acceptance-criteria)
 
-1.  Tăng doanh thu từ kênh trực tuyến.
-2.  Mở rộng phạm vi tiếp cận khách hàng.
-3.  Cải thiện trải nghiệm mua sách.
-4.  Quản lý sản phẩm và tồn kho chính xác.
-5.  Giảm thời gian xử lý đơn hàng.
-6.  Cung cấp báo cáo hỗ trợ quản lý.
-7.  Tạo nền tảng có thể mở rộng trong tương lai.
+## 1. PROJECT OVERVIEW
 
-## 3. PHẠM VI VÀ ĐỐI TƯỢNG SỬ DỤNG
+### 1.1. Background
 
-### 3.1. Trong phạm vi
+Book Shop is a bookstore chain expanding from physical retail into online sales.
 
-Website và hệ thống quản lý bao gồm:
+The Book Shop website is intended to create an online sales channel while helping Book Shop manage customers, books, orders, payments, deliveries, inventory, and business operations consistently.
 
-- Quản lý tài khoản.
-- Quản lý sách và danh mục.
-- Tìm kiếm và lọc sách.
-- Giỏ hàng và đặt hàng.
-- Thanh toán.
-- Quản lý đơn hàng.
-- Quản lý tồn kho.
-- Quản lý cửa hàng.
-- Khuyến mãi.
-- Đánh giá sản phẩm.
-- Thông báo.
-- Báo cáo kinh doanh.
-- Chatbot hỗ trợ khách hàng.
+### 1.2. Problem to Be Solved
 
-### 3.2. Đối tượng sử dụng
+Book Shop needs a platform that can:
 
-**Khách hàng:** tìm kiếm, mua sách, thanh toán, theo dõi đơn hàng, đánh
-giá và quản lý tài khoản.
+- Reach customers beyond the areas served by its stores.
+- Help customers find and purchase books conveniently.
+- Reduce manual processing.
+- Improve the accuracy of product and order tracking.
+- Provide information to support management and decision-making.
 
-**Khách vãng lai:** xem, tìm kiếm và khám phá sách nhưng không sử dụng
-các chức năng yêu cầu tài khoản.
+### 1.3. Vision
 
-**Nhân viên:** Xác nhận đơn hàng vận chuyển, xác nhận giao hàng thành công (nhận thông báo từ bên thứ 3 và xác nhận trạng thái giao hàng thành công cho khách hàng).
-
-**Quản lý cửa hàng:** quản lý hàng hóa, đơn hàng và thông tin kinh doanh
-trong phạm vi cửa hàng được phân công.
-
-**Quản trị viên:** quản lý toàn bộ hoạt động được Book Shop cho phép.
-
-### 3.3. Ngoài phạm vi giai đoạn đầu
-
-- Marketplace cho bên bán thứ ba.
-- Livestream bán hàng.
-- Cho thuê sách.
-- Hệ thống kế toán/ERP chuyên sâu.
-- Ứng dụng mobile riêng.
-- Quản lý việc vẫn chuyển đơn hàng (được giao cho bên thứ 3).
-- Thanh toán online thông qua ngân hàng hoặc các hình thức online khác.
-
-Các chức năng này có thể được xem xét ở giai đoạn sau.
+Build an omnichannel bookstore platform that connects customers, the website, stores, warehouses, and Book Shop's business operations.
 
 ---
 
-## 4. SẢN PHẨM, TÌM KIẾM VÀ TRẢI NGHIỆM MUA HÀNG
+## 2. BUSINESS OBJECTIVES
 
-### 4.1. Quản lý sản phẩm
+The project aims to:
 
-Book Shop cần quản lý các thông tin:
+1. Increase revenue from online sales.
+2. Expand customer reach.
+3. Improve the book-shopping experience.
+4. Manage products and inventory accurately.
+5. Reduce order processing time.
+6. Provide reports that support management.
+7. Create a platform that can scale in the future.
 
-- Tên sách.
-- Tác giả.
-- Nhà xuất bản.
-- Thể loại.
-- Mô tả.
-- Hình ảnh.
-- Giá bán.
+## 3. SCOPE AND USERS
 
-Quản trị viên có thể thêm, xem, chỉnh sửa, ngừng bán và kích hoạt lại
-sản phẩm.
+### 3.1. In Scope
 
-### 4.2. Tìm kiếm và khám phá
+The website and management system include:
 
-Khách hàng có thể tìm kiếm theo:
+- Account management.
+- Book and category management.
+- Book search and filtering.
+- Shopping cart and order placement.
+- Payment.
+- Order management.
+- Inventory management.
+- Store management.
+- Promotions.
+- Product reviews.
+- Notifications.
+- Business reports.
+- Customer support chatbot.
 
-- Tên sách.
-- Tác giả.
-- Nhà xuất bản.
-- Thể loại.
-- Từ khóa liên quan.
+### 3.2. Users
 
-Có thể lọc theo:
+**Customers:** Search for and purchase books, make payments, track orders, leave reviews, and manage their accounts.
 
-- Giá.
-- Thể loại.
-- Nhà xuất bản.
-- Đánh giá.
-- Tình trạng còn hàng.
+**Guest visitors:** Browse, search for, and discover books, but cannot use features that require an account.
 
-Có thể sắp xếp theo:
+**Employees:** Confirm orders for shipment and confirm successful delivery (receive a notification from a third party and update the order status to indicate successful delivery to the customer).
 
-- Giá.
-- Bán chạy.
-- Đánh giá.
-- Sách mới.
+**Store managers:** Manage products, orders, and business information for their assigned stores.
 
-### 4.3. Trang chi tiết sách
+**Administrators:** Manage all operations permitted by Book Shop.
 
-Trang sách cần hiển thị rõ:
+### 3.3. Out of Scope for the Initial Release
 
-- Tên sách.
-- Tác giả.
-- Hình ảnh.
-- Giá.
-- Giá khuyến mãi nếu có.
-- Mô tả.
-- Nhà xuất bản.
-- Đánh giá.
-- Tình trạng còn hàng.
+- A marketplace for third-party sellers.
+- Livestream shopping.
+- Book rentals.
+- A specialized accounting/ERP system.
+- A standalone mobile application.
+- Shipment management (handled by a third party).
+- Online payments through banks or other online payment methods.
 
-Khách hàng có thể thêm vào giỏ hàng hoặc mua ngay.
+These features may be considered in a later phase.
 
 ---
 
-## 5. TÀI KHOẢN, GIỎ HÀNG, ĐẶT HÀNG VÀ THANH TOÁN
+## 4. PRODUCTS, SEARCH, AND SHOPPING EXPERIENCE
 
-### 5.1. Tài khoản
+### 4.1. Product Management
 
-Khách hàng có thể:
+Book Shop needs to manage the following information:
 
-- Đăng ký.
-- Đăng nhập.
-- Xác minh tài khoản.
-- Lấy lại mật khẩu.
-- Cập nhật thông tin cá nhân.
-- Quản lý địa chỉ giao hàng.
-- Xem lịch sử mua hàng.
+- Book title.
+- Author.
+- Publisher.
+- Genre/category.
+- Description.
+- Images.
+- Sale price.
 
-### 5.2. Giỏ hàng
+Administrators can add, view, edit, discontinue, and reactivate products.
 
-Khách hàng có thể:
+### 4.2. Search and Discovery
 
-- Thêm sách.
-- Thay đổi số lượng.
-- Xóa sản phẩm.
-- Xem tổng tiền.
+Customers can search by:
 
-Không được đặt số lượng vượt quá số hàng có thể bán.
+- Book title.
+- Author.
+- Publisher.
+- Genre/category.
+- Related keywords.
 
-### 5.3. Đặt hàng
+They can filter by:
 
-Quy trình cơ bản:
+- Price.
+- Genre/category.
+- Publisher.
+- Rating.
+- Availability.
+
+They can sort by:
+
+- Price.
+- Best-selling.
+- Rating.
+- Newest books.
+
+### 4.3. Book Detail Page
+
+The book page should clearly display:
+
+- Book title.
+- Author.
+- Images.
+- Price.
+- Promotional price, if applicable.
+- Description.
+- Publisher.
+- Reviews.
+- Availability.
+
+Customers can add a book to their cart or buy it immediately.
+
+---
+
+## 5. ACCOUNTS, CART, ORDERS, AND PAYMENT
+
+### 5.1. Accounts
+
+Customers can:
+
+- Register.
+- Sign in.
+- Verify their account.
+- Recover their password.
+- Update personal information.
+- Manage delivery addresses.
+- View purchase history.
+
+### 5.2. Shopping Cart
+
+Customers can:
+
+- Add books.
+- Change quantities.
+- Remove items.
+- View the total amount.
+
+Customers must not be able to order more than the quantity available for sale.
+
+### 5.3. Order Placement
+
+Basic flow:
 
 ```text
-Tìm sách
+Find books
    ↓
-Chọn sách
+Select books
    ↓
-Thêm vào giỏ (tùy chọn)
+Add to cart (optional)
    ↓
-Nhập địa chỉ
+Enter a delivery address
    ↓
-Chọn phương thức thanh toán (Phiên bản 1.0 chỉ có thanh toán khi nhận hàng)
+Choose a payment method (version 1.0 supports cash on delivery only)
    ↓
-Áp dụng khuyến mãi (Tùy chọn)
+Apply a promotion (optional)
    ↓
-Xác nhận đơn (trạng thái đơn hàng là chờ xác nhận)
+Confirm the order (order status is Pending)
    ↓
-Nhân viên giao hàng cho bên thứ 3 vận chuyển (trạng thái đơn hàng là đang vận chuyển)
+An employee hands the order to a third-party carrier (order status is Shipping)
    ↓
-Giao hàng (Phiên bản 1 là khách hàng thanh toán với bên thứ 3 vẫn chuyển)
+Delivery (in version 1, the customer pays the third-party carrier)
    ↓
-Hoàn tất (Book shop nhận được tiền từ bên thứ 3 và xác nhận trạng thái đơn hàng là hoàn tất)
+Completion (Book Shop receives the payment from the third party and confirms the order as Completed)
 ```
 
-## 6. ĐƠN HÀNG VÀ CHĂM SÓC KHÁCH HÀNG
+## 6. ORDERS AND CUSTOMER SUPPORT
 
-### 6.1. Quản lý đơn hàng
+### 6.1. Order Management
 
-Khách hàng có thể:
+Customers can:
 
-- Xem đơn hàng.
-- Theo dõi trạng thái.
-- Xem sản phẩm và số tiền.
-- Hủy đơn nếu vẫn được phép.
-*Lưu ý:* Đơn hàng không được hủy khi trạng thái đơn hàng là đang vận chuyển.
+- View orders.
+- Track order status.
+- View items and amounts.
+- Cancel an order if cancellation is still allowed.
 
-Nhân viên được phân quyền có thể:
+*Note:* An order cannot be cancelled once its status is **Shipping**.
 
-- Tìm kiếm đơn.
-- Xác nhận đơn.
-- Xử lý đơn.
-- Hủy đơn theo chính sách.
-- Xử lý yêu cầu trả hàng và hoàn tiền.
+Authorized employees can:
 
-### 6.2. Trả hàng và hoàn tiền
+- Search for orders.
+- Confirm orders.
+- Process orders.
+- Cancel orders according to policy.
+- Handle return and refund requests.
 
-- Khi khách hàng đã nhận được hàng (trạng thái đơn hàng là Hoàn tất) và muốn trả hàng thì cần cung cấp các các thông tin minh chứng, tài khoảng ngân hàng.
-Quy trình:
+### 6.2. Returns and Refunds
+
+- If a customer has received an order (the order status is **Completed**) and wants to return it, they must provide supporting evidence and bank account information.
+
+Process:
 
 ```text
-Khách hàng yêu cầu
+Customer submits a request
        ↓
-Book Shop kiểm tra
+Book Shop reviews the request
        ↓
-Chấp nhận / Từ chối
+Approve / Reject
        ↓
-Nhận và kiểm tra hàng
+Receive and inspect the items
        ↓
-Hoàn tiền nếu đủ điều kiện
+Issue a refund if eligible
        ↓
-Cập nhật đơn hàng và hàng hóa
+Update the order and inventory
 ```
 
-### 6.3. Thông báo
+### 6.3. Notifications
 
-Khách hàng nhận thông báo về các sự kiện quan trọng như:
+Customers receive notifications about important events, such as:
 
-- Đăng ký tài khoản.
-- Đặt hàng.
-- Thanh toán.
-- Xác nhận đơn.
-- Giao hàng.
-- Hủy đơn.
-- Hoàn tiền.
-- Khuyến mãi.
-
----
-
-## 7. TỒN KHO, CỬA HÀNG VÀ KHUYẾN MÃI
-
-### 7.1. Quản lý tồn kho
-
-Book Shop cần biết số lượng sách tại từng cửa hàng hoặc kho.
-
-Cần theo dõi:
-
-- Số lượng hiện có.
-- Số lượng đã giữ cho đơn hàng.
-- Số lượng có thể bán.
-- Số lượng hư hỏng.
-- Số lượng đang chờ nhập.
-
-Tồn kho được cập nhật khi:
-
-- Nhập hàng.
-- Bán hàng.
-- Đặt hàng.
-- Hủy đơn.
-- Hoàn hàng.
-- Điều chuyển.
-- Ghi nhận hàng hư hỏng.
-
-**Nguyên tắc:** không được bán vượt số lượng hàng có thể bán.
-
-### 7.2. Quản lý nhiều cửa hàng
-
-Book Shop có thể:
-
-- Xem tồn kho từng cửa hàng.
-- Kiểm kê.
-- Nhập và xuất hàng.
-- Điều chuyển hàng.
-- Nhận hàng từ cửa hàng khác.
-- Theo dõi lịch sử thay đổi.
-
-### 7.3. Khuyến mãi
-
-Có thể áp dụng:
-
-- Giảm theo phần trăm.
-- Giảm theo số tiền.
-- Mã giảm giá.
-- Miễn phí giao hàng.
-- Flash sale.
-- Khuyến mãi theo thể loại.
-
-Khuyến mãi phải tuân theo điều kiện về sản phẩm, giá trị đơn hàng, thời
-gian và số lần sử dụng.
+- Account registration.
+- Order placement.
+- Payment.
+- Order confirmation.
+- Delivery.
+- Order cancellation.
+- Refund.
+- Promotions.
 
 ---
 
-## 8. ĐÁNH GIÁ VÀ CHATBOT
+## 7. INVENTORY, STORES, AND PROMOTIONS
 
-### 8.1. Đánh giá
+### 7.1. Inventory Management
 
-Khách hàng có thể đánh giá từ 1 đến 5 sao và viết nhận xét.
+Book Shop needs to know the quantity of each book at every store or warehouse.
 
-Book Shop có thể yêu cầu khách hàng đã mua sản phẩm mới được đánh giá.
+The system must track:
 
-Quản trị viên có thể kiểm duyệt và ẩn các đánh giá vi phạm.
+- Quantity on hand.
+- Quantity reserved for orders.
+- Quantity available for sale.
+- Damaged quantity.
+- Quantity awaiting receipt.
+
+Inventory is updated when:
+
+- Stock is received.
+- Items are sold.
+- An order is placed.
+- An order is cancelled.
+- Items are returned.
+- Stock is transferred.
+- Damaged items are recorded.
+
+**Principle:** Do not sell more than the quantity available for sale.
+
+### 7.2. Multi-Store Management
+
+Book Shop can:
+
+- View inventory at each store.
+- Perform stock counts.
+- Receive and issue stock.
+- Transfer stock between locations.
+- Receive stock from another store.
+- Track the history of changes.
+
+### 7.3. Promotions
+
+Promotions may include:
+
+- Percentage discounts.
+- Fixed-amount discounts.
+- Discount codes.
+- Free shipping.
+- Flash sales.
+- Category-based promotions.
+
+Promotions must follow conditions for eligible products, order value, time period, and number of uses.
+
+---
+
+## 8. REVIEWS AND CHATBOT
+
+### 8.1. Reviews
+
+Customers can rate a book from 1 to 5 stars and write a review.
+
+Book Shop may require customers to have purchased a product before reviewing it.
+
+Administrators can moderate and hide reviews that violate policy.
 
 ### 8.2. Chatbot
 
-Chatbot hỗ trợ:
+The chatbot helps customers:
 
-- Tìm sách.
-- Gợi ý sách.
-- Giải đáp câu hỏi về sản phẩm.
+- Find books.
+- Get book recommendations.
+- Ask questions about products.
 
-Trong tương lai có thể mở rộng thành hệ thống đề xuất sách cá nhân hóa.
-
----
-
-## 9. QUY TẮC KINH DOANH, BÁO CÁO VÀ BẢO MẬT
-
-### 9.1. Quy tắc kinh doanh
+In the future, it may be expanded into a personalized book recommendation system.
 
 ---
 
-Mã Quy tắc
+## 9. BUSINESS RULES, REPORTS, AND SECURITY
+
+### 9.1. Business Rules
+
+| ID | Business rule |
+|---|---|
+| BR-001 | The sale price must not be less than zero. |
+| BR-002 | Customers must not order more than the quantity available for sale. |
+| BR-003 | Expired promotions cannot be applied. |
+| BR-004 | A user cannot use more points than they currently have. |
+| BR-005 | Reviews must comply with Book Shop's policies. |
+| BR-006 | An order can only be cancelled when the applicable conditions are met. |
+| BR-007 | Refunds must comply with the return policy. |
+| BR-008 | Users may only perform tasks that match their responsibilities. |
+| BR-009 | The total amount must be clear before an order is placed. |
+| BR-010 | An order cannot be cancelled while its status is Shipping. |
+
+### 9.2. Reports
+
+Management needs information about:
+
+**Revenue**
+
+- By day, week, month, quarter, and year.
+- By store.
+- By product.
+- By category.
+
+**Orders**
+
+- New orders.
+- Orders in progress.
+- Completed orders.
+- Cancelled orders.
+
+**Products**
+
+- Books running low.
+- Out-of-stock books.
+- Best-selling books.
+- Slow-moving books.
+
+**Customers**
+
+- New customers.
+- Returning customers.
+- Purchase frequency.
 
 ---
 
-BR-001 Giá bán không được nhỏ hơn 0.
+## 10. SUCCESS AND ACCEPTANCE CRITERIA
 
-BR-002 Không được đặt vượt số lượng hàng
-có thể bán.
+### 10.1. Acceptance Criteria
 
-BR-003 Khuyến mãi hết hạn không được áp
-dụng.
+The project is accepted when:
 
-BR-004 Không được sử dụng điểm vượt quá số
-điểm hiện có.
+- Customers can search for and view books.
+- Customers can add books to their cart.
+- Customers can place orders.
+- Customers can pay using the methods supported by Book Shop.
+- The system prevents sales beyond the quantity available for sale.
+- Customers can track their orders.
+- Book Shop can manage products.
+- Book Shop can manage orders.
+- Book Shop can track inventory.
+- Users can only perform functions appropriate to their responsibilities.
+- Management can view the required reports.
+- No critical defects affecting business operations remain at the time of acceptance.
 
-BR-005 Đánh giá phải tuân theo chính sách
-Book Shop.
+### 10.2. Expected Outcomes
 
-BR-006 Đơn hàng chỉ được hủy khi đáp ứng
-điều kiện cho phép.
+When complete, Book Shop will have an online sales channel that meets its main business needs:
 
-BR-007 Hoàn tiền phải tuân theo chính sách
-trả hàng.
+- Customers can easily find and purchase books.
+- Book Shop can manage products, orders, and inventory.
+- The purchasing process is clear and convenient.
+- Management has the information needed to monitor business operations.
+- The platform can continue to expand as business needs grow.
 
-BR-008 Người dùng chỉ được thực hiện công
-việc phù hợp với trách nhiệm.
+### 10.3. BRD Guiding Principle
 
-BR-009 Tổng tiền phải được xác định rõ
-trước khi đặt hàng.
+The BRD defines **what Book Shop needs, who needs it, and why**.
 
-BR-0010 Việc hủy đơn hàng không được diển ra khi trạng thái đang là đang vận chuyển..
+The BRD does not go into detail about how the development team will build the system. Topics such as:
 
----
+- Technologies used.
+- Database.
+- Software architecture.
+- API design.
+- Detailed interface design.
+- Technical requirements.
+- Technical security.
+- System deployment and operations.
 
-### 9.2. Báo cáo
-
-Ban quản lý cần có thông tin về:
-
-**Doanh thu**
-
-- Theo ngày, tuần, tháng, quý, năm.
-- Theo cửa hàng.
-- Theo sản phẩm.
-- Theo thể loại.
-
-**Đơn hàng**
-
-- Đơn mới.
-- Đơn đang xử lý.
-- Đơn hoàn tất.
-- Đơn hủy.
-
-**Hàng hóa**
-
-- Sách sắp hết.
-- Sách hết hàng.
-- Sách bán chạy.
-- Sách bán chậm.
-
-**Khách hàng**
-
-- Khách hàng mới.
-- Khách hàng quay lại.
-- Tần suất mua hàng.
+will be described in specialized documents in later stages, particularly the **SRS, Software Architecture Document, API Specification, and Technical Design**.
 
 ---
 
-## 10. TIÊU CHÍ THÀNH CÔNG VÀ NGHIỆM THU
-
-### 10.1. Tiêu chí nghiệm thu
-
-Dự án được nghiệm thu khi:
-
-- Khách hàng có thể tìm kiếm và xem sách.
-- Khách hàng có thể thêm sách vào giỏ hàng.
-- Khách hàng có thể đặt hàng.
-- Khách hàng có thể thanh toán bằng các phương thức được Book Shop hỗ
-  trợ.
-- Không cho phép bán vượt số lượng hàng có thể bán.
-- Khách hàng có thể theo dõi đơn hàng.
-- Book Shop có thể quản lý sản phẩm.
-- Book Shop có thể quản lý đơn hàng.
-- Book Shop có thể theo dõi tồn kho.
-- Người dùng chỉ được thực hiện các chức năng phù hợp với trách nhiệm
-  của mình.
-- Ban quản lý có thể xem các báo cáo cần thiết.
-- Không còn lỗi nghiêm trọng ảnh hưởng đến hoạt động kinh doanh tại
-  thời điểm nghiệm thu.
-
-### 10.2. Kết quả mong đợi
-
-Sau khi hoàn thành, Book Shop có một kênh bán hàng trực tuyến đáp ứng
-các nhu cầu kinh doanh chính:
-
-- Khách hàng dễ dàng tìm kiếm và mua sách.
-- Book Shop quản lý được sản phẩm, đơn hàng và tồn kho.
-- Quy trình mua hàng rõ ràng và thuận tiện.
-- Ban quản lý có thông tin cần thiết để theo dõi hoạt động kinh doanh.
-- Nền tảng có thể tiếp tục được mở rộng khi nhu cầu kinh doanh tăng
-  lên.
-
-### 10.3. Nguyên tắc của BRD
-
-BRD xác định **Book Shop cần gì, ai cần và vì sao cần**.
-
-BRD không đi sâu vào cách đội phát triển xây dựng hệ thống. Các nội dung
-như:
-
-- Công nghệ sử dụng.
-- Cơ sở dữ liệu.
-- Kiến trúc phần mềm.
-- Thiết kế API.
-- Thiết kế giao diện chi tiết.
-- Yêu cầu kỹ thuật.
-- Bảo mật ở mức kỹ thuật.
-- Cách triển khai và vận hành hệ thống.
-
-sẽ được mô tả trong các tài liệu chuyên môn ở giai đoạn sau, đặc biệt là
-**SRS, Software Architecture Document, API Specification và Technical
-Design**.
-
----
-
-**Document Owner:** Founder & CEO -- Book Shop\
+**Document Owner:** Founder & CEO — Book Shop\
 **Document Type:** Business Requirements Document\
 **Version:** 1.0\
 **Status:** Draft for Review
