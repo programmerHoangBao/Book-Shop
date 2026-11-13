@@ -1,6 +1,7 @@
 using back_end.Data;
 using back_end.Entities;
 using back_end.Enums;
+using back_end.DTOs.Orders.Responses;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 
@@ -13,6 +14,44 @@ namespace back_end.Repositories.Implements
         public OrderRepository(DatabaseContext context)
         {
             _context = context;
+        }
+
+        public async Task<OrderSummaryResponse> GetSummaryAsync(List<Guid>? storeIds)
+        {
+            IQueryable<OrderEntity> query = _context.Orders.AsNoTracking()
+                .Where(order => !order.IsDeleted);
+
+            if (storeIds != null)
+            {
+                if (storeIds.Count == 0)
+                    return new OrderSummaryResponse();
+
+                query = query.Where(order => _context.InventoryTransactions.Any(transaction =>
+                    !transaction.IsDeleted &&
+                    transaction.TransactionType == TransactionType.Adjustment &&
+                    transaction.Quantity > 0 &&
+                    transaction.Reason == "Reserved for order " + order.OrderCode &&
+                    transaction.Inventory != null && !transaction.Inventory.IsDeleted &&
+                    storeIds.Contains(transaction.Inventory.StoreId)));
+            }
+
+            var counts = await query
+                .GroupBy(order => order.OrderStatus)
+                .Select(group => new { Status = group.Key, Count = group.Count() })
+                .ToListAsync();
+
+            int Count(OrderStatus status) => counts
+                .Where(item => item.Status == status)
+                .Select(item => item.Count)
+                .FirstOrDefault();
+
+            return new OrderSummaryResponse
+            {
+                NewOrders = Count(OrderStatus.Pending),
+                InProgressOrders = Count(OrderStatus.Confirmed) + Count(OrderStatus.Shipping),
+                CompletedOrders = Count(OrderStatus.Completed),
+                CancelledOrders = Count(OrderStatus.Cancelled)
+            };
         }
 
         public async Task<(List<OrderEntity> Orders, int TotalItems)> GetInvoicesAsync(

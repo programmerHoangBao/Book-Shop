@@ -3878,3 +3878,34 @@ Revenue is calculated from completed, paid order line totals (`OrderItem.TotalPr
 | `GET /api/revenue/by-category` | Revenue grouped by category. | `startDate`, `endDate`, `storeId` |
 
 The standard API response wraps the report in `data`. The report contains `totalRevenue`, distinct `orderCount`, the applied date range, and an `items` array. Each item has a `key`, `name`, `revenue`, `orderCount`, and `quantitySold`; time report items also include `periodStart`. A book assigned to multiple categories contributes to each category report, so category totals can exceed the overall revenue.
+
+## 4. Order Summary
+
+### Get Order Summary
+
+| Field | Value |
+| --- | --- |
+| Method | `GET` |
+| URL | `/api/orders/summary` |
+| Authorization | Bearer token with the `Admin` or `Manager` role |
+
+Returns counts for orders that are not soft-deleted. `newOrders` counts `Pending` orders; `inProgressOrders` combines `Confirmed` and `Shipping`; `completedOrders` and `cancelledOrders` count their corresponding statuses.
+
+Admins see the entire system. Managers see orders with inventory reserved from one or more active stores assigned to them. An order supplied by multiple managed stores is counted once. A manager with no active store assignments receives zero counts.
+
+Example success response:
+
+```json
+{
+  "isSuccess": true,
+  "responseCode": "S002",
+  "message": "Successful!",
+  "httpStatus": 200,
+  "data": {
+    "newOrders": 4,
+    "inProgressOrders": 7,
+    "completedOrders": 21,
+    "cancelledOrders": 2
+  }
+}
+```

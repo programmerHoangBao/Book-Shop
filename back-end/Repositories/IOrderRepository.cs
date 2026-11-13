@@ -1,4 +1,5 @@
 using back_end.Entities;
+using back_end.DTOs.Orders.Responses;
 using back_end.Enums;
 
 namespace back_end.Repositories
@@ -50,6 +51,7 @@ namespace back_end.Repositories
 
     public interface IOrderRepository
     {
+        Task<OrderSummaryResponse> GetSummaryAsync(List<Guid>? storeIds);
         Task<(List<OrderEntity> Orders, int TotalItems)> GetInvoicesAsync(
             Guid userId,
             OrderStatus status,

@@ -17,6 +17,14 @@ namespace back_end.Controllers
             _orderService = orderService;
         }
 
+        [HttpGet("summary")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> GetSummaryAsync()
+        {
+            var response = await _orderService.GetSummaryAsync();
+            return StatusCode(response.HttpStatus, response);
+        }
+
         [HttpPost]
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> PlaceOrderAsync(

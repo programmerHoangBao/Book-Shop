@@ -44,6 +44,17 @@ namespace back_end.Repositories.Implements
                 .FirstOrDefaultAsync();
         }
 
+        public Task<List<Guid>> GetStoreIdsByUserIdAsync(Guid userId)
+        {
+            return _context.StoreStaffs.AsNoTracking()
+                .Where(staff => staff.UserId == userId && !staff.IsDeleted &&
+                    staff.User != null && staff.User.Enabled && !staff.User.IsDeleted &&
+                    staff.Store != null && !staff.Store.IsDeleted)
+                .Select(staff => staff.StoreId)
+                .Distinct()
+                .ToListAsync();
+        }
+
         public Task<bool> IsUserAssignedToStoreAsync(Guid userId, Guid storeId)
         {
             return _context.StoreStaffs.AnyAsync(staff =>
