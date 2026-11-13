@@ -1,1159 +1,1155 @@
 # SOFTWARE REQUIREMENTS SPECIFICATION (SRS)
 
-## BOOK SHOP — NỀN TẢNG BÁN SÁCH TRỰC TUYẾN
+## BOOK SHOP — ONLINE BOOKSTORE PLATFORM
 
-**Phiên bản:** 1.0  
-**Trạng thái:** Draft for Review  
-**Loại tài liệu:** Software Requirements Specification  
-**Tài liệu nguồn:** Business Requirements Document (BRD) v1.0  
-**Chủ sở hữu:** Founder & CEO — Book Shop  
+**Version:** 1.0  
+**Status:** Draft for Review  
+**Document Type:** Software Requirements Specification  
+**Source Document:** Business Requirements Document (BRD) v1.0  
+**Owner:** Founder & CEO — Book Shop
 
 ---
 
-# MỤC LỤC
+# TABLE OF CONTENTS
 
-1. [Giới thiệu](#1-giới-thiệu)
-2. [Tổng quan hệ thống](#2-tổng-quan-hệ-thống)
-3. [Đối tượng sử dụng và phân quyền](#3-đối-tượng-sử-dụng-và-phân-quyền)
-4. [Phạm vi hệ thống](#4-phạm-vi-hệ-thống)
-5. [Yêu cầu chức năng](#5-yêu-cầu-chức-năng)
-   - 5.1. Quản lý tài khoản
-   - 5.2. Quản lý sách và danh mục
-   - 5.3. Tìm kiếm và lọc sách
-   - 5.4. Chi tiết sách
-   - 5.5. Giỏ hàng
-   - 5.6. Đặt hàng
-   - 5.7. Thanh toán
-   - 5.8. Quản lý đơn hàng
-   - 5.9. Trả hàng và hoàn tiền
-   - 5.10. Quản lý tồn kho
-   - 5.11. Quản lý cửa hàng
-   - 5.12. Khuyến mãi
-   - 5.13. Đánh giá sản phẩm
-   - 5.14. Thông báo
+1. [Introduction](#1-introduction)
+2. [System Overview](#2-system-overview)
+3. [User Types and Roles](#3-user-types-and-roles)
+4. [System Scope](#4-system-scope)
+5. [Functional Requirements](#5-functional-requirements)
+   - 5.1. Account Management
+   - 5.2. Book and Category Management
+   - 5.3. Book Search and Filtering
+   - 5.4. Book Details
+   - 5.5. Shopping Cart
+   - 5.6. Order Placement
+   - 5.7. Payment
+   - 5.8. Order Management
+   - 5.9. Returns and Refunds
+   - 5.10. Inventory Management
+   - 5.11. Store Management
+   - 5.12. Promotions
+   - 5.13. Product Reviews
+   - 5.14. Notifications
    - 5.15. Chatbot
-   - 5.16. Báo cáo kinh doanh
-6. [Yêu cầu nghiệp vụ và Business Rules](#6-yêu-cầu-nghiệp-vụ-và-business-rules)
-7. [Yêu cầu phi chức năng](#7-yêu-cầu-phi-chức-năng)
-8. [Yêu cầu dữ liệu](#8-yêu-cầu-dữ-liệu)
-9. [Quy trình nghiệp vụ và trạng thái](#9-quy-trình-nghiệp-vụ-và-trạng-thái)
-10. [Phân quyền và kiểm soát truy cập](#10-phân-quyền-và-kiểm-soát-truy-cập)
-11. [Yêu cầu giao diện và trải nghiệm người dùng](#11-yêu-cầu-giao-diện-và-trải-nghiệm-người-dùng)
-12. [Yêu cầu tích hợp](#12-yêu-cầu-tích-hợp)
-13. [Yêu cầu báo cáo](#13-yêu-cầu-báo-cáo)
-14. [Tiêu chí chấp nhận](#14-tiêu-chí-chấp-nhận)
+   - 5.16. Business Reporting
+6. [Business Requirements and Business Rules](#6-business-requirements-and-business-rules)
+7. [Non-functional Requirements](#7-non-functional-requirements)
+8. [Data Requirements](#8-data-requirements)
+9. [Business Processes and States](#9-business-processes-and-states)
+10. [Authorization and Access Control](#10-authorization-and-access-control)
+11. [User Interface and User Experience Requirements](#11-user-interface-and-user-experience-requirements)
+12. [Integration Requirements](#12-integration-requirements)
+13. [Reporting Requirements](#13-reporting-requirements)
+14. [Acceptance Criteria](#14-acceptance-criteria)
 15. [Traceability Matrix](#15-traceability-matrix)
-16. [Các vấn đề cần làm rõ](#16-các-vấn-đề-cần-làm-rõ)
-17. [Ngoài phạm vi](#17-ngoài-phạm-vi)
-18. [Phụ lục](#18-phụ-lục)
+16. [Open Issues and Clarifications](#16-open-issues-and-clarifications)
+17. [Out of Scope](#17-out-of-scope)
+18. [Appendices](#18-appendices)
 
 ---
 
-# 1. GIỚI THIỆU
+# 1. INTRODUCTION
 
-## 1.1. Mục đích tài liệu
+## 1.1. Document Purpose
 
-Tài liệu Software Requirements Specification (SRS) mô tả các yêu cầu phần mềm của hệ thống **Book Shop — Nền tảng bán sách trực tuyến**.
+This Software Requirements Specification (SRS) describes the software requirements for **Book Shop — an Online Bookstore Platform**.
 
-SRS chuyển đổi các nhu cầu kinh doanh được xác định trong BRD thành các yêu cầu mà hệ thống phần mềm cần đáp ứng.
+The SRS translates the business needs identified in the BRD into requirements that the software system must satisfy.
 
-Tài liệu này được sử dụng làm cơ sở cho:
+This document serves as the basis for:
 
-- Phân tích và thiết kế hệ thống.
-- Thiết kế kiến trúc phần mềm.
-- Thiết kế cơ sở dữ liệu.
-- Phát triển chức năng.
-- Thiết kế API.
-- Thiết kế giao diện.
-- Viết test case và kiểm thử hệ thống.
-- Nghiệm thu sản phẩm.
+- System analysis and design.
+- Software architecture design.
+- Database design.
+- Feature development.
+- API design.
+- User interface design.
+- Test case preparation and system testing.
+- Product acceptance.
 
-## 1.2. Tài liệu tham chiếu
+## 1.2. Reference Document
 
-Tài liệu nguồn chính:
+Primary source document:
 
 **Business Requirements Document — Book Shop, Version 1.0**
 
-BRD xác định nhu cầu kinh doanh, đối tượng sử dụng và phạm vi tổng thể của hệ thống.
+The BRD defines the business needs, user types, and overall scope of the system.
 
-## 1.3. Phạm vi tài liệu
+## 1.3. Document Scope
 
-SRS bao gồm các yêu cầu liên quan đến:
+This SRS covers requirements related to:
 
-- Tài khoản người dùng.
-- Sách và danh mục.
-- Tìm kiếm.
-- Giỏ hàng.
-- Đặt hàng.
-- Thanh toán.
-- Đơn hàng.
-- Trả hàng và hoàn tiền.
-- Tồn kho.
-- Cửa hàng.
-- Khuyến mãi.
-- Đánh giá.
-- Thông báo.
+- User accounts.
+- Books and categories.
+- Search.
+- Shopping carts.
+- Order placement.
+- Payment.
+- Orders.
+- Returns and refunds.
+- Inventory.
+- Stores.
+- Promotions.
+- Reviews.
+- Notifications.
 - Chatbot.
-- Báo cáo.
-- Phân quyền.
-- Các yêu cầu phi chức năng ở mức yêu cầu hệ thống.
+- Reporting.
+- Authorization.
+- System-level non-functional requirements.
 
 ---
 
-# 2. TỔNG QUAN HỆ THỐNG
+# 2. SYSTEM OVERVIEW
 
-## 2.1. Mục tiêu hệ thống
+## 2.1. System Objectives
 
-Book Shop là nền tảng bán sách trực tuyến được xây dựng để mở rộng hoạt động kinh doanh từ cửa hàng vật lý sang môi trường trực tuyến.
+Book Shop is an online bookstore platform intended to expand business operations from physical stores to the online environment.
 
-Hệ thống cung cấp một kênh bán hàng trực tuyến đồng thời hỗ trợ quản lý:
+The system provides an online sales channel while supporting the management of:
 
-- Khách hàng.
-- Sách.
-- Đơn hàng.
-- Thanh toán.
-- Giao hàng.
-- Tồn kho.
-- Cửa hàng.
-- Khuyến mãi.
-- Hoạt động kinh doanh.
+- Customers.
+- Books.
+- Orders.
+- Payments.
+- Shipping.
+- Inventory.
+- Stores.
+- Promotions.
+- Business operations.
 
-Mục tiêu tổng thể là kết nối **khách hàng — website — cửa hàng — kho hàng — hoạt động kinh doanh** trong cùng một nền tảng.
+The overall objective is to connect **customers — website — stores — warehouses — business operations** within a single platform.
 
-## 2.2. Mục tiêu kinh doanh
+## 2.2. Business Objectives
 
-Hệ thống phải hỗ trợ Book Shop:
+The system must support Book Shop in achieving the following objectives:
 
-1. Tăng doanh thu từ kênh trực tuyến.
-2. Mở rộng phạm vi tiếp cận khách hàng.
-3. Cải thiện trải nghiệm mua sách.
-4. Quản lý sản phẩm và tồn kho chính xác.
-5. Giảm thời gian xử lý đơn hàng.
-6. Cung cấp báo cáo hỗ trợ quản lý.
-7. Tạo nền tảng có khả năng mở rộng trong tương lai.
+1. Increase revenue from online sales.
+2. Expand customer reach.
+3. Improve the book-shopping experience.
+4. Manage products and inventory accurately.
+5. Reduce order-processing time.
+6. Provide reports to support management decisions.
+7. Establish a platform that can be expanded in the future.
 
-## 2.3. Tổng quan tác nhân
+## 2.3. Actors Overview
 
-Hệ thống có các nhóm người dùng:
+The system has the following user groups:
 
-| Actor | Mô tả |
-|---|---|
-| Guest | Người chưa đăng nhập, có thể xem và tìm kiếm sách |
-| Customer | Khách hàng đã có tài khoản |
-| Employee | Nhân viên xử lý đơn hàng và xác nhận trạng thái giao hàng |
-| Store Manager | Quản lý hàng hóa, đơn hàng và thông tin kinh doanh của cửa hàng được phân công |
-| Administrator | Quản lý toàn bộ hoạt động được Book Shop cho phép |
+| Actor         | Description                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------------- |
+| Guest         | A user who is not signed in and can browse and search for books.                               |
+| Customer      | A user who has an account.                                                                     |
+| Employee      | An employee who processes orders and confirms delivery statuses.                               |
+| Store Manager | A manager responsible for merchandise, orders, and business information for an assigned store. |
+| Administrator | A user who manages all activities permitted by Book Shop.                                      |
 
-Các đối tượng trên được xác định trong BRD.
+These actors are defined in the BRD.
 
 ---
 
-# 3. ĐỐI TƯỢNG SỬ DỤNG VÀ PHÂN QUYỀN
+# 3. USER TYPES AND ROLES
 
 ## 3.1. Guest
 
-Guest có thể:
+A Guest can:
 
-- Xem danh sách sách.
-- Tìm kiếm sách.
-- Lọc sách.
-- Sắp xếp sách.
-- Xem thông tin chi tiết sách.
-- Khám phá sản phẩm.
+- View the book catalog.
+- Search for books.
+- Filter books.
+- Sort books.
+- View book details.
+- Explore products.
 
-Guest không được sử dụng các chức năng yêu cầu tài khoản.
+A Guest cannot use features that require an account.
 
 ## 3.2. Customer
 
-Customer có thể:
+A Customer can:
 
-- Đăng ký tài khoản.
-- Đăng nhập.
-- Xác minh tài khoản.
-- Lấy lại mật khẩu.
-- Cập nhật thông tin cá nhân.
-- Quản lý địa chỉ.
-- Quản lý giỏ hàng.
-- Đặt hàng.
-- Theo dõi đơn hàng.
-- Hủy đơn nếu đáp ứng điều kiện.
-- Yêu cầu trả hàng/hoàn tiền.
-- Đánh giá sản phẩm.
-- Nhận thông báo.
-- Sử dụng chatbot.
+- Register an account.
+- Sign in.
+- Verify their account.
+- Reset a forgotten password.
+- Update personal information.
+- Manage addresses.
+- Manage the shopping cart.
+- Place orders.
+- Track orders.
+- Cancel orders when eligible.
+- Submit return/refund requests.
+- Review products.
+- Receive notifications.
+- Use the chatbot.
 
 ## 3.3. Employee
 
-Employee có thể:
+An Employee can:
 
-- Tìm kiếm đơn hàng.
-- Xác nhận đơn.
-- Xử lý đơn.
-- Chuyển đơn cho bên thứ ba vận chuyển.
-- Nhận thông tin trạng thái giao hàng từ bên thứ ba.
-- Xác nhận trạng thái giao hàng thành công cho khách hàng.
-- Hủy đơn theo chính sách.
-- Xử lý yêu cầu trả hàng và hoàn tiền theo phân quyền.
+- Search for orders.
+- Confirm orders.
+- Process orders.
+- Hand orders over to a third-party shipping provider.
+- Receive delivery-status information from the third party.
+- Confirm successful delivery to the customer.
+- Cancel orders in accordance with policy.
+- Process return and refund requests according to assigned permissions.
 
 ## 3.4. Store Manager
 
-Store Manager có thể:
+A Store Manager can:
 
-- Xem tồn kho cửa hàng được phân công.
-- Kiểm kê.
-- Nhập hàng.
-- Xuất hàng.
-- Điều chuyển hàng.
-- Nhận hàng từ cửa hàng khác.
-- Theo dõi lịch sử thay đổi.
-- Quản lý đơn hàng trong phạm vi được phân quyền.
-- Xem thông tin kinh doanh trong phạm vi cửa hàng.
+- View inventory for the assigned store.
+- Perform stocktaking.
+- Receive stock.
+- Issue stock.
+- Transfer stock.
+- Receive stock from another store.
+- Track change history.
+- Manage orders within the scope of their permissions.
+- View business information within the scope of the assigned store.
 
 ## 3.5. Administrator
 
-Administrator có quyền quản lý toàn bộ hoạt động được Book Shop cho phép, bao gồm:
+An Administrator has permission to manage all activities permitted by Book Shop, including:
 
-- Người dùng.
-- Sản phẩm.
-- Danh mục.
-- Đơn hàng.
-- Tồn kho.
-- Cửa hàng.
-- Khuyến mãi.
-- Đánh giá.
-- Báo cáo.
-- Các cấu hình quản trị khác.
+- Users.
+- Products.
+- Categories.
+- Orders.
+- Inventory.
+- Stores.
+- Promotions.
+- Reviews.
+- Reports.
+- Other administrative configurations.
 
 ---
 
-# 4. PHẠM VI HỆ THỐNG
+# 4. SYSTEM SCOPE
 
 ## 4.1. In Scope
 
-Hệ thống bao gồm:
+The system includes:
 
 - Account Management.
-- Product & Category Management.
-- Search & Filtering.
+- Product and Category Management.
+- Search and Filtering.
 - Shopping Cart.
 - Order Management.
 - Payment.
 - Inventory Management.
 - Store Management.
 - Promotion Management.
-- Product Review.
-- Notification.
+- Product Reviews.
+- Notifications.
 - Customer Chatbot.
 - Business Reporting.
 
-Đây là các chức năng nằm trong phạm vi của BRD.
+These features are within the scope defined in the BRD.
 
 ## 4.2. Out of Scope
 
-Các chức năng sau không thuộc phiên bản đầu:
+The following features are not included in the initial version:
 
-- Marketplace cho bên bán thứ ba.
-- Livestream bán hàng.
-- Cho thuê sách.
-- Hệ thống kế toán/ERP chuyên sâu.
-- Mobile App riêng.
-- Quản lý việc vận chuyển đơn hàng.
-- Thanh toán trực tuyến qua ngân hàng hoặc các phương thức online khác.
+- A marketplace for third-party sellers.
+- Livestream shopping.
+- Book rental.
+- A comprehensive accounting/ERP system.
+- A dedicated mobile application.
+- Management of the order-shipping operation.
+- Online bank payments or other online payment methods.
 
-Việc vận chuyển được giao cho bên thứ ba và phiên bản 1.0 chỉ hỗ trợ thanh toán khi nhận hàng.
+Shipping is handled by a third party. Version 1.0 supports Cash on Delivery only.
 
 ---
 
-# 5. YÊU CẦU CHỨC NĂNG
+# 5. FUNCTIONAL REQUIREMENTS
 
-# 5.1. Quản lý tài khoản
+# 5.1. Account Management
 
-## FR-ACC-001 — Đăng ký tài khoản
+## FR-ACC-001 — Account Registration
 
 **Actor:** Guest
 
-Hệ thống phải cho phép Guest đăng ký tài khoản.
+The system must allow Guests to register an account.
 
 ### Preconditions
 
-- Người dùng chưa có tài khoản hoặc đang sử dụng chức năng đăng ký.
+- The user does not already have an account or is accessing the registration feature.
 
 ### Main Flow
 
-1. Guest mở chức năng đăng ký.
-2. Guest nhập thông tin yêu cầu.
-3. Hệ thống kiểm tra dữ liệu.
-4. Hệ thống tạo tài khoản.
-5. Hệ thống yêu cầu xác minh tài khoản nếu cần.
-6. Hệ thống thông báo kết quả.
+1. The Guest opens the registration feature.
+2. The Guest enters the required information.
+3. The system validates the submitted data.
+4. The system creates the account.
+5. The system requests account verification if required.
+6. The system displays the result.
 
-Ngoài việc đang ký bằng cách nhập thông tin thì Guest còn có thể đang ký tài khoảng với google (Chức năng sign in google).
+In addition to registering by entering information, a Guest can also register using Google (Google Sign-In).
 
 ### Business Rules
 
-- Thông tin tài khoản phải hợp lệ.
-- Tài khoản phải được xác minh theo quy trình của Book Shop.
+- Account information must be valid.
+- The account must be verified according to Book Shop's process.
 
 ---
 
-## FR-ACC-002 — Đăng nhập
+## FR-ACC-002 — Sign In
 
 **Actor:** Customer
 
-Hệ thống phải cho phép Customer đăng nhập vào tài khoản.
+The system must allow Customers to sign in to their accounts.
 
 ### Main Flow
 
-1. Customer nhập thông tin đăng nhập.
-2. Hệ thống xác thực thông tin.
-3. Nếu hợp lệ, hệ thống cho phép truy cập tài khoản.
-4. Nếu không hợp lệ, hệ thống thông báo lỗi.
+1. The Customer enters their sign-in credentials.
+2. The system authenticates the credentials.
+3. If the credentials are valid, the system grants access to the account.
+4. If the credentials are invalid, the system displays an error.
 
-- Ngoài ra khách hàng còn có thể đang nhập bằng google mà không cần phải nhập thông tin.
----
-
-## FR-ACC-003 — Xác minh tài khoản
-
- - Hệ thống phải hỗ trợ xác minh tài khoản sau khi đăng ký. Ở đây hệ thông có thể xác minh tài khoản người dùng bằng mã OTP.
----
-
-## FR-ACC-004 — Lấy lại mật khẩu
-
-Customer phải có khả năng thực hiện quy trình lấy lại mật khẩu bằng cách xác thực email bằng mã otp và cung cấp mật khẩu mới.
+Customers can also sign in with Google without entering their credentials manually.
 
 ---
 
-## FR-ACC-005 — Cập nhật thông tin cá nhân
+## FR-ACC-003 — Account Verification
 
-Customer phải có khả năng:
-
-- Xem thông tin cá nhân.
-- Cập nhật thông tin được phép.
-- Lưu thông tin mới.
+The system must support account verification after registration. The system may verify a user's account using a One-Time Password (OTP).
 
 ---
 
-## FR-ACC-006 — Quản lý địa chỉ giao hàng
+## FR-ACC-004 — Password Recovery
 
-Customer phải có khả năng:
-
-- Thêm địa chỉ.
-- Xem địa chỉ.
-- Chỉnh sửa địa chỉ.
-- Chọn địa chỉ sử dụng khi đặt hàng.
+Customers must be able to recover a forgotten password by verifying their email address with an OTP and providing a new password.
 
 ---
 
-## FR-ACC-007 — Xem lịch sử mua hàng
+## FR-ACC-005 — Update Personal Information
 
-Customer phải có khả năng xem lịch sử các đơn hàng đã thực hiện.
+Customers must be able to:
 
----
-
-# 5.2. Quản lý sách và danh mục
-
-## FR-PROD-001 — Thêm sách
-
-**Actor:** Administrator.
-
-Administrator có thể thêm sản phẩm mới.
-
-Thông tin tối thiểu:
-
-- Tên sách.
-- Tác giả.
-- Nhà xuất bản.
-- Thể loại.
-- Mô tả.
-- Hình ảnh.
-- Giá bán.
-
-Các thông tin này được xác định trong BRD.
+- View their personal information.
+- Update permitted information.
+- Save the updated information.
 
 ---
 
-## FR-PROD-002 — Xem sách
+## FR-ACC-006 — Manage Shipping Addresses
 
-Hệ thống phải cho phép người dùng xem thông tin sách phù hợp với quyền truy cập.
+Customers must be able to:
 
----
-
-## FR-PROD-003 — Chỉnh sửa sách
-
-Administrator có thể chỉnh sửa thông tin sản phẩm.
-
----
-
-## FR-PROD-004 — Ngừng bán sách
-
-Administrator có thể ngừng bán sản phẩm.
-
-Sản phẩm ngừng bán không được xuất hiện như sản phẩm có thể mua.
+- Add an address.
+- View addresses.
+- Edit an address.
+- Select an address to use when placing an order.
 
 ---
 
-## FR-PROD-005 — Kích hoạt lại sách
+## FR-ACC-007 — View Purchase History
 
-Administrator có thể kích hoạt lại sản phẩm đã ngừng bán.
-
----
-
-# 5.3. Tìm kiếm và lọc sách
-
-## FR-SEARCH-001 — Tìm kiếm
-
-Hệ thống phải cho phép tìm kiếm theo:
-
-- Tên sách.
-- Tác giả.
-- Nhà xuất bản.
-- Thể loại.
-- Từ khóa liên quan.
-
-## FR-SEARCH-002 — Lọc
-
-Hệ thống phải hỗ trợ lọc theo:
-
-- Giá.
-- Thể loại.
-- Nhà xuất bản.
-- Đánh giá.
-- Tình trạng còn hàng.
-
-## FR-SEARCH-003 — Sắp xếp
-
-Hệ thống phải hỗ trợ sắp xếp theo:
-
-- Giá.
-- Bán chạy.
-- Đánh giá.
-- Sách mới.
-
-Các tiêu chí tìm kiếm, lọc và sắp xếp trên được lấy từ BRD.
+Customers must be able to view the history of orders they have placed.
 
 ---
 
-# 5.4. Chi tiết sách
+# 5.2. Book and Category Management
 
-## FR-PROD-006 — Hiển thị chi tiết sách
+## FR-PROD-001 — Add a Book
 
-Hệ thống phải hiển thị:
+**Actor:** Administrator
 
-- Tên sách.
-- Tác giả.
-- Hình ảnh.
-- Giá.
-- Giá khuyến mãi nếu có.
-- Mô tả.
-- Nhà xuất bản.
-- Đánh giá.
-- Tình trạng còn hàng.
+An Administrator can add a new product.
 
-## FR-PROD-007 — Thêm vào giỏ hàng
+Minimum information:
 
-Customer có thể thêm sách vào giỏ hàng từ trang chi tiết.
+- Book title.
+- Author.
+- Publisher.
+- Category.
+- Description.
+- Images.
+- Selling price.
 
-## FR-PROD-008 — Mua ngay
-
-Customer có thể mua sản phẩm trực tiếp từ trang chi tiết.
-
-
+These information fields are defined in the BRD.
 
 ---
 
-# 5.5. Giỏ hàng
+## FR-PROD-002 — View Books
 
-## FR-CART-001 — Thêm sản phẩm
-
-Customer có thể thêm sách vào giỏ hàng.
-
-## FR-CART-002 — Thay đổi số lượng
-
-Customer có thể tăng hoặc giảm số lượng sách.
-
-## FR-CART-003 — Xóa sản phẩm
-
-Customer có thể xóa sách khỏi giỏ hàng.
-
-## FR-CART-004 — Xem tổng tiền
-
-Hệ thống phải hiển thị tổng giá trị giỏ hàng.
-
-## FR-CART-005 — Kiểm tra tồn kho
-
-Hệ thống không được cho phép Customer đặt số lượng vượt quá số lượng hàng có thể bán.
-
-Đây là yêu cầu nghiệp vụ bắt buộc của BRD.
+The system must allow users to view book information in accordance with their access permissions.
 
 ---
 
-# 5.6. Đặt hàng
+## FR-PROD-003 — Edit a Book
 
-## FR-ORDER-001 — Tạo đơn hàng
+An Administrator can edit product information.
 
-Customer có thể tạo đơn hàng theo quy trình:
+---
+
+## FR-PROD-004 — Discontinue a Book
+
+An Administrator can discontinue a product.
+
+A discontinued product must not be displayed as available for purchase.
+
+---
+
+## FR-PROD-005 — Reactivate a Book
+
+An Administrator can reactivate a discontinued product.
+
+---
+
+# 5.3. Book Search and Filtering
+
+## FR-SEARCH-001 — Search
+
+The system must support searching by:
+
+- Book title.
+- Author.
+- Publisher.
+- Category.
+- Related keywords.
+
+## FR-SEARCH-002 — Filter
+
+The system must support filtering by:
+
+- Price.
+- Category.
+- Publisher.
+- Rating.
+- Stock availability.
+
+## FR-SEARCH-003 — Sort
+
+The system must support sorting by:
+
+- Price.
+- Best-selling.
+- Rating.
+- Newest books.
+
+The search, filtering, and sorting criteria above are taken from the BRD.
+
+---
+
+# 5.4. Book Details
+
+## FR-PROD-006 — Display Book Details
+
+The system must display:
+
+- Book title.
+- Author.
+- Images.
+- Price.
+- Promotional price, if applicable.
+- Description.
+- Publisher.
+- Rating.
+- Stock availability.
+
+## FR-PROD-007 — Add to Cart
+
+Customers can add a book to their shopping cart from the book details page.
+
+## FR-PROD-008 — Buy Now
+
+Customers can purchase a product directly from the book details page.
+
+---
+
+# 5.5. Shopping Cart
+
+## FR-CART-001 — Add Products
+
+Customers can add books to their shopping carts.
+
+## FR-CART-002 — Change Quantities
+
+Customers can increase or decrease the quantity of books in their carts.
+
+## FR-CART-003 — Remove Products
+
+Customers can remove books from their shopping carts.
+
+## FR-CART-004 — View Total Amount
+
+The system must display the total value of the shopping cart.
+
+## FR-CART-005 — Validate Inventory
+
+The system must not allow Customers to order a quantity greater than the quantity available for sale.
+
+This is a mandatory business requirement defined in the BRD.
+
+---
+
+# 5.6. Order Placement
+
+## FR-ORDER-001 — Create an Order
+
+Customers can create an order through the following process:
 
 ```text
-Tìm sách
-   ↓
-Chọn sách
-   ↓
-Thêm vào giỏ hàng (optional)
-   ↓
-Nhập địa chỉ
-   ↓
-Chọn phương thức thanh toán
-   ↓
-Áp dụng khuyến mãi (optional)
-   ↓
-Xác nhận đơn
-   ↓
-Chờ xác nhận
-   ↓
-Đang vận chuyển
-   ↓
-Hoàn tất
+Search for books
+      ↓
+Select books
+      ↓
+Add to cart (optional)
+      ↓
+Enter shipping address
+      ↓
+Select payment method
+      ↓
+Apply promotion (optional)
+      ↓
+Confirm order
+      ↓
+Pending Confirmation
+      ↓
+Shipping
+      ↓
+Completed
 ```
 
-Quy trình trên được xác định trong BRD.
+The process above is defined in the BRD.
 
-## FR-ORDER-002 — Xác định tổng tiền
+## FR-ORDER-002 — Calculate the Total Amount
 
-Trước khi Customer xác nhận đơn, hệ thống phải hiển thị rõ tổng số tiền phải thanh toán.
+Before a Customer confirms an order, the system must clearly display the total amount payable.
 
-Tổng tiền phải phản ánh:
+The total amount must reflect:
 
-- Giá sản phẩm.
-- Số lượng.
-- Giá khuyến mãi nếu có.
-- Các khoản liên quan khác được Book Shop hỗ trợ.
+- Product prices.
+- Quantities.
+- Promotional prices, if applicable.
+- Other applicable charges supported by Book Shop.
 
-## FR-ORDER-003 — Kiểm tra tồn kho trước khi đặt
+## FR-ORDER-003 — Validate Inventory Before Ordering
 
-Hệ thống phải kiểm tra số lượng hàng có thể bán trước khi tạo đơn.
+The system must check the quantity available for sale before creating an order.
 
-## FR-ORDER-004 — Áp dụng khuyến mãi
+## FR-ORDER-004 — Apply Promotions
 
-Customer có thể áp dụng chương trình hoặc mã khuyến mãi hợp lệ.
+Customers can apply valid promotions or discount codes.
 
-## FR-ORDER-005 — Xác nhận đơn
+## FR-ORDER-005 — Confirm an Order
 
-Sau khi Customer xác nhận, đơn hàng được tạo với trạng thái:
+After the Customer confirms the order, the order is created with the following status:
 
-**Chờ xác nhận**
-
----
-
-# 5.7. Thanh toán
-
-## FR-PAY-001 — Thanh toán khi nhận hàng
-
-Phiên bản 1.0 phải hỗ trợ phương thức:
-
-**Cash on Delivery (COD)**.
-
-Customer thanh toán cho bên thứ ba vận chuyển khi nhận hàng.
-
-## FR-PAY-002 — Xác nhận hoàn tất thanh toán
-
-Sau khi bên thứ ba giao hàng và Book Shop nhận được tiền, hệ thống phải cho phép xác nhận đơn hàng đã hoàn tất.
-
-## FR-PAY-003 — Không hỗ trợ thanh toán online
-
-Phiên bản 1.0 không bao gồm:
-
-- Thanh toán ngân hàng trực tuyến.
-- Các phương thức thanh toán online khác.
+**Pending Confirmation**
 
 ---
 
-# 5.8. Quản lý đơn hàng
+# 5.7. Payment
 
-## FR-ORDER-006 — Customer xem đơn hàng
+## FR-PAY-001 — Cash on Delivery
 
-Customer có thể:
+Version 1.0 must support the following payment method:
 
-- Xem danh sách đơn hàng.
-- Xem chi tiết đơn hàng.
-- Xem sản phẩm.
-- Xem số tiền.
-- Theo dõi trạng thái.
+**Cash on Delivery (COD).**
 
-## FR-ORDER-007 — Hủy đơn hàng
+The Customer pays the third-party shipping provider upon receiving the order.
 
-Customer có thể hủy đơn nếu trạng thái và chính sách cho phép.
+## FR-PAY-002 — Confirm Payment Completion
 
-**Không được phép hủy đơn khi trạng thái là "Đang vận chuyển".**
+After the third party delivers the order and Book Shop receives the payment, the system must allow the order to be confirmed as completed.
 
+## FR-PAY-003 — Online Payments Not Supported
 
+Version 1.0 does not include:
 
-## FR-ORDER-008 — Nhân viên tìm kiếm đơn
-
-Employee có thể tìm kiếm đơn hàng.
-
-## FR-ORDER-009 — Nhân viên xác nhận đơn
-
-Employee có thể xác nhận đơn hàng. 
-Nhân viên xác nhận đơn hàng đã chuyển sang trạng thái đang vẫn chuyển. 
-Nhân viên xác nhận đơn hàng đã hoàn tắt khi nhận được tiền từ bên vận chuyển thứ 3.
-
-## FR-ORDER-010 — Xử lý đơn
-
-Employee có thể xử lý đơn hàng theo quy trình nghiệp vụ.
-
-## FR-ORDER-011 — Hủy đơn bởi nhân viên
-
-Employee có thể hủy đơn theo chính sách.
+- Online bank payments.
+- Other online payment methods.
 
 ---
 
-# 5.9. Trả hàng và hoàn tiền
+# 5.8. Order Management
 
-## FR-RETURN-001 — Tạo yêu cầu trả hàng
+## FR-ORDER-006 — Customer Views Orders
 
-Customer có thể yêu cầu trả hàng sau khi đã nhận hàng và đơn hàng ở trạng thái **Hoàn tất**. Thời gian hoàn trả không quá 3 ngày sau khi nhận hàng.
+Customers can:
 
-Customer phải cung cấp:
+- View their order list.
+- View order details.
+- View ordered products.
+- View amounts.
+- Track order statuses.
 
-- Thông tin minh chứng.
-- Thông tin tài khoản ngân hàng.
+## FR-ORDER-007 — Cancel an Order
 
-## FR-RETURN-002 — Kiểm tra yêu cầu
+Customers can cancel an order if its status and the applicable policy allow cancellation.
 
-Book Shop có thể kiểm tra yêu cầu trả hàng.
+**An order cannot be cancelled when its status is "Shipping".**
 
-## FR-RETURN-003 — Chấp nhận hoặc từ chối
+## FR-ORDER-008 — Employee Searches for Orders
 
-Book Shop phải có khả năng:
+Employees can search for orders.
 
-- Chấp nhận yêu cầu.
-- Từ chối yêu cầu.
+## FR-ORDER-009 — Employee Confirms an Order
 
-## FR-RETURN-004 — Nhận và kiểm tra hàng
+Employees can confirm orders.
 
-Book Shop thực hiện nhận và kiểm tra sản phẩm trả lại.
+An Employee confirms that an order has moved to the **Shipping** status.
 
-## FR-RETURN-005 — Hoàn tiền
+An Employee confirms that an order is **Completed** after receiving the payment from the third-party shipping provider.
 
-Nếu yêu cầu đủ điều kiện, hệ thống phải hỗ trợ ghi nhận việc hoàn tiền.
+## FR-ORDER-010 — Process an Order
 
-## FR-RETURN-006 — Cập nhật đơn hàng và hàng hóa
+Employees can process orders according to the business process.
 
-Sau khi xử lý trả hàng, hệ thống phải cập nhật:
+## FR-ORDER-011 — Employee Cancels an Order
 
-- Trạng thái đơn hàng.
-- Tình trạng hàng hóa.
-- Thông tin hoàn tiền.
-
-Quy trình được xác định trong BRD.
+Employees can cancel orders in accordance with policy.
 
 ---
 
-# 5.10. Quản lý tồn kho
+# 5.9. Returns and Refunds
 
-## FR-INV-001 — Theo dõi tồn kho
+## FR-RETURN-001 — Create a Return Request
 
-Hệ thống phải theo dõi số lượng sách tại từng cửa hàng hoặc kho.
+Customers can request a return after receiving the order, provided that the order is in the **Completed** status. The return request must be submitted no later than 3 days after the order is received.
 
-Mỗi sản phẩm cần có thông tin:
+Customers must provide:
 
-- Số lượng hiện có.
-- Số lượng đã giữ cho đơn hàng.
-- Số lượng có thể bán.
-- Số lượng hư hỏng.
-- Số lượng đang chờ nhập.
+- Supporting evidence.
+- Bank account information.
 
-## FR-INV-002 — Cập nhật tồn kho
+## FR-RETURN-002 — Review a Request
 
-Tồn kho phải được cập nhật khi xảy ra:
+Book Shop can review return requests.
 
-- Nhập hàng.
-- Bán hàng.
-- Đặt hàng.
-- Hủy đơn.
-- Hoàn hàng.
-- Điều chuyển.
-- Ghi nhận hàng hư hỏng.
+## FR-RETURN-003 — Approve or Reject a Request
 
-## FR-INV-003 — Không bán vượt tồn kho
+Book Shop must be able to:
 
-Hệ thống tuyệt đối không được cho phép bán vượt số lượng hàng có thể bán.
+- Approve a request.
+- Reject a request.
 
+## FR-RETURN-004 — Receive and Inspect Returned Products
 
+Book Shop receives and inspects returned products.
 
----
+## FR-RETURN-005 — Issue a Refund
 
-# 5.11. Quản lý cửa hàng
+If a request meets the eligibility requirements, the system must support recording the refund.
 
-## FR-STORE-001 — Xem tồn kho cửa hàng
+## FR-RETURN-006 — Update the Order and Products
 
-Người dùng có quyền có thể xem tồn kho theo từng cửa hàng.
+After processing a return, the system must update:
 
-## FR-STORE-002 — Kiểm kê
+- Order status.
+- Product condition.
+- Refund information.
 
-Hệ thống phải hỗ trợ ghi nhận hoạt động kiểm kê.
-
-## FR-STORE-003 — Nhập hàng
-
-Hệ thống phải hỗ trợ ghi nhận hàng nhập.
-
-## FR-STORE-004 — Xuất hàng
-
-Hệ thống phải hỗ trợ ghi nhận hàng xuất.
-
-## FR-STORE-005 — Điều chuyển
-
-Hệ thống phải hỗ trợ điều chuyển hàng giữa các cửa hàng/kho.
-
-## FR-STORE-006 — Nhận hàng
-
-Cửa hàng nhận có thể ghi nhận việc nhận hàng.
-
-## FR-STORE-007 — Lịch sử tồn kho
-
-Hệ thống phải lưu và cho phép theo dõi lịch sử thay đổi tồn kho.
+The process is defined in the BRD.
 
 ---
 
-# 5.12. Khuyến mãi
+# 5.10. Inventory Management
 
-## FR-PROMO-001 — Khuyến mãi theo phần trăm
+## FR-INV-001 — Track Inventory
 
-Hệ thống hỗ trợ giảm giá theo phần trăm.
+The system must track book quantities at each store or warehouse.
 
-## FR-PROMO-002 — Khuyến mãi theo số tiền
+Each product must have the following information:
 
-Hệ thống hỗ trợ giảm một số tiền cố định.
+- Current quantity.
+- Quantity reserved for orders.
+- Quantity available for sale.
+- Damaged quantity.
+- Quantity pending receipt.
 
-## FR-PROMO-003 — Mã giảm giá
+## FR-INV-002 — Update Inventory
 
-Hệ thống hỗ trợ mã giảm giá.
+Inventory must be updated when any of the following events occur:
 
-## FR-PROMO-004 — Miễn phí giao hàng
+- Stock receipt.
+- Sale.
+- Order placement.
+- Order cancellation.
+- Returned goods.
+- Stock transfer.
+- Recording of damaged goods.
 
-Hệ thống hỗ trợ chương trình miễn phí giao hàng.
+## FR-INV-003 — Prevent Overselling
 
-## FR-PROMO-005 — Flash Sale
-
-Hệ thống hỗ trợ chương trình Flash Sale.
-
-## FR-PROMO-006 — Khuyến mãi theo thể loại
-
-Hệ thống hỗ trợ khuyến mãi theo thể loại sách.
-
-## FR-PROMO-007 — Kiểm tra điều kiện
-
-Khuyến mãi phải được kiểm tra theo:
-
-- Sản phẩm.
-- Giá trị đơn hàng.
-- Thời gian.
-- Số lần sử dụng.
-
-Khuyến mãi đã hết hạn không được áp dụng.
+The system must never allow sales that exceed the quantity available for sale.
 
 ---
 
-# 5.13. Đánh giá sản phẩm
+# 5.11. Store Management
 
-## FR-REVIEW-001 — Đánh giá sao
+## FR-STORE-001 — View Store Inventory
 
-Customer có thể đánh giá sản phẩm từ:
+Authorized users can view inventory for each store.
 
-**1 đến 5 sao.**
+## FR-STORE-002 — Stocktaking
 
-## FR-REVIEW-002 — Nhận xét
+The system must support recording stocktaking activities.
 
-Customer có thể viết nhận xét về sản phẩm.
+## FR-STORE-003 — Receive Stock
 
-## FR-REVIEW-003 — Kiểm tra quyền đánh giá
+The system must support recording received stock.
 
-Book Shop có thể yêu cầu chỉ Customer đã mua sản phẩm mới được đánh giá.
+## FR-STORE-004 — Issue Stock
 
-## FR-REVIEW-004 — Kiểm duyệt
+The system must support recording issued stock.
 
-Administrator, Store Manager, Employee có thể:
+## FR-STORE-005 — Transfer Stock
 
-- Xem đánh giá.
-- Kiểm duyệt.
-- Ẩn đánh giá vi phạm.
+The system must support transferring stock between stores/warehouses.
+
+## FR-STORE-006 — Receive Transferred Stock
+
+The receiving store can record the receipt of transferred stock.
+
+## FR-STORE-007 — Inventory History
+
+The system must store and allow users to track inventory change history.
+
 ---
 
-# 5.14. Thông báo
+# 5.12. Promotions
 
-## FR-NOTI-001 — Thông báo sự kiện
+## FR-PROMO-001 — Percentage-Based Promotions
 
-Hệ thống phải hỗ trợ thông báo cho Customer về các sự kiện quan trọng:
+The system supports percentage discounts.
 
-- Đăng ký tài khoản.
-- Đặt hàng.
-- Thanh toán.
-- Xác nhận đơn.
-- Giao hàng.
-- Hủy đơn.
-- Hoàn tiền.
-- Khuyến mãi.
+## FR-PROMO-002 — Fixed-Amount Promotions
 
-**Kênh thông báo cụ thể:** Trong hệ thống và Email.
+The system supports discounts of a fixed monetary amount.
+
+## FR-PROMO-003 — Discount Codes
+
+The system supports discount codes.
+
+## FR-PROMO-004 — Free Shipping
+
+The system supports free-shipping promotions.
+
+## FR-PROMO-005 — Flash Sales
+
+The system supports Flash Sale campaigns.
+
+## FR-PROMO-006 — Category-Based Promotions
+
+The system supports promotions for specific book categories.
+
+## FR-PROMO-007 — Validate Promotion Conditions
+
+Promotions must be validated against:
+
+- Products.
+- Order value.
+- Validity period.
+- Number of uses.
+
+Expired promotions must not be applied.
+
+---
+
+# 5.13. Product Reviews
+
+## FR-REVIEW-001 — Star Ratings
+
+Customers can rate products from:
+
+**1 to 5 stars.**
+
+## FR-REVIEW-002 — Written Reviews
+
+Customers can write comments about products.
+
+## FR-REVIEW-003 — Review Eligibility Check
+
+Book Shop may require that only Customers who have purchased a product can review it.
+
+## FR-REVIEW-004 — Moderation
+
+Administrators, Store Managers, and Employees can:
+
+- View reviews.
+- Moderate reviews.
+- Hide reviews that violate policy.
+
+---
+
+# 5.14. Notifications
+
+## FR-NOTI-001 — Event Notifications
+
+The system must support notifying Customers about important events, including:
+
+- Account registration.
+- Order placement.
+- Payment.
+- Order confirmation.
+- Shipping.
+- Order cancellation.
+- Refund.
+- Promotions.
+
+**Notification channels:** In-app notifications and email.
 
 ---
 
 # 5.15. Chatbot
 
-## FR-CHAT-001 — Tìm sách
+## FR-CHAT-001 — Search for Books
 
-Chatbot phải hỗ trợ Customer tìm kiếm sách.
+The chatbot must help Customers search for books.
 
-## FR-CHAT-002 — Gợi ý sách
+## FR-CHAT-002 — Recommend Books
 
-Chatbot phải có khả năng gợi ý sách.
+The chatbot must be able to recommend books.
 
-## FR-CHAT-003 — Giải đáp thông tin sản phẩm
+## FR-CHAT-003 — Answer Product-Related Questions
 
-Chatbot phải hỗ trợ trả lời câu hỏi liên quan đến sản phẩm.
+The chatbot must support answering questions related to products.
 
-## FR-CHAT-004 — Mở rộng trong tương lai
+## FR-CHAT-004 — Future Expansion
 
-Hệ thống có thể được mở rộng thành hệ thống đề xuất sách cá nhân hóa.
+The system may be expanded into a personalized book recommendation system.
 
-Chức năng đề xuất cá nhân hóa chưa phải yêu cầu bắt buộc của phiên bản đầu.
-
----
-
-# 5.16. Báo cáo kinh doanh
-
-## FR-REPORT-001 — Báo cáo doanh thu
-
-Hệ thống phải cung cấp thông tin doanh thu theo:
-
-- Ngày.
-- Tuần.
-- Tháng.
-- Quý.
-- Năm.
-- Cửa hàng.
-- Sản phẩm.
-- Thể loại.
-- Có thể cuất bao cáo đơn hàng ra file csv và báo có qua mail hằng ngày vào 08:00 AM. Chỉ báo cáo cho người Administrator.
-
-## FR-REPORT-002 — Báo cáo đơn hàng
-
-Hệ thống phải cung cấp:
-
-- Đơn mới.
-- Đơn đang xử lý.
-- Đơn hoàn tất.
-- Đơn hủy.
-
-## FR-REPORT-003 — Báo cáo hàng hóa
-
-Hệ thống phải cung cấp:
-
-- Sách sắp hết.
-- Sách hết hàng.
-- Sách bán chạy.
-- Sách bán chậm.
-
-## FR-REPORT-004 — Báo cáo khách hàng
-
-Hệ thống phải cung cấp:
-
-- Khách hàng mới.
-- Khách hàng quay lại.
-- Tần suất mua hàng.
-
-
+Personalized recommendations are not a mandatory requirement for the initial version.
 
 ---
 
-# 6. YÊU CẦU NGHIỆP VỤ VÀ BUSINESS RULES
+# 5.16. Business Reporting
 
-| ID | Business Rule | Yêu cầu hệ thống |
-|---|---|---|
-| BR-001 | Giá bán không được nhỏ hơn 0 | Hệ thống phải từ chối giá bán < 0 |
-| BR-002 | Không đặt vượt hàng có thể bán | Hệ thống phải kiểm tra available quantity |
-| BR-003 | Khuyến mãi hết hạn không được áp dụng | Hệ thống phải kiểm tra thời gian hiệu lực |
-| BR-004 | Không sử dụng điểm vượt quá số điểm hiện có | Nếu hệ thống hỗ trợ điểm, phải kiểm tra số dư |
-| BR-005 | Đánh giá tuân thủ chính sách | Hệ thống phải áp dụng policy đánh giá |
-| BR-006 | Đơn hàng chỉ được hủy khi đáp ứng điều kiện | Hệ thống phải kiểm tra trạng thái/policy |
-| BR-007 | Hoàn tiền tuân thủ chính sách trả hàng | Hệ thống phải kiểm tra điều kiện refund |
-| BR-008 | Người dùng chỉ thực hiện công việc phù hợp trách nhiệm | Hệ thống phải kiểm soát authorization |
-| BR-009 | Tổng tiền phải xác định rõ trước khi đặt hàng | Checkout phải hiển thị tổng tiền |
-| BR-010 | Không hủy đơn khi đang vận chuyển | Hệ thống phải từ chối thao tác hủy |
+## FR-REPORT-001 — Revenue Reports
 
-Các business rules trên được chuyển từ BRD.
+The system must provide revenue information by:
 
-> **Lưu ý:** BR-004 về điểm thưởng xuất hiện trong BRD nhưng phần phạm vi chức năng chưa mô tả hệ thống Loyalty/Point. Do đó cần làm rõ trước khi triển khai.
+- Day.
+- Week.
+- Month.
+- Quarter.
+- Year.
+- Store.
+- Product.
+- Category.
+
+The system may export order reports to CSV files and email reports daily at **08:00 AM**. Reports must be sent only to the Administrator.
+
+## FR-REPORT-002 — Order Reports
+
+The system must provide information about:
+
+- New orders.
+- Orders being processed.
+- Completed orders.
+- Cancelled orders.
+
+## FR-REPORT-003 — Product and Inventory Reports
+
+The system must provide information about:
+
+- Books with low stock.
+- Out-of-stock books.
+- Best-selling books.
+- Slow-moving books.
+
+## FR-REPORT-004 — Customer Reports
+
+The system must provide information about:
+
+- New customers.
+- Returning customers.
+- Purchase frequency.
 
 ---
 
-# 7. YÊU CẦU PHI CHỨC NĂNG
+# 6. BUSINESS REQUIREMENTS AND BUSINESS RULES
 
-BRD không đưa ra các chỉ số kỹ thuật cụ thể về hiệu năng, khả năng chịu tải, SLA hoặc bảo mật kỹ thuật. Vì vậy các yêu cầu dưới đây được xác định ở mức **system requirement cần được làm rõ**, không tự đặt giá trị kỹ thuật.
+| ID     | Business Rule                                                          | System Requirement                                                        |
+| ------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| BR-001 | The selling price must not be less than 0.                             | The system must reject a selling price below 0.                           |
+| BR-002 | Orders must not exceed the quantity available for sale.                | The system must validate the available quantity.                          |
+| BR-003 | Expired promotions cannot be applied.                                  | The system must validate the promotion's validity period.                 |
+| BR-004 | Users must not redeem more points than they currently have.            | If the system supports points, it must validate the user's point balance. |
+| BR-005 | Reviews must comply with the applicable policy.                        | The system must enforce the review policy.                                |
+| BR-006 | An order can only be cancelled when the applicable conditions are met. | The system must validate the order status and cancellation policy.        |
+| BR-007 | Refunds must comply with the return policy.                            | The system must validate refund eligibility.                              |
+| BR-008 | Users may only perform tasks appropriate to their responsibilities.    | The system must enforce authorization.                                    |
+| BR-009 | The total amount must be clearly determined before an order is placed. | Checkout must display the total amount.                                   |
+| BR-010 | Orders cannot be cancelled while they are being shipped.               | The system must reject cancellation attempts during shipping.             |
+
+The business rules above are derived from the BRD.
+
+> **Note:** BR-004 regarding reward points appears in the BRD, but the functional scope does not describe a Loyalty/Points system. This requirement must therefore be clarified before implementation.
+
+---
+
+# 7. NON-FUNCTIONAL REQUIREMENTS
+
+The BRD does not specify concrete technical metrics for performance, load capacity, SLA, or technical security. Therefore, the requirements below are identified as **system requirements that need further clarification**, rather than assigning unsupported technical values.
 
 ## NFR-001 — Performance
 
-Hệ thống phải đáp ứng thời gian phản hồi phù hợp với trải nghiệm mua sắm trực tuyến.
+The system must provide response times appropriate for the online shopping experience.
 
-- Thời gian phản hồi của một API không quá **500 ms** đối với các request thông thường.
-- Hệ thống phải có khả năng xử lý tối thiểu **100 requests/giây (RPS)** trong điều kiện tải bình thường.
-- Hệ thống phải hỗ trợ tối thiểu **500 người dùng đồng thời** mà không làm hệ thống ngừng hoạt động hoặc suy giảm nghiêm trọng hiệu năng.
+- The response time of a typical API request must not exceed **500 ms**.
+- The system must be able to handle at least **100 requests per second (RPS)** under normal load conditions.
+- The system must support at least **500 concurrent users** without becoming unavailable or experiencing severe performance degradation.
 
 ## NFR-002 — Availability
 
-Hệ thống phải đảm bảo khả năng truy cập phù hợp với hoạt động kinh doanh.
+The system must provide an appropriate level of availability to support business operations.
 
 ## NFR-003 — Scalability
 
-Hệ thống phải có khả năng mở rộng khi số lượng:
+The system must be scalable as the number of the following increases:
 
-- Khách hàng.
-- Sản phẩm.
-- Đơn hàng.
-- Cửa hàng.
-
-tăng lên.
+- Customers.
+- Products.
+- Orders.
+- Stores.
 
 ## NFR-004 — Security
 
-Hệ thống phải bảo vệ:
+The system must protect:
 
-- Thông tin tài khoản.
-- Thông tin cá nhân.
-- Địa chỉ giao hàng.
-- Thông tin liên quan đến đơn hàng.
-- Thông tin tài khoản ngân hàng phục vụ hoàn tiền.
+- Account information.
+- Personal information.
+- Shipping addresses.
+- Order-related information.
+- Bank account information used for refunds.
 
-Các cơ chế bảo mật kỹ thuật cụ thể: **TBD**.
+Specific technical security mechanisms: **TBD**.
 
 ## NFR-005 — Authorization
 
-Người dùng chỉ được truy cập chức năng và dữ liệu phù hợp với trách nhiệm được phân quyền.
+Users may only access features and data that are appropriate to their assigned responsibilities.
 
 ## NFR-006 — Data Integrity
 
-Hệ thống phải đảm bảo tính nhất quán của:
+The system must ensure the consistency of:
 
-- Đơn hàng.
-- Tồn kho.
-- Thanh toán.
-- Khuyến mãi.
-- Trả hàng.
-- Hoàn tiền.
+- Orders.
+- Inventory.
+- Payments.
+- Promotions.
+- Returns.
+- Refunds.
 
 ## NFR-007 — Auditability
 
-Các thay đổi quan trọng đối với tồn kho và hoạt động quản trị cần có khả năng truy vết.
+Important changes to inventory and administrative activities must be traceable.
 
-Chi tiết audit log.
+Audit log details: **TBD**.
 
 ## NFR-008 — Usability
 
-Giao diện phải hỗ trợ người dùng thực hiện quy trình mua sách rõ ràng và thuận tiện.
+The user interface must enable users to complete the book-purchasing process clearly and conveniently.
 
 ## NFR-009 — Maintainability
 
-Hệ thống phải có khả năng bảo trì và mở rộng trong các giai đoạn tiếp theo.
+The system must be maintainable and extensible in subsequent phases.
 
 ## NFR-010 — Compatibility
 
-Nền tảng web phải hoạt động trên các trình duyệt được Book Shop hỗ trợ.
+The web platform must work on browsers supported by Book Shop.
 
 ---
 
-# 8. YÊU CẦU DỮ LIỆU
+# 8. DATA REQUIREMENTS
 
 ## 8.1. Product
 
-| Field | Mô tả | Required |
-|---|---|---|
-| Book ID | Định danh sách | Yes |
-| Book Name | Tên sách | Yes |
-| Author | Tác giả | No |
-| Publisher | Nhà xuất bản | Yes |
-| Category | Thể loại | Yes |
-| Description | Mô tả | No |
-| Image | Hình ảnh | No |
-| Selling Price | Giá bán | Yes |
-| Status | Trạng thái bán | Yes |
+| Field         | Description            | Required |
+| ------------- | ---------------------- | -------- |
+| Book ID       | Unique book identifier | Yes      |
+| Book Name     | Book title             | Yes      |
+| Author        | Author                 | No       |
+| Publisher     | Publisher              | Yes      |
+| Category      | Book category          | Yes      |
+| Description   | Book description       | No       |
+| Image         | Book image             | No       |
+| Selling Price | Selling price          | Yes      |
+| Status        | Sales status           | Yes      |
 
 ## 8.2. Customer
 
-Thông tin Customer cần hỗ trợ:
+Customer information must support:
 
-- Thông tin tài khoản.
-- Thông tin cá nhân.
-- Địa chỉ giao hàng.
-- Lịch sử mua hàng.
+- Account information.
+- Personal information.
+- Shipping addresses.
+- Purchase history.
 
 ## 8.3. Order
 
-Đơn hàng cần quản lý tối thiểu:
+At a minimum, an order must manage:
 
-- Mã đơn.
-- Khách hàng.
-- Sản phẩm.
-- Số lượng.
-- Giá.
-- Khuyến mãi.
-- Tổng tiền.
-- Địa chỉ giao hàng.
-- Phương thức thanh toán.
-- Trạng thái đơn hàng.
-- Thông tin liên quan đến giao hàng.
-- Thông tin hoàn tiền nếu có.
+- Order ID.
+- Customer.
+- Products.
+- Quantities.
+- Prices.
+- Promotions.
+- Total amount.
+- Shipping address.
+- Payment method.
+- Order status.
+- Shipping-related information.
+- Refund information, if applicable.
 
 ## 8.4. Inventory
 
-Inventory phải quản lý:
+Inventory must manage:
 
-- Số lượng hiện có.
-- Số lượng đã giữ.
-- Số lượng có thể bán.
-- Số lượng hư hỏng.
-- Số lượng chờ nhập.
-- Cửa hàng/kho.
-- Lịch sử thay đổi.
+- Current quantity.
+- Reserved quantity.
+- Available quantity.
+- Damaged quantity.
+- Quantity pending receipt.
+- Store/warehouse.
+- Change history.
 
 ## 8.5. Review
 
-Review phải chứa tối thiểu:
+A review must contain at least:
 
-- Người đánh giá.
-- Sản phẩm.
-- Số sao.
-- Nội dung nhận xét.
-- Trạng thái kiểm duyệt.
+- Reviewer.
+- Product.
+- Star rating.
+- Review content.
+- Moderation status.
 
 ## 8.6. Promotion
 
-Promotion cần quản lý:
+A promotion must manage:
 
-- Loại khuyến mãi.
-- Giá trị giảm.
-- Sản phẩm/thể loại áp dụng.
-- Điều kiện đơn hàng.
-- Thời gian hiệu lực.
-- Số lần sử dụng.
+- Promotion type.
+- Discount value.
+- Applicable products/categories.
+- Order conditions.
+- Validity period.
+- Number of uses.
 
 ---
 
-# 9. QUY TRÌNH NGHIỆP VỤ VÀ TRẠNG THÁI
+# 9. BUSINESS PROCESSES AND STATES
 
 # 9.1. Order Lifecycle
 
-Trạng thái tối thiểu:
+Minimum order statuses:
 
 ```text
-Chờ xác nhận
-      ↓
-Đang vận chuyển
-      ↓
-Hoàn tất
+Pending Confirmation
+        ↓
+Shipping
+        ↓
+Completed
 ```
 
-Ngoài ra, đơn hàng có thể có trạng thái:
+An order may also have the following status:
 
 ```text
-Hủy
+Cancelled
 ```
 
-theo điều kiện nghiệp vụ.
+subject to the applicable business conditions.
 
 ## 9.2. Order Cancellation Rule
 
-Customer được phép hủy khi:
+A Customer is allowed to cancel an order when:
 
 ```text
-Order Status != Đang vận chuyển
+Order Status != Shipping
 AND
 Cancellation Policy = Allowed
 ```
 
-Customer không được hủy:
+A Customer is not allowed to cancel an order when:
 
 ```text
-Order Status = Đang vận chuyển
+Order Status = Shipping
 ```
 
-## 9.3. Return & Refund Lifecycle
+## 9.3. Return and Refund Lifecycle
 
 ```text
-Customer tạo yêu cầu
+Customer submits a request
         ↓
-Book Shop kiểm tra
+Book Shop reviews the request
         ↓
-   ┌────┴────┐
-   ↓         ↓
-Chấp nhận   Từ chối
-   ↓
-Nhận hàng
-   ↓
-Kiểm tra hàng
-   ↓
-Hoàn tiền
-   ↓
-Cập nhật đơn hàng + hàng hóa
+    ┌───┴───┐
+    ↓       ↓
+ Approved  Rejected
+    ↓
+Receive returned product
+    ↓
+Inspect product
+    ↓
+Issue refund
+    ↓
+Update order and product information
 ```
 
 ---
 
-# 10. PHÂN QUYỀN VÀ KIỂM SOÁT TRUY CẬP
+# 10. AUTHORIZATION AND ACCESS CONTROL
 
-Ma trận quyền ở mức SRS:
+The SRS-level permission matrix is as follows:
 
-| Chức năng | Guest | Customer | Employee | Store Manager | Admin |
-|---|---:|---:|---:|---:|---:|
-| Xem sách | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Tìm kiếm sách | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Quản lý giỏ hàng | - | ✓ | - | - | - |
-| Đặt hàng | - | ✓ | - | - | - |
-| Xem đơn của mình | - | ✓ | - | - | - |
-| Xử lý đơn | - | - | ✓ | ✓* | ✓ |
-| Quản lý sản phẩm | - | - | - | - | ✓ |
-| Quản lý tồn kho | - | - | - | ✓ | ✓ |
-| Quản lý cửa hàng | - | - | - | ✓* | ✓ |
-| Quản lý khuyến mãi | - | - | - | - | ✓ |
-| Kiểm duyệt review | - | - | - | - | ✓ |
-| Báo cáo | - | - | TBD | ✓* | ✓ |
-| Chatbot | - | ✓ | - | - | ✓ |
+| Feature              | Guest | Customer | Employee | Store Manager | Admin |
+| -------------------- | ----: | -------: | -------: | ------------: | ----: |
+| View books           |     ✓ |        ✓ |        ✓ |             ✓ |     ✓ |
+| Search books         |     ✓ |        ✓ |        ✓ |             ✓ |     ✓ |
+| Manage shopping cart |     - |        ✓ |        - |             - |     - |
+| Place orders         |     - |        ✓ |        - |             - |     - |
+| View own orders      |     - |        ✓ |        - |             - |     - |
+| Process orders       |     - |        - |        ✓ |           ✓\* |     ✓ |
+| Manage products      |     - |        - |        - |             - |     ✓ |
+| Manage inventory     |     - |        - |        - |             ✓ |     ✓ |
+| Manage stores        |     - |        - |        - |           ✓\* |     ✓ |
+| Manage promotions    |     - |        - |        - |             - |     ✓ |
+| Moderate reviews     |     - |        - |        - |             - |     ✓ |
+| Reports              |     - |        - |      TBD |           ✓\* |     ✓ |
+| Chatbot              |     - |        ✓ |        - |             - |     ✓ |
 
-`*` Phạm vi quyền phải giới hạn theo cửa hàng/trách nhiệm được phân công.
+`*` Permissions must be restricted according to the assigned store and responsibilities.
 
-Nguyên tắc chung:
+General principle:
 
-> Người dùng chỉ được thực hiện công việc phù hợp với trách nhiệm được cấp.
+> Users may only perform tasks that are appropriate to the responsibilities assigned to them.
 
-Điều này tương ứng với BR-008 trong BRD.
+This corresponds to BR-008 in the BRD.
 
 ---
 
-# 11. YÊU CẦU GIAO DIỆN VÀ TRẢI NGHIỆM NGƯỜI DÙNG
+# 11. USER INTERFACE AND USER EXPERIENCE REQUIREMENTS
 
-## 11.1. Customer-facing pages
+## 11.1. Customer-facing Pages
 
-Hệ thống nên cung cấp các nhóm màn hình:
+The system should provide the following groups of screens:
 
 ### Public
 
 - Home.
 - Book Listing.
-- Search Result.
-- Book Detail.
-- Login.
-- Register.
+- Search Results.
+- Book Details.
+- Sign In.
+- Registration.
 
 ### Customer
 
 - Profile.
 - Address Management.
-- Cart.
+- Shopping Cart.
 - Checkout.
 - Order History.
-- Order Detail.
+- Order Details.
 - Return/Refund Request.
-- Review.
-- Notification.
+- Reviews.
+- Notifications.
 - Chatbot.
 
 ### Back Office
@@ -1170,39 +1166,39 @@ Hệ thống nên cung cấp các nhóm màn hình:
 
 ## 11.2. Checkout
 
-Checkout phải thể hiện rõ:
+The checkout page must clearly display:
 
-- Sản phẩm.
-- Số lượng.
-- Địa chỉ.
-- Phương thức thanh toán.
-- Khuyến mãi.
-- Tổng tiền.
-- Nút xác nhận đơn.
+- Products.
+- Quantities.
+- Address.
+- Payment method.
+- Promotions.
+- Total amount.
+- Order confirmation button.
 
-Tổng tiền phải được xác định rõ trước khi Customer đặt hàng.
+The total amount must be clearly determined before the Customer places the order.
 
 ---
 
-# 12. YÊU CẦU TÍCH HỢP
+# 12. INTEGRATION REQUIREMENTS
 
 ## 12.1. Third-party Shipping Provider
 
-Hệ thống có liên quan đến bên thứ ba vận chuyển.
+The system interacts with a third-party shipping provider.
 
-Phiên bản đầu:
+In the initial version:
 
-- Book Shop chuyển đơn cho bên thứ ba.
-- Bên thứ ba thực hiện vận chuyển.
-- Khách hàng thanh toán khi nhận hàng.
-- Book Shop nhận thông tin trạng thái giao hàng.
-- Nhân viên xác nhận trạng thái giao hàng thành công trên hệ thống.
+- Book Shop hands the order over to the third party.
+- The third party performs the shipping.
+- The Customer pays upon delivery.
+- Book Shop receives delivery-status information.
+- An Employee confirms successful delivery in the system.
 
-Book Shop **không quản lý hoạt động vận chuyển** trong phạm vi phiên bản đầu.
+Book Shop **does not manage shipping operations** within the scope of the initial version.
 
 ## 12.2. Payment Integration
 
-Không yêu cầu payment gateway online trong phiên bản 1.0.
+An online payment gateway is not required in Version 1.0.
 
 Payment method:
 
@@ -1210,29 +1206,30 @@ Payment method:
 
 ## 12.3. Notification Integration
 
-Hổ trợ gửi thông báo qua email
+The system supports sending notifications by email.
 
 ## 12.4. Chatbot
 
-Chatbot là một thành phần hỗ trợ Customer:
+The chatbot is a component that helps Customers to:
 
-- Tìm sách.
-- Gợi ý sách.
-- Trả lời câu hỏi sản phẩm.
+- Search for books.
+- Get book recommendations.
+- Receive answers to product-related questions.
+
 ---
 
-# 13. YÊU CẦU BÁO CÁO
+# 13. REPORTING REQUIREMENTS
 
 ## 13.1. Revenue Report
 
-Bộ lọc:
+Filters:
 
 - Date.
 - Store.
 - Product.
 - Category.
 
-Khoảng thời gian:
+Time periods:
 
 - Day.
 - Week.
@@ -1242,7 +1239,7 @@ Khoảng thời gian:
 
 ## 13.2. Order Report
 
-Các chỉ số:
+Metrics:
 
 - New Orders.
 - Processing Orders.
@@ -1251,16 +1248,16 @@ Các chỉ số:
 
 ## 13.3. Inventory Report
 
-Các chỉ số:
+Metrics:
 
-- Low Stock Books.
+- Low-stock Books.
 - Out-of-stock Books.
 - Best-selling Books.
 - Slow-moving Books.
 
 ## 13.4. Customer Report
 
-Các chỉ số:
+Metrics:
 
 - New Customers.
 - Returning Customers.
@@ -1268,166 +1265,166 @@ Các chỉ số:
 
 ---
 
-# 14. TIÊU CHÍ CHẤP NHẬN
+# 14. ACCEPTANCE CRITERIA
 
-Hệ thống được xem là đáp ứng SRS khi các yêu cầu cốt lõi sau được kiểm thử thành công:
+The system is considered to satisfy this SRS when the following core requirements pass testing:
 
 ### AC-001 — Search
 
-Customer/Guest có thể tìm kiếm sách.
+Customers and Guests can search for books.
 
-### AC-002 — Product Detail
+### AC-002 — Product Details
 
-Người dùng có thể xem đầy đủ thông tin sách.
+Users can view complete book information.
 
-### AC-003 — Cart
+### AC-003 — Shopping Cart
 
-Customer có thể:
+Customers can:
 
-- Thêm sách.
-- Sửa số lượng.
-- Xóa sách.
-- Xem tổng tiền.
+- Add books.
+- Change quantities.
+- Remove books.
+- View the total amount.
 
 ### AC-004 — Order
 
-Customer có thể tạo đơn hàng thành công.
+Customers can successfully create an order.
 
 ### AC-005 — Inventory Validation
 
-Hệ thống không cho phép đặt vượt số lượng hàng có thể bán.
+The system does not allow orders that exceed the quantity available for sale.
 
 ### AC-006 — Payment
 
-Customer có thể chọn COD.
+Customers can select COD.
 
 ### AC-007 — Order Tracking
 
-Customer có thể theo dõi trạng thái đơn hàng.
+Customers can track order statuses.
 
 ### AC-008 — Order Cancellation
 
-Customer không thể hủy đơn khi đơn đang vận chuyển.
+Customers cannot cancel an order while it is being shipped.
 
 ### AC-009 — Product Management
 
-Administrator có thể quản lý sản phẩm.
+Administrators can manage products.
 
 ### AC-010 — Order Management
 
-Nhân viên có quyền có thể xử lý đơn hàng.
+Authorized Employees can process orders.
 
 ### AC-011 — Inventory Management
 
-Book Shop có thể theo dõi tồn kho.
+Book Shop can track inventory.
 
 ### AC-012 — Authorization
 
-Người dùng không được truy cập chức năng ngoài quyền.
+Users cannot access features outside their permissions.
 
 ### AC-013 — Reporting
 
-Ban quản lý có thể xem các báo cáo cần thiết.
+Management can view the required reports.
 
-### AC-014 — Review
+### AC-014 — Reviews
 
-Customer có thể đánh giá theo chính sách.
+Customers can submit reviews in accordance with the applicable policy.
 
-### AC-015 — Promotion
+### AC-015 — Promotions
 
-Hệ thống không áp dụng khuyến mãi đã hết hạn.
+The system does not apply expired promotions.
 
-### AC-016 — Return/Refund
+### AC-016 — Returns and Refunds
 
-Hệ thống hỗ trợ quy trình yêu cầu trả hàng và hoàn tiền theo chính sách.
+The system supports the return-request and refund process in accordance with policy.
 
-Các tiêu chí này được xây dựng từ tiêu chí nghiệm thu của BRD.
+These criteria are derived from the acceptance criteria in the BRD.
 
 ---
 
 # 15. TRACEABILITY MATRIX
 
-| BRD Requirement | SRS Requirement | Module |
-|---|---|---|
-| Quản lý tài khoản | FR-ACC-001 → FR-ACC-007 | Account |
-| Quản lý sách | FR-PROD-001 → FR-PROD-005 | Product |
-| Tìm kiếm | FR-SEARCH-001 → FR-SEARCH-003 | Search |
-| Chi tiết sách | FR-PROD-006 → FR-PROD-008 | Product |
-| Giỏ hàng | FR-CART-001 → FR-CART-005 | Cart |
-| Đặt hàng | FR-ORDER-001 → FR-ORDER-005 | Order |
-| Thanh toán | FR-PAY-001 → FR-PAY-003 | Payment |
-| Quản lý đơn | FR-ORDER-006 → FR-ORDER-011 | Order |
-| Trả hàng | FR-RETURN-001 → FR-RETURN-006 | Return/Refund |
-| Tồn kho | FR-INV-001 → FR-INV-003 | Inventory |
-| Cửa hàng | FR-STORE-001 → FR-STORE-007 | Store |
-| Khuyến mãi | FR-PROMO-001 → FR-PROMO-007 | Promotion |
-| Đánh giá | FR-REVIEW-001 → FR-REVIEW-004 | Review |
-| Thông báo | FR-NOTI-001 | Notification |
-| Chatbot | FR-CHAT-001 → FR-CHAT-004 | Chatbot |
-| Báo cáo | FR-REPORT-001 → FR-REPORT-004 | Reporting |
+| BRD Requirement    | SRS Requirement               | Module        |
+| ------------------ | ----------------------------- | ------------- |
+| Account Management | FR-ACC-001 → FR-ACC-007       | Account       |
+| Book Management    | FR-PROD-001 → FR-PROD-005     | Product       |
+| Search             | FR-SEARCH-001 → FR-SEARCH-003 | Search        |
+| Book Details       | FR-PROD-006 → FR-PROD-008     | Product       |
+| Shopping Cart      | FR-CART-001 → FR-CART-005     | Cart          |
+| Order Placement    | FR-ORDER-001 → FR-ORDER-005   | Order         |
+| Payment            | FR-PAY-001 → FR-PAY-003       | Payment       |
+| Order Management   | FR-ORDER-006 → FR-ORDER-011   | Order         |
+| Returns            | FR-RETURN-001 → FR-RETURN-006 | Return/Refund |
+| Inventory          | FR-INV-001 → FR-INV-003       | Inventory     |
+| Stores             | FR-STORE-001 → FR-STORE-007   | Store         |
+| Promotions         | FR-PROMO-001 → FR-PROMO-007   | Promotion     |
+| Reviews            | FR-REVIEW-001 → FR-REVIEW-004 | Review        |
+| Notifications      | FR-NOTI-001                   | Notification  |
+| Chatbot            | FR-CHAT-001 → FR-CHAT-004     | Chatbot       |
+| Reporting          | FR-REPORT-001 → FR-REPORT-004 | Reporting     |
 
 ---
 
-# 16. CÁC VẤN ĐỀ CẦN LÀM RÕ
+# 16. OPEN ISSUES AND CLARIFICATIONS
 
-BRD hiện đã xác định khá đầy đủ phạm vi nghiệp vụ, nhưng trước khi chuyển sang thiết kế kỹ thuật cần làm rõ các vấn đề sau.
+The BRD has defined the business scope in considerable detail. However, the following issues must be clarified before proceeding to technical design.
 
 ## 16.1. Chatbot
 
-Cần xác định:
+The following points need to be determined:
 
-- Chatbot chỉ trả lời thông tin sách hay có thể truy cập đơn hàng?
-- Chatbot có thể thực hiện thao tác đặt hàng không?
-- Có lưu lịch sử hội thoại không?
-- Có chuyển tiếp sang nhân viên CSKH không?
-
----
-
-# 17. NGOÀI PHẠM VI
-
-Các chức năng sau không thuộc phiên bản 1.0:
-
-1. Marketplace bên thứ ba.
-2. Livestream.
-3. Cho thuê sách.
-4. ERP/Kế toán chuyên sâu.
-5. Mobile application riêng.
-6. Quản lý vận chuyển nội bộ.
-7. Thanh toán online qua ngân hàng.
-8. Các tính năng khác chưa được xác định trong BRD.
-
-Các chức năng này có thể được xem xét ở giai đoạn tiếp theo.
+- Does the chatbot only answer questions about books, or can it also access order information?
+- Can the chatbot perform order-placement operations?
+- Is conversation history stored?
+- Can conversations be transferred to a customer support employee?
 
 ---
 
-# 18. PHỤ LỤC
+# 17. OUT OF SCOPE
+
+The following features are not included in Version 1.0:
+
+1. Third-party marketplace.
+2. Livestream shopping.
+3. Book rental.
+4. Advanced ERP/accounting.
+5. A dedicated mobile application.
+6. Internal shipping management.
+7. Online bank payments.
+8. Other features not defined in the BRD.
+
+These features may be considered in subsequent phases.
+
+---
+
+# 18. APPENDICES
 
 ## 18.1. Glossary
 
-| Term | Definition |
-|---|---|
-| BRD | Business Requirements Document |
-| SRS | Software Requirements Specification |
-| Guest | Người dùng chưa đăng nhập |
-| Customer | Khách hàng có tài khoản |
-| Employee | Nhân viên Book Shop |
-| Store Manager | Quản lý cửa hàng |
-| Administrator | Quản trị viên |
-| Product/Book | Sản phẩm sách |
-| Inventory | Tồn kho |
-| Available Quantity | Số lượng hàng có thể bán |
-| Reserved Quantity | Số lượng đã giữ cho đơn |
-| Promotion | Chương trình khuyến mãi |
-| COD | Cash on Delivery |
-| Review | Đánh giá sản phẩm |
-| Order | Đơn hàng |
-| Return | Trả hàng |
-| Refund | Hoàn tiền |
-| Third-party Shipping Provider | Đơn vị vận chuyển bên thứ ba |
+| Term                          | Definition                            |
+| ----------------------------- | ------------------------------------- |
+| BRD                           | Business Requirements Document        |
+| SRS                           | Software Requirements Specification   |
+| Guest                         | A user who is not signed in           |
+| Customer                      | A customer who has an account         |
+| Employee                      | A Book Shop employee                  |
+| Store Manager                 | A store manager                       |
+| Administrator                 | An administrator                      |
+| Product/Book                  | A book product                        |
+| Inventory                     | Stock on hand                         |
+| Available Quantity            | Quantity available for sale           |
+| Reserved Quantity             | Quantity reserved for an order        |
+| Promotion                     | A promotional campaign                |
+| COD                           | Cash on Delivery                      |
+| Review                        | A product review                      |
+| Order                         | A customer order                      |
+| Return                        | Return of a product                   |
+| Refund                        | Repayment of money                    |
+| Third-party Shipping Provider | An external shipping service provider |
 
 ## 18.2. Requirement ID Convention
 
-Các Requirement ID được quy ước:
+Requirement IDs follow the conventions below:
 
 ```text
 FR-ACC      Account
@@ -1451,16 +1448,16 @@ AC          Acceptance Criteria
 
 ## 18.3. Requirement Priority
 
-Có thể sử dụng quy ước:
+The following convention may be used:
 
-| Priority | Meaning |
-|---|---|
-| Must Have | Bắt buộc để hệ thống hoạt động |
-| Should Have | Quan trọng nhưng có thể trì hoãn |
-| Could Have | Có thể triển khai nếu còn nguồn lực |
-| Won't Have | Không thuộc phiên bản hiện tại |
+| Priority    | Meaning                                       |
+| ----------- | --------------------------------------------- |
+| Must Have   | Required for the system to operate            |
+| Should Have | Important, but may be postponed               |
+| Could Have  | May be implemented if resources are available |
+| Won't Have  | Not included in the current version           |
 
-Đối với phiên bản 1.0, các chức năng cốt lõi như:
+For Version 1.0, core features such as:
 
 - Product.
 - Search.
@@ -1472,41 +1469,41 @@ Có thể sử dụng quy ước:
 - Authorization.
 - Reporting.
 
-được xem là nhóm chức năng trọng tâm dựa trên tiêu chí nghiệm thu của BRD.
+are considered the main functional areas based on the BRD acceptance criteria.
 
 ---
 
 # DOCUMENT CONTROL
 
-| Item | Value |
-|---|---|
-| Document | Software Requirements Specification |
-| Project | Book Shop |
-| Version | 1.0 |
-| Status | Draft for Review |
-| Based On | Business Requirements Document v1.0 |
-| Owner | Founder & CEO — Book Shop |
-| Prepared By | Business Analysis |
-| Reviewers | TBD |
-| Approval Date | TBD |
+| Item          | Value                               |
+| ------------- | ----------------------------------- |
+| Document      | Software Requirements Specification |
+| Project       | Book Shop                           |
+| Version       | 1.0                                 |
+| Status        | Draft for Review                    |
+| Based On      | Business Requirements Document v1.0 |
+| Owner         | Founder & CEO — Book Shop           |
+| Prepared By   | Business Analysis                   |
+| Reviewers     | TBD                                 |
+| Approval Date | TBD                                 |
 
 ---
 
-# KẾT LUẬN
+# CONCLUSION
 
-SRS này chuyển đổi yêu cầu nghiệp vụ của Book Shop thành các yêu cầu chức năng, yêu cầu phi chức năng, business rules, quyền truy cập, quy trình nghiệp vụ, yêu cầu dữ liệu, acceptance criteria và traceability.
+This SRS translates Book Shop's business requirements into functional requirements, non-functional requirements, business rules, access permissions, business processes, data requirements, acceptance criteria, and traceability.
 
-SRS **không xác định thay cho tài liệu kiến trúc hoặc technical design** các nội dung như:
+This SRS **does not replace architecture or technical design documents** for defining topics such as:
 
-- Công nghệ.
+- Technologies.
 - Database engine.
-- Kiến trúc hệ thống.
-- API endpoint.
-- Framework.
+- System architecture.
+- API endpoints.
+- Frameworks.
 - Infrastructure.
 - Deployment.
-- Chi tiết bảo mật kỹ thuật.
+- Detailed technical security.
 
-Các nội dung này sẽ được xác định trong các tài liệu kỹ thuật tương ứng ở giai đoạn tiếp theo.
+These topics will be defined in the corresponding technical documents during the next phase.
 
 **End of Document**
