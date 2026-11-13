@@ -3879,6 +3879,19 @@ Revenue is calculated from completed, paid order line totals (`OrderItem.TotalPr
 
 The standard API response wraps the report in `data`. The report contains `totalRevenue`, distinct `orderCount`, the applied date range, and an `items` array. Each item has a `key`, `name`, `revenue`, `orderCount`, and `quantitySold`; time report items also include `periodStart`. A book assigned to multiple categories contributes to each category report, so category totals can exceed the overall revenue.
 
+## 5. Merchandise Reports
+
+All merchandise report endpoints require a bearer token with the `Admin` or `Manager` role. Administrators receive system-wide results. Managers are scoped to their active assigned store(s); inventory totals and sales quantities include only those stores. Soft-deleted inventory, stores, books, and orders are excluded.
+
+| Method and route | Description | Query parameters |
+| --- | --- | --- |
+| `GET /api/merchandise/reports/low-stock` | Books with positive combined available stock at or below the threshold. | `threshold` (default `5`; range `0`–`1,000,000`) |
+| `GET /api/merchandise/reports/out-of-stock` | Books whose combined available stock is zero or less in the caller's scope. | None |
+| `GET /api/merchandise/reports/best-selling` | Top books by completed-order units sold in the trailing period. | `periodDays` (default `30`; range `1`–`3,650`), `limit` (default `10`; range `1`–`100`) |
+| `GET /api/merchandise/reports/slow-moving` | Books with units sold at or below the configured maximum during the trailing period. | `periodDays` (default `30`; range `1`–`3,650`), `maximumUnitsSold` (default `5`; range `0`–`1,000,000`) |
+
+Each response wraps an array in `data`. Items include `bookId`, `name`, `author`, `availableQuantity`, and `quantitySold`; `availableQuantity` is `null` on the best-selling report. Inventory reports include the available stock total; sales reports include completed units sold in the selected trailing period. Sales are associated with stores using each order's inventory reservation records.
+
 ## 4. Order Summary
 
 ### Get Order Summary
