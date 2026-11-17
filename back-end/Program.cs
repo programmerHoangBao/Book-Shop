@@ -26,6 +26,19 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// Allow browser requests only from configured frontend origins.
+var allowedCorsOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? Array.Empty<string>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy => policy
+        .WithOrigins(allowedCorsOrigins)
+        .AllowAnyHeader()
+        .AllowAnyMethod());
+});
+
 //Connect to the database
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -154,6 +167,7 @@ if (app.Environment.IsDevelopment())
 
 // Add Rate Limiting Middleware
 app.UseRouting();
+app.UseCors("Frontend");
 app.UseRateLimiter();
 
 app.UseHttpsRedirection();
