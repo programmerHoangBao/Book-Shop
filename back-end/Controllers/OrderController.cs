@@ -25,6 +25,24 @@ namespace back_end.Controllers
             return StatusCode(response.HttpStatus, response);
         }
 
+        [HttpGet]
+        [Authorize(Roles = "Admin,Manager,Employee")]
+        public async Task<IActionResult> GetStaffOrdersAsync(
+            [FromQuery] GetStaffOrdersRequest request)
+        {
+            var response = await _orderService.GetStaffOrdersAsync(request);
+            return StatusCode(response.HttpStatus, response);
+        }
+
+        [HttpGet("search")]
+        [Authorize(Roles = "Admin,Manager,Employee")]
+        public async Task<IActionResult> SearchOrdersAsync(
+            [FromQuery] SearchOrdersRequest request)
+        {
+            var response = await _orderService.SearchOrdersAsync(request);
+            return StatusCode(response.HttpStatus, response);
+        }
+
         [HttpPost]
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> PlaceOrderAsync(

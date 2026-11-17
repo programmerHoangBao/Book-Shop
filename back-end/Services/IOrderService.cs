@@ -9,6 +9,10 @@ namespace back_end.Services
     public interface IOrderService
     {
         Task<ApiResponse<OrderSummaryResponse>> GetSummaryAsync();
+        Task<ApiResponse<PaginationResponse<StaffOrderListItemResponse>>> GetStaffOrdersAsync(
+            GetStaffOrdersRequest request);
+        Task<ApiResponse<PaginationResponse<StaffOrderListItemResponse>>> SearchOrdersAsync(
+            SearchOrdersRequest request);
         Task<ApiResponse<PaginationResponse<InvoiceResponse>>> GetInvoicesAsync(
             OrderStatus status,
             int pageNumber,

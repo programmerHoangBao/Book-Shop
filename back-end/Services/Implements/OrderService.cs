@@ -54,6 +54,98 @@ namespace back_end.Services.Implements
             return ApiResponse<OrderSummaryResponse>.Response(MessageRecord.Success, data: summary);
         }
 
+        public Task<ApiResponse<PaginationResponse<StaffOrderListItemResponse>>> GetStaffOrdersAsync(
+            GetStaffOrdersRequest request)
+        {
+            return GetStaffOrdersPageAsync(request, null);
+        }
+
+        public Task<ApiResponse<PaginationResponse<StaffOrderListItemResponse>>> SearchOrdersAsync(
+            SearchOrdersRequest request)
+        {
+            string key = request.Key?.Trim() ?? string.Empty;
+            if (key.Length == 0 || key.Length > 255)
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            return GetStaffOrdersPageAsync(request, key);
+        }
+
+        private async Task<ApiResponse<PaginationResponse<StaffOrderListItemResponse>>>
+            GetStaffOrdersPageAsync(GetStaffOrdersRequest request, string? key)
+        {
+            if (request.PageNumber < 1 || request.PageSize < 1 || request.PageSize > 100 ||
+                (long)(request.PageNumber - 1) * request.PageSize > int.MaxValue ||
+                (request.Status.HasValue && !Enum.IsDefined(request.Status.Value)) ||
+                (request.StartDate.HasValue && request.EndDate.HasValue &&
+                    request.StartDate.Value >= request.EndDate.Value))
+            {
+                throw new BusinessException(ErrorRecord.RequestInvalid);
+            }
+
+            List<Guid>? storeIds = await GetStaffOrderStoreScopeAsync();
+            var result = await _orderRepository.GetStaffOrdersAsync(
+                storeIds,
+                key,
+                request.Status,
+                request.StartDate,
+                request.EndDate,
+                request.PageNumber,
+                request.PageSize);
+
+            PaginationResponse<StaffOrderListItemResponse> page = new()
+            {
+                CurrentPage = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalItems = result.TotalItems,
+                TotalPages = (int)Math.Ceiling((double)result.TotalItems / request.PageSize),
+                Items = result.Orders.Select(order => new StaffOrderListItemResponse
+                {
+                    OrderId = order.Id,
+                    OrderCode = order.OrderCode,
+                    CustomerName = order.User is { IsDeleted: false }
+                        ? order.User.FullName
+                        : "Deleted customer",
+                    CustomerEmail = order.User is { IsDeleted: false, Enabled: true }
+                        ? order.User.Email
+                        : null,
+                    OrderStatus = order.OrderStatus,
+                    PaymentStatus = order.PaymentStatus,
+                    PaymentMethod = order.PaymentMethod,
+                    ItemCount = order.Items.Count,
+                    TotalAmount = order.TotalAmount,
+                    OrderedAt = order.OrderedAt
+                }).ToList()
+            };
+
+            return ApiResponse<PaginationResponse<StaffOrderListItemResponse>>.Response(
+                MessageRecord.Success,
+                data: page);
+        }
+
+        private async Task<List<Guid>?> GetStaffOrderStoreScopeAsync()
+        {
+            Guid? userId = _currentUserService.GetCurrentUserId();
+            RoleUser? role = _currentUserService.GetRoleCurrentUser();
+            if (!userId.HasValue || userId.Value == Guid.Empty)
+            {
+                throw new BusinessException(ErrorRecord.Forbidden);
+            }
+
+            if (role == RoleUser.Admin)
+            {
+                return null;
+            }
+
+            if (role is RoleUser.Manager or RoleUser.Employee)
+            {
+                return await _storeStaffRepository.GetStoreIdsByUserIdAsync(userId.Value);
+            }
+
+            throw new BusinessException(ErrorRecord.Forbidden);
+        }
+
         public async Task<ApiResponse<PaginationResponse<InvoiceResponse>>> GetInvoicesAsync(
             OrderStatus status,
             int pageNumber,
