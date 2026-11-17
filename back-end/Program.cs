@@ -79,6 +79,7 @@ builder.Services.AddSingleton<IKafkaProducer, KafkaProducer>();
 
 // Add Repository
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IStoreRepository, StoreRepository>();
 builder.Services.AddScoped<IStoreStaffRepository, StoreStaffRepository>();
@@ -90,6 +91,7 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 // Add service
 builder.Services.AddScoped<IRedisService, RedisService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IGoogleService, GoogleService>();
