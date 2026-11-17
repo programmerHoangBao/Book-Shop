@@ -52,6 +52,14 @@ namespace back_end.Repositories
     public interface IOrderRepository
     {
         Task<OrderSummaryResponse> GetSummaryAsync(List<Guid>? storeIds);
+        Task<(List<OrderEntity> Orders, int TotalItems)> GetStaffOrdersAsync(
+            List<Guid>? storeIds,
+            string? key,
+            OrderStatus? status,
+            DateTime? startDate,
+            DateTime? endDate,
+            int pageNumber,
+            int pageSize);
         Task<(List<OrderEntity> Orders, int TotalItems)> GetInvoicesAsync(
             Guid userId,
             OrderStatus status,

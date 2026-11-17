@@ -112,11 +112,13 @@ All cart routes require a `Customer` bearer token; the cart is associated with t
 | `DELETE /api/cart/items/{bookId}` | Remove book from cart. Path: `bookId` GUID. | `200 S002`; result, usually no data. | `400 E001`; `404 E005`; `400 E008`; `500 E002`; `401`/`403`; `429`. |
 
 ### Orders and invoices
-Order summary requires `Admin` or `Manager`. Placing/cancelling orders and viewing invoices require `Customer`. Confirming, shipping and completing orders require `Admin`, `Manager`, or `Employee`.
+Order summary requires `Admin` or `Manager`. Staff order listing and search require `Admin`, `Manager`, or `Employee`; Managers and Employees see only orders associated with their assigned stores, while Admins can see all orders. Placing/cancelling orders and viewing invoices require `Customer`. Confirming, shipping and completing orders require `Admin`, `Manager`, or `Employee`.
 
 | Method and route | Function and input | Success output | Other possible responses |
 |---|---|---|---|
 | `GET /api/orders/summary` | Count non-deleted orders by status; managers are scoped to assigned stores. No parameters. | `200 S002`; `newOrders`, `inProgressOrders`, `completedOrders`, `cancelledOrders`. | `403 E017`; `500 E002`; `401`/`403`; `429`. |
+| `GET /api/orders` | List orders for staff. Optional query: `status` (`OrderStatus`), `startDate` (inclusive), `endDate` (exclusive), `pageNumber` (default 1), `pageSize` (default 10, max 100). | `200 S002`; paginated order summaries with customer, status, payment, total, item count, and ordered date. | `400 E001`; `403 E017`; `500 E002`; `401`/`403`; `429`. |
+| `GET /api/orders/search` | Search staff-visible orders by partial order code, customer name/email, or exact order GUID. Required query: `key` (max 255). Supports the same optional `status`, `startDate`, `endDate`, `pageNumber`, and `pageSize` filters as the list endpoint. | `200 S002`; paginated matching order summaries. | `400 E001`; `403 E017`; `500 E002`; `401`/`403`; `429`. |
 | `POST /api/orders` | Submit current cart as an order. JSON: `addressId` GUID; `paymentMethod` enum (default `CashOnDelivery`); optional `promotionCode` (max 6). Optional `Idempotency-Key` header. | Typically `202 S005` when queued, with order result data; some code paths return `200 S002`. | `400 E001`/`E026` empty cart; `403 E017`; `404 E005`; `409 E024`/`E025`/`E027`; `500 E002`; `401`/`403`; `429`. |
 | `POST /api/orders/{orderId}/confirm` | Confirm a pending order. Path: `orderId` GUID. | `200 S002`; confirmation data. | `400 E001`; `404 E005`; `403 E017`; `409 E028`; `500 E002`; `401`/`403`; `429`. |
 | `POST /api/orders/{orderId}/in-transit` | Mark confirmed order in transit. Path: `orderId` GUID. | `200 S002`; transit data. | `400 E001`; `404 E005`; `403 E017`; `409 E029`; `500 E002`; `401`/`403`; `429`. |
@@ -326,6 +328,8 @@ Examples use illustrative IDs and data. Query examples can be appended to the ro
 | `PUT /api/cart/items/{bookId}` | Path `bookId=550e8400-e29b-41d4-a716-446655440000`; `{"quantity":3}` |
 | `DELETE /api/cart/items/{bookId}` | `DELETE /api/cart/items/550e8400-e29b-41d4-a716-446655440000` (no body) |
 | `GET /api/orders/summary` | `GET /api/orders/summary` |
+| `GET /api/orders` | `GET /api/orders?status=Pending&pageNumber=1&pageSize=20` |
+| `GET /api/orders/search` | `GET /api/orders/search?key=BK1024&status=Pending&pageNumber=1&pageSize=20` |
 | `POST /api/orders` | Header `Idempotency-Key: checkout-20261114-001`; `{"addressId":"550e8400-e29b-41d4-a716-446655440000","paymentMethod":"CashOnDelivery","promotionCode":"SAVE10"}` |
 | `POST /api/orders/{orderId}/confirm` | `POST /api/orders/550e8400-e29b-41d4-a716-446655440000/confirm` (no body) |
 | `POST /api/orders/{orderId}/in-transit` | `POST /api/orders/550e8400-e29b-41d4-a716-446655440000/in-transit` (no body) |

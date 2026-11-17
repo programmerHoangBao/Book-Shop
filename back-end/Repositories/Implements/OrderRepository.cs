@@ -54,6 +54,79 @@ namespace back_end.Repositories.Implements
             };
         }
 
+        public async Task<(List<OrderEntity> Orders, int TotalItems)> GetStaffOrdersAsync(
+            List<Guid>? storeIds,
+            string? key,
+            OrderStatus? status,
+            DateTime? startDate,
+            DateTime? endDate,
+            int pageNumber,
+            int pageSize)
+        {
+            IQueryable<OrderEntity> query = _context.Orders
+                .AsNoTracking()
+                .Where(order => !order.IsDeleted);
+
+            if (storeIds != null)
+            {
+                if (storeIds.Count == 0)
+                {
+                    return (new List<OrderEntity>(), 0);
+                }
+
+                query = query.Where(order => _context.InventoryTransactions.Any(transaction =>
+                    !transaction.IsDeleted &&
+                    transaction.TransactionType == TransactionType.Adjustment &&
+                    transaction.Quantity > 0 &&
+                    transaction.Reason == "Reserved for order " + order.OrderCode &&
+                    transaction.Inventory != null &&
+                    !transaction.Inventory.IsDeleted &&
+                    storeIds.Contains(transaction.Inventory.StoreId)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(key))
+            {
+                string pattern = $"%{key.Trim()}%";
+                Guid? matchingOrderId = Guid.TryParse(key.Trim(), out Guid parsedOrderId)
+                    ? parsedOrderId
+                    : null;
+
+                query = query.Where(order =>
+                    EF.Functions.ILike(order.OrderCode, pattern) ||
+                    (order.User != null && !order.User.IsDeleted &&
+                        (EF.Functions.ILike(order.User.FullName, pattern) ||
+                         EF.Functions.ILike(order.User.Email, pattern))) ||
+                    (matchingOrderId.HasValue && order.Id == matchingOrderId.Value));
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(order => order.OrderStatus == status.Value);
+            }
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(order => order.OrderedAt >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(order => order.OrderedAt < endDate.Value);
+            }
+
+            int totalItems = await query.CountAsync();
+            List<OrderEntity> orders = await query
+                .Include(order => order.User)
+                .Include(order => order.Items)
+                .OrderByDescending(order => order.OrderedAt)
+                .ThenByDescending(order => order.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (orders, totalItems);
+        }
+
         public async Task<(List<OrderEntity> Orders, int TotalItems)> GetInvoicesAsync(
             Guid userId,
             OrderStatus status,
