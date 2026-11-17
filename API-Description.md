@@ -89,6 +89,18 @@ Profile get/update endpoints require any authenticated user; service-level owner
 | `DELETE /api/user/bulk` | Soft-delete users. JSON: `userIds` array of GUIDs. | `200 S002`; per-user successes/errors. | `400 E001`; `404 E003`; `403 E017`; `400 E019`; `500 E002`; `401`/`403`; `429`. |
 | `PATCH /api/user/bulk/restore` | Restore users. JSON: `userIds` array of GUIDs. | `200 S002`; per-user successes/errors. | `400 E001`; `404 E003`; `403 E017`; `400 E020`; `500 E002`; `401`/`403`; `429`. |
 
+### Delivery addresses — `/api/user/addresses`
+All delivery-address endpoints require a `Customer` bearer token. Each operation is scoped to the authenticated customer; an address belonging to another customer is returned as not found. Deleted addresses are hidden from reads and are soft-deleted so existing orders retain their address reference. The first active address is made the default automatically. Deleting the current default selects the newest remaining active address as the new default.
+
+| Method and route | Function and input | Success output | Other possible responses |
+|---|---|---|---|
+| `GET /api/user/addresses` | List the current customer's active addresses. | `200 S002`; `data` is an array of address objects, ordered with the default first. | `401`/`403`; `500 E002`; `429`. |
+| `GET /api/user/addresses/{addressId}` | Get one active address. Path: `addressId` GUID. | `200 S002`; address object in `data`. | `400 E001`; `404 E005`; `401`/`403`; `500 E002`; `429`. |
+| `POST /api/user/addresses` | Add an address. JSON: `recipientName` (required, max 255), `phoneNumber` (required, max 11), `addressDetail` (required, max 500), optional `ward`, `district`, `province`, `city` (max 50 each), optional `isDefault` (default false). If no active default exists, the new address becomes default. | `201 S003`; created address object in `data`. | `400 E001`; `403 E017`; `500 E002`; `401`/`403`; `429`. |
+| `PUT /api/user/addresses/{addressId}` | Replace the editable fields of an active address. Path: `addressId` GUID. JSON uses the same address fields as create, without `isDefault`. | `200 S002`; updated address object in `data`. | `400 E001`; `404 E005`; `403 E017`; `500 E002`; `401`/`403`; `429`. |
+| `PATCH /api/user/addresses/{addressId}/default` | Make an active address the current customer's default. Path: `addressId` GUID; no body. | `200 S002`; selected address object in `data`. | `400 E001`; `404 E005`; `403 E017`; `500 E002`; `401`/`403`; `429`. |
+| `DELETE /api/user/addresses/{addressId}` | Soft-delete an active address. Path: `addressId` GUID; no body. | `200 S002`, normally `data:null`. | `400 E001`; `404 E005`; `403 E017`; `500 E002`; `401`/`403`; `429`. |
+
 ### Cart — `/api/cart`
 All cart routes require a `Customer` bearer token; the cart is associated with the current customer.
 
@@ -298,6 +310,12 @@ Examples use illustrative IDs and data. Query examples can be appended to the ro
 | `PATCH /api/user/restore?Id={guid}` | `PATCH /api/user/restore?Id=550e8400-e29b-41d4-a716-446655440000` (no body) |
 | `DELETE /api/user/bulk` | `{"userIds":["550e8400-e29b-41d4-a716-446655440000","550e8400-e29b-41d4-a716-446655440001"]}` |
 | `PATCH /api/user/bulk/restore` | `{"userIds":["550e8400-e29b-41d4-a716-446655440000"]}` |
+| `GET /api/user/addresses` | `GET /api/user/addresses` |
+| `GET /api/user/addresses/{addressId}` | `GET /api/user/addresses/550e8400-e29b-41d4-a716-446655440000` |
+| `POST /api/user/addresses` | `{"recipientName":"Ari Reader","phoneNumber":"0123456789","addressDetail":"12 Main Street","ward":"Central Ward","district":"Downtown","province":"Example Province","city":"Example City","isDefault":true}` |
+| `PUT /api/user/addresses/{addressId}` | Path `addressId=550e8400-e29b-41d4-a716-446655440000`; `{"recipientName":"Ari Reader","phoneNumber":"0123456789","addressDetail":"20 Main Street","ward":"Central Ward","district":"Downtown","province":"Example Province","city":"Example City"}` |
+| `PATCH /api/user/addresses/{addressId}/default` | `PATCH /api/user/addresses/550e8400-e29b-41d4-a716-446655440000/default` (no body) |
+| `DELETE /api/user/addresses/{addressId}` | `DELETE /api/user/addresses/550e8400-e29b-41d4-a716-446655440000` (no body) |
 
 ### Cart, orders, invoices and returns
 
