@@ -1,1509 +1,1943 @@
-# SOFTWARE REQUIREMENTS SPECIFICATION (SRS)
+**# SOFTWARE REQUIREMENTS SPECIFICATION (SRS)**
 
-## BOOK SHOP — ONLINE BOOKSTORE PLATFORM
+**## BOOK SHOP — ONLINE BOOKSTORE PLATFORM**
 
-**Version:** 1.0  
-**Status:** Draft for Review  
-**Document Type:** Software Requirements Specification  
-**Source Document:** Business Requirements Document (BRD) v1.0  
-**Owner:** Founder & CEO — Book Shop
+**\*\*Version:\*\*** 1.0  
 
----
+**\*\*Status:\*\*** Draft for Review  
 
-# TABLE OF CONTENTS
+**\*\*Document Type:\*\*** Software Requirements Specification  
 
-1. [Introduction](#1-introduction)
-2. [System Overview](#2-system-overview)
-3. [User Types and Roles](#3-user-types-and-roles)
-4. [System Scope](#4-system-scope)
-5. [Functional Requirements](#5-functional-requirements)
-   - 5.1. Account Management
-   - 5.2. Book and Category Management
-   - 5.3. Book Search and Filtering
-   - 5.4. Book Details
-   - 5.5. Shopping Cart
-   - 5.6. Order Placement
-   - 5.7. Payment
-   - 5.8. Order Management
-   - 5.9. Returns and Refunds
-   - 5.10. Inventory Management
-   - 5.11. Store Management
-   - 5.12. Promotions
-   - 5.13. Product Reviews
-   - 5.14. Notifications
-   - 5.15. Chatbot
-   - 5.16. Business Reporting
-6. [Business Requirements and Business Rules](#6-business-requirements-and-business-rules)
-7. [Non-functional Requirements](#7-non-functional-requirements)
-8. [Data Requirements](#8-data-requirements)
-9. [Business Processes and States](#9-business-processes-and-states)
-10. [Authorization and Access Control](#10-authorization-and-access-control)
-11. [User Interface and User Experience Requirements](#11-user-interface-and-user-experience-requirements)
-12. [Integration Requirements](#12-integration-requirements)
-13. [Reporting Requirements](#13-reporting-requirements)
-14. [Acceptance Criteria](#14-acceptance-criteria)
-15. [Traceability Matrix](#15-traceability-matrix)
-16. [Open Issues and Clarifications](#16-open-issues-and-clarifications)
-17. [Out of Scope](#17-out-of-scope)
-18. [Appendices](#18-appendices)
+**\*\*Source Document:\*\*** Business Requirements Document (BRD) v1.0  
 
----
+**\*\*Owner:\*\*** Founder & CEO — Book Shop
 
-# 1. INTRODUCTION
+**---**
 
-## 1.1. Document Purpose
+**# TABLE OF CONTENTS**
 
-This Software Requirements Specification (SRS) describes the software requirements for **Book Shop — an Online Bookstore Platform**.
+1\. [Introduction]\(#1-introduction)
+
+2\. [System Overview]\(#2-system-overview)
+
+3\. [User Types and Roles]\(#3-user-types-and-roles)
+
+4\. [System Scope]\(#4-system-scope)
+
+5\. [Functional Requirements]\(#5-functional-requirements)
+
+   - 5.1. Account Management
+
+   - 5.2. Book and Category Management
+
+   - 5.3. Book Search and Filtering
+
+   - 5.4. Book Details
+
+   - 5.5. Shopping Cart
+
+   - 5.6. Order Placement
+
+   - 5.7. Payment
+
+   - 5.8. Order Management
+
+   - 5.9. Returns and Refunds
+
+   - 5.10. Inventory Management
+
+   - 5.11. Store Management
+
+   - 5.12. Promotions
+
+   - 5.13. Product Reviews
+
+   - 5.14. Notifications
+
+   - 5.15. Business Reporting
+
+6\. [Business Requirements and Business Rules]\(#6-business-requirements-and-business-rules)
+
+7\. [Non-functional Requirements]\(#7-non-functional-requirements)
+
+8\. [Data Requirements]\(#8-data-requirements)
+
+9\. [Business Processes and States]\(#9-business-processes-and-states)
+
+10\. [Authorization and Access Control]\(#10-authorization-and-access-control)
+
+11\. [User Interface and User Experience Requirements]\(#11-user-interface-and-user-experience-requirements)
+
+12\. [Integration Requirements]\(#12-integration-requirements)
+
+13\. [Reporting Requirements]\(#13-reporting-requirements)
+
+14\. [Acceptance Criteria]\(#14-acceptance-criteria)
+
+15\. [Traceability Matrix]\(#15-traceability-matrix)
+
+16\. [Out of Scope]\(#16-out-of-scope)
+
+17\. [Appendices]\(#17-appendices)
+
+**---**
+
+**# 1. INTRODUCTION**
+
+**## 1.1. Document Purpose**
+
+This Software Requirements Specification (SRS) describes the software requirements for **\*\*Book Shop — an Online Bookstore Platform\*\***.
 
 The SRS translates the business needs identified in the BRD into requirements that the software system must satisfy.
 
 This document serves as the basis for:
 
-- System analysis and design.
-- Software architecture design.
-- Database design.
-- Feature development.
-- API design.
-- User interface design.
-- Test case preparation and system testing.
-- Product acceptance.
+\- System analysis and design.
 
-## 1.2. Reference Document
+\- Software architecture design.
+
+\- Database design.
+
+\- Feature development.
+
+\- API design.
+
+\- User interface design.
+
+\- Test case preparation and system testing.
+
+\- Product acceptance.
+
+**## 1.2. Reference Document**
 
 Primary source document:
 
-**Business Requirements Document — Book Shop, Version 1.0**
+**\*\*Business Requirements Document — Book Shop, Version 1.0\*\***
 
 The BRD defines the business needs, user types, and overall scope of the system.
 
-## 1.3. Document Scope
+**## 1.3. Document Scope**
 
 This SRS covers requirements related to:
 
-- User accounts.
-- Books and categories.
-- Search.
-- Shopping carts.
-- Order placement.
-- Payment.
-- Orders.
-- Returns and refunds.
-- Inventory.
-- Stores.
-- Promotions.
-- Reviews.
-- Notifications.
-- Chatbot.
-- Reporting.
-- Authorization.
-- System-level non-functional requirements.
+\- User accounts.
 
----
+\- Books and categories.
 
-# 2. SYSTEM OVERVIEW
+\- Search.
 
-## 2.1. System Objectives
+\- Shopping carts.
+
+\- Order placement.
+
+\- Payment.
+
+\- Orders.
+
+\- Returns and refunds.
+
+\- Inventory.
+
+\- Stores.
+
+\- Promotions.
+
+\- Reviews.
+
+\- Notifications.
+
+\- Reporting.
+
+\- Authorization.
+
+\- System-level non-functional requirements.
+
+**---**
+
+**# 2. SYSTEM OVERVIEW**
+
+**## 2.1. System Objectives**
 
 Book Shop is an online bookstore platform intended to expand business operations from physical stores to the online environment.
 
 The system provides an online sales channel while supporting the management of:
 
-- Customers.
-- Books.
-- Orders.
-- Payments.
-- Shipping.
-- Inventory.
-- Stores.
-- Promotions.
-- Business operations.
+\- Customers.
 
-The overall objective is to connect **customers — website — stores — warehouses — business operations** within a single platform.
+\- Books.
 
-## 2.2. Business Objectives
+\- Orders.
+
+\- Payments.
+
+\- Shipping.
+
+\- Inventory.
+
+\- Stores.
+
+\- Promotions.
+
+\- Business operations.
+
+The overall objective is to connect **\*\*customers — website — stores — warehouses — business operations\*\*** within a single platform.
+
+**## 2.2. Business Objectives**
 
 The system must support Book Shop in achieving the following objectives:
 
-1. Increase revenue from online sales.
-2. Expand customer reach.
-3. Improve the book-shopping experience.
-4. Manage products and inventory accurately.
-5. Reduce order-processing time.
-6. Provide reports to support management decisions.
-7. Establish a platform that can be expanded in the future.
+1\. Increase revenue from online sales.
 
-## 2.3. Actors Overview
+2\. Expand customer reach.
+
+3\. Improve the book-shopping experience.
+
+4\. Manage products and inventory accurately.
+
+5\. Reduce order-processing time.
+
+6\. Provide reports to support management decisions.
+
+7\. Establish a platform that can be expanded in the future.
+
+**## 2.3. Actors Overview**
 
 The system has the following user groups:
 
-| Actor         | Description                                                                                    |
-| ------------- | ---------------------------------------------------------------------------------------------- |
-| Guest         | A user who is not signed in and can browse and search for books.                               |
-| Customer      | A user who has an account.                                                                     |
-| Employee      | An employee who processes orders and confirms delivery statuses.                               |
-| Store Manager | A manager responsible for merchandise, orders, and business information for an assigned store. |
-| Administrator | A user who manages all activities permitted by Book Shop.                                      |
+\| Actor         | Description                                                                                    |
+
+\| ------------- | ---------------------------------------------------------------------------------------------- |
+
+\| Guest         | A user who is not signed in and can browse and search for books.                               |
+
+\| Customer      | A user who has an account.                                                                     |
+
+\| Employee      | An employee who processes orders and confirms delivery statuses.                               |
+
+\| Store Manager | A manager responsible for merchandise, orders, and business information for an assigned store. |
+
+\| Administrator | A user who manages all activities permitted by Book Shop.                                      |
 
 These actors are defined in the BRD.
 
----
+**---**
 
-# 3. USER TYPES AND ROLES
+**# 3. USER TYPES AND ROLES**
 
-## 3.1. Guest
+**## 3.1. Guest**
 
 A Guest can:
 
-- View the book catalog.
-- Search for books.
-- Filter books.
-- Sort books.
-- View book details.
-- Explore products.
+\- View the book catalog.
+
+\- Search for books.
+
+\- Filter books.
+
+\- Sort books.
+
+\- View book details.
+
+\- Explore products.
 
 A Guest cannot use features that require an account.
 
-## 3.2. Customer
+**## 3.2. Customer**
 
 A Customer can:
 
-- Register an account.
-- Sign in.
-- Verify their account.
-- Reset a forgotten password.
-- Update personal information.
-- Manage addresses.
-- Manage the shopping cart.
-- Place orders.
-- Track orders.
-- Cancel orders when eligible.
-- Submit return/refund requests.
-- Review products.
-- Receive notifications.
-- Use the chatbot.
+\- Register an account.
 
-## 3.3. Employee
+\- Sign in.
+
+\- Verify their account.
+
+\- Reset a forgotten password.
+
+\- Update personal information.
+
+\- Manage addresses.
+
+\- Manage the shopping cart.
+
+\- Place orders.
+
+\- Track orders.
+
+\- Cancel orders when eligible.
+
+\- Submit return/refund requests.
+
+\- Review products.
+
+\- Receive notifications.
+
+**## 3.3. Employee**
 
 An Employee can:
 
-- Search for orders.
-- Confirm orders.
-- Process orders.
-- Hand orders over to a third-party shipping provider.
-- Receive delivery-status information from the third party.
-- Confirm successful delivery to the customer.
-- Cancel orders in accordance with policy.
-- Process return and refund requests according to assigned permissions.
+\- Search for orders.
 
-## 3.4. Store Manager
+\- Confirm orders.
+
+\- Process orders.
+
+\- Hand orders over to a third-party shipping provider.
+
+\- Receive delivery-status information from the third party.
+
+\- Confirm successful delivery to the customer.
+
+\- Cancel orders in accordance with policy.
+
+\- Process return and refund requests according to assigned permissions.
+
+**## 3.4. Store Manager**
 
 A Store Manager can:
 
-- View inventory for the assigned store.
-- Perform stocktaking.
-- Receive stock.
-- Issue stock.
-- Transfer stock.
-- Receive stock from another store.
-- Track change history.
-- Manage orders within the scope of their permissions.
-- View business information within the scope of the assigned store.
+\- View inventory for the assigned store.
 
-## 3.5. Administrator
+\- Perform stocktaking.
+
+\- Receive stock.
+
+\- Issue stock.
+
+\- Transfer stock.
+
+\- Receive stock from another store.
+
+\- Track change history.
+
+\- Manage orders within the scope of their permissions.
+
+\- View business information within the scope of the assigned store.
+
+**## 3.5. Administrator**
 
 An Administrator has permission to manage all activities permitted by Book Shop, including:
 
-- Users.
-- Products.
-- Categories.
-- Orders.
-- Inventory.
-- Stores.
-- Promotions.
-- Reviews.
-- Reports.
-- Other administrative configurations.
+\- Users.
 
----
+\- Products.
 
-# 4. SYSTEM SCOPE
+\- Categories.
 
-## 4.1. In Scope
+\- Orders.
+
+\- Inventory.
+
+\- Stores.
+
+\- Promotions.
+
+\- Reviews.
+
+\- Reports.
+
+\- Other administrative configurations.
+
+**---**
+
+**# 4. SYSTEM SCOPE**
+
+**## 4.1. In Scope**
 
 The system includes:
 
-- Account Management.
-- Product and Category Management.
-- Search and Filtering.
-- Shopping Cart.
-- Order Management.
-- Payment.
-- Inventory Management.
-- Store Management.
-- Promotion Management.
-- Product Reviews.
-- Notifications.
-- Customer Chatbot.
-- Business Reporting.
+\- Account Management.
+
+\- Product and Category Management.
+
+\- Search and Filtering.
+
+\- Shopping Cart.
+
+\- Order Management.
+
+\- Payment.
+
+\- Inventory Management.
+
+\- Store Management.
+
+\- Promotion Management.
+
+\- Product Reviews.
+
+\- Notifications.
+
+\- Business Reporting.
 
 These features are within the scope defined in the BRD.
 
-## 4.2. Out of Scope
+**## 4.2. Out of Scope**
 
 The following features are not included in the initial version:
 
-- A marketplace for third-party sellers.
-- Livestream shopping.
-- Book rental.
-- A comprehensive accounting/ERP system.
-- A dedicated mobile application.
-- Management of the order-shipping operation.
-- Online bank payments or other online payment methods.
+\- A marketplace for third-party sellers.
+
+\- Livestream shopping.
+
+\- Book rental.
+
+\- A comprehensive accounting/ERP system.
+
+\- A dedicated mobile application.
+
+\- Management of the order-shipping operation.
+
+\- Online bank payments or other online payment methods.
 
 Shipping is handled by a third party. Version 1.0 supports Cash on Delivery only.
 
----
+**---**
 
-# 5. FUNCTIONAL REQUIREMENTS
+**# 5. FUNCTIONAL REQUIREMENTS**
 
-# 5.1. Account Management
+**# 5.1. Account Management**
 
-## FR-ACC-001 — Account Registration
+**## FR-ACC-001 — Account Registration**
 
-**Actor:** Guest
+**\*\*Actor:\*\*** Guest
 
 The system must allow Guests to register an account.
 
-### Preconditions
+**### Preconditions**
 
-- The user does not already have an account or is accessing the registration feature.
+\- The user does not already have an account or is accessing the registration feature.
 
-### Main Flow
+**### Main Flow**
 
-1. The Guest opens the registration feature.
-2. The Guest enters the required information.
-3. The system validates the submitted data.
-4. The system creates the account.
-5. The system requests account verification if required.
-6. The system displays the result.
+1\. The Guest opens the registration feature.
+
+2\. The Guest enters the required information.
+
+3\. The system validates the submitted data.
+
+4\. The system creates the account.
+
+5\. The system requests account verification if required.
+
+6\. The system displays the result.
 
 In addition to registering by entering information, a Guest can also register using Google (Google Sign-In).
 
-### Business Rules
+**### Business Rules**
 
-- Account information must be valid.
-- The account must be verified according to Book Shop's process.
+\- Account information must be valid.
 
----
+\- The account must be verified according to Book Shop's process.
 
-## FR-ACC-002 — Sign In
+**---**
 
-**Actor:** Customer
+**## FR-ACC-002 — Sign In**
+
+**\*\*Actor:\*\*** Customer
 
 The system must allow Customers to sign in to their accounts.
 
-### Main Flow
+**### Main Flow**
 
-1. The Customer enters their sign-in credentials.
-2. The system authenticates the credentials.
-3. If the credentials are valid, the system grants access to the account.
-4. If the credentials are invalid, the system displays an error.
+1\. The Customer enters their sign-in credentials.
+
+2\. The system authenticates the credentials.
+
+3\. If the credentials are valid, the system grants access to the account.
+
+4\. If the credentials are invalid, the system displays an error.
 
 Customers can also sign in with Google without entering their credentials manually.
 
----
+**---**
 
-## FR-ACC-003 — Account Verification
+**## FR-ACC-003 — Account Verification**
 
 The system must support account verification after registration. The system may verify a user's account using a One-Time Password (OTP).
 
----
+**---**
 
-## FR-ACC-004 — Password Recovery
+**## FR-ACC-004 — Password Recovery**
 
 Customers must be able to recover a forgotten password by verifying their email address with an OTP and providing a new password.
 
----
+**---**
 
-## FR-ACC-005 — Update Personal Information
-
-Customers must be able to:
-
-- View their personal information.
-- Update permitted information.
-- Save the updated information.
-
----
-
-## FR-ACC-006 — Manage Shipping Addresses
+**## FR-ACC-005 — Update Personal Information**
 
 Customers must be able to:
 
-- Add an address.
-- View addresses.
-- Edit an address.
-- Select an address to use when placing an order.
+\- View their personal information.
 
----
+\- Update permitted information.
 
-## FR-ACC-007 — View Purchase History
+\- Save the updated information.
+
+**---**
+
+**## FR-ACC-006 — Manage Shipping Addresses**
+
+Customers must be able to:
+
+\- Add an address.
+
+\- View addresses.
+
+\- Edit an address.
+
+\- Select an address to use when placing an order.
+
+**---**
+
+**## FR-ACC-007 — View Purchase History**
 
 Customers must be able to view the history of orders they have placed.
 
----
+**---**
 
-# 5.2. Book and Category Management
+**# 5.2. Book and Category Management**
 
-## FR-PROD-001 — Add a Book
+**## FR-PROD-001 — Add a Book**
 
-**Actor:** Administrator
+**\*\*Actor:\*\*** Administrator
 
 An Administrator can add a new product.
 
 Minimum information:
 
-- Book title.
-- Author.
-- Publisher.
-- Category.
-- Description.
-- Images.
-- Selling price.
+\- Book title.
+
+\- Author.
+
+\- Publisher.
+
+\- Category.
+
+\- Description.
+
+\- Images.
+
+\- Selling price.
 
 These information fields are defined in the BRD.
 
----
+**---**
 
-## FR-PROD-002 — View Books
+**## FR-PROD-002 — View Books**
 
 The system must allow users to view book information in accordance with their access permissions.
 
----
+**---**
 
-## FR-PROD-003 — Edit a Book
+**## FR-PROD-003 — Edit a Book**
 
 An Administrator can edit product information.
 
----
+**---**
 
-## FR-PROD-004 — Discontinue a Book
+**## FR-PROD-004 — Discontinue a Book**
 
 An Administrator can discontinue a product.
 
 A discontinued product must not be displayed as available for purchase.
 
----
+**---**
 
-## FR-PROD-005 — Reactivate a Book
+**## FR-PROD-005 — Reactivate a Book**
 
 An Administrator can reactivate a discontinued product.
 
----
+**---**
 
-# 5.3. Book Search and Filtering
+**# 5.3. Book Search and Filtering**
 
-## FR-SEARCH-001 — Search
+**## FR-SEARCH-001 — Search**
 
 The system must support searching by:
 
-- Book title.
-- Author.
-- Publisher.
-- Category.
-- Related keywords.
+\- Book title.
 
-## FR-SEARCH-002 — Filter
+\- Author.
+
+\- Publisher.
+
+\- Category.
+
+\- Related keywords.
+
+**## FR-SEARCH-002 — Filter**
 
 The system must support filtering by:
 
-- Price.
-- Category.
-- Publisher.
-- Rating.
-- Stock availability.
+\- Price.
 
-## FR-SEARCH-003 — Sort
+\- Category.
+
+\- Publisher.
+
+\- Rating.
+
+\- Stock availability.
+
+**## FR-SEARCH-003 — Sort**
 
 The system must support sorting by:
 
-- Price.
-- Best-selling.
-- Rating.
-- Newest books.
+\- Price.
+
+\- Best-selling.
+
+\- Rating.
+
+\- Newest books.
 
 The search, filtering, and sorting criteria above are taken from the BRD.
 
----
+**---**
 
-# 5.4. Book Details
+**# 5.4. Book Details**
 
-## FR-PROD-006 — Display Book Details
+**## FR-PROD-006 — Display Book Details**
 
 The system must display:
 
-- Book title.
-- Author.
-- Images.
-- Price.
-- Promotional price, if applicable.
-- Description.
-- Publisher.
-- Rating.
-- Stock availability.
+\- Book title.
 
-## FR-PROD-007 — Add to Cart
+\- Author.
+
+\- Images.
+
+\- Price.
+
+\- Promotional price, if applicable.
+
+\- Description.
+
+\- Publisher.
+
+\- Rating.
+
+\- Stock availability.
+
+**## FR-PROD-007 — Add to Cart**
 
 Customers can add a book to their shopping cart from the book details page.
 
-## FR-PROD-008 — Buy Now
+**## FR-PROD-008 — Buy Now**
 
 Customers can purchase a product directly from the book details page.
 
----
+**---**
 
-# 5.5. Shopping Cart
+**# 5.5. Shopping Cart**
 
-## FR-CART-001 — Add Products
+**## FR-CART-001 — Add Products**
 
 Customers can add books to their shopping carts.
 
-## FR-CART-002 — Change Quantities
+**## FR-CART-002 — Change Quantities**
 
 Customers can increase or decrease the quantity of books in their carts.
 
-## FR-CART-003 — Remove Products
+**## FR-CART-003 — Remove Products**
 
 Customers can remove books from their shopping carts.
 
-## FR-CART-004 — View Total Amount
+**## FR-CART-004 — View Total Amount**
 
 The system must display the total value of the shopping cart.
 
-## FR-CART-005 — Validate Inventory
+**## FR-CART-005 — Validate Inventory**
 
 The system must not allow Customers to order a quantity greater than the quantity available for sale.
 
 This is a mandatory business requirement defined in the BRD.
 
----
+**---**
 
-# 5.6. Order Placement
+**# 5.6. Order Placement**
 
-## FR-ORDER-001 — Create an Order
+**## FR-ORDER-001 — Create an Order**
 
 Customers can create an order through the following process:
 
-```text
+\`\`\`text
+
 Search for books
-      ↓
+
+      ↓
+
 Select books
-      ↓
+
+      ↓
+
 Add to cart (optional)
-      ↓
+
+      ↓
+
 Enter shipping address
-      ↓
+
+      ↓
+
 Select payment method
-      ↓
+
+      ↓
+
 Apply promotion (optional)
-      ↓
+
+      ↓
+
 Confirm order
-      ↓
+
+      ↓
+
 Pending Confirmation
-      ↓
+
+      ↓
+
 Shipping
-      ↓
+
+      ↓
+
 Completed
-```
+
+\`\`\`
 
 The process above is defined in the BRD.
 
-## FR-ORDER-002 — Calculate the Total Amount
+**## FR-ORDER-002 — Calculate the Total Amount**
 
 Before a Customer confirms an order, the system must clearly display the total amount payable.
 
 The total amount must reflect:
 
-- Product prices.
-- Quantities.
-- Promotional prices, if applicable.
-- Other applicable charges supported by Book Shop.
+\- Product prices.
 
-## FR-ORDER-003 — Validate Inventory Before Ordering
+\- Quantities.
+
+\- Promotional prices, if applicable.
+
+\- Other applicable charges supported by Book Shop.
+
+**## FR-ORDER-003 — Validate Inventory Before Ordering**
 
 The system must check the quantity available for sale before creating an order.
 
-## FR-ORDER-004 — Apply Promotions
+**## FR-ORDER-004 — Apply Promotions**
 
 Customers can apply valid promotions or discount codes.
 
-## FR-ORDER-005 — Confirm an Order
+**## FR-ORDER-005 — Confirm an Order**
 
 After the Customer confirms the order, the order is created with the following status:
 
-**Pending Confirmation**
+**\*\*Pending Confirmation\*\***
 
----
+**---**
 
-# 5.7. Payment
+**# 5.7. Payment**
 
-## FR-PAY-001 — Cash on Delivery
+**## FR-PAY-001 — Cash on Delivery**
 
 Version 1.0 must support the following payment method:
 
-**Cash on Delivery (COD).**
+**\*\*Cash on Delivery (COD).\*\***
 
 The Customer pays the third-party shipping provider upon receiving the order.
 
-## FR-PAY-002 — Confirm Payment Completion
+**## FR-PAY-002 — Confirm Payment Completion**
 
 After the third party delivers the order and Book Shop receives the payment, the system must allow the order to be confirmed as completed.
 
-## FR-PAY-003 — Online Payments Not Supported
+**## FR-PAY-003 — Online Payments Not Supported**
 
 Version 1.0 does not include:
 
-- Online bank payments.
-- Other online payment methods.
+\- Online bank payments.
 
----
+\- Other online payment methods.
 
-# 5.8. Order Management
+**---**
 
-## FR-ORDER-006 — Customer Views Orders
+**# 5.8. Order Management**
+
+**## FR-ORDER-006 — Customer Views Orders**
 
 Customers can:
 
-- View their order list.
-- View order details.
-- View ordered products.
-- View amounts.
-- Track order statuses.
+\- View their order list.
 
-## FR-ORDER-007 — Cancel an Order
+\- View order details.
+
+\- View ordered products.
+
+\- View amounts.
+
+\- Track order statuses.
+
+**## FR-ORDER-007 — Cancel an Order**
 
 Customers can cancel an order if its status and the applicable policy allow cancellation.
 
-**An order cannot be cancelled when its status is "Shipping".**
+**\*\*An order cannot be cancelled when its status is "Shipping".\*\***
 
-## FR-ORDER-008 — Employee Searches for Orders
+**## FR-ORDER-008 — Employee Searches for Orders**
 
 Employees can search for orders.
 
-## FR-ORDER-009 — Employee Confirms an Order
+**## FR-ORDER-009 — Employee Confirms an Order**
 
 Employees can confirm orders.
 
-An Employee confirms that an order has moved to the **Shipping** status.
+An Employee confirms that an order has moved to the **\*\*Shipping\*\*** status.
 
-An Employee confirms that an order is **Completed** after receiving the payment from the third-party shipping provider.
+An Employee confirms that an order is **\*\*Completed\*\*** after receiving the payment from the third-party shipping provider.
 
-## FR-ORDER-010 — Process an Order
+**## FR-ORDER-010 — Process an Order**
 
 Employees can process orders according to the business process.
 
-## FR-ORDER-011 — Employee Cancels an Order
+**## FR-ORDER-011 — Employee Cancels an Order**
 
 Employees can cancel orders in accordance with policy.
 
----
+**---**
 
-# 5.9. Returns and Refunds
+**# 5.9. Returns and Refunds**
 
-## FR-RETURN-001 — Create a Return Request
+**## FR-RETURN-001 — Create a Return Request**
 
-Customers can request a return after receiving the order, provided that the order is in the **Completed** status. The return request must be submitted no later than 3 days after the order is received.
+Customers can request a return after receiving the order, provided that the order is in the **\*\*Completed\*\*** status. The return request must be submitted no later than 3 days after the order is received.
 
 Customers must provide:
 
-- Supporting evidence.
-- Bank account information.
+\- Supporting evidence.
 
-## FR-RETURN-002 — Review a Request
+\- Bank account information.
+
+**## FR-RETURN-002 — Review a Request**
 
 Book Shop can review return requests.
 
-## FR-RETURN-003 — Approve or Reject a Request
+**## FR-RETURN-003 — Approve or Reject a Request**
 
 Book Shop must be able to:
 
-- Approve a request.
-- Reject a request.
+\- Approve a request.
 
-## FR-RETURN-004 — Receive and Inspect Returned Products
+\- Reject a request.
+
+**## FR-RETURN-004 — Receive and Inspect Returned Products**
 
 Book Shop receives and inspects returned products.
 
-## FR-RETURN-005 — Issue a Refund
+**## FR-RETURN-005 — Issue a Refund**
 
 If a request meets the eligibility requirements, the system must support recording the refund.
 
-## FR-RETURN-006 — Update the Order and Products
+**## FR-RETURN-006 — Update the Order and Products**
 
 After processing a return, the system must update:
 
-- Order status.
-- Product condition.
-- Refund information.
+\- Order status.
+
+\- Product condition.
+
+\- Refund information.
 
 The process is defined in the BRD.
 
----
+**---**
 
-# 5.10. Inventory Management
+**# 5.10. Inventory Management**
 
-## FR-INV-001 — Track Inventory
+**## FR-INV-001 — Track Inventory**
 
 The system must track book quantities at each store or warehouse.
 
 Each product must have the following information:
 
-- Current quantity.
-- Quantity reserved for orders.
-- Quantity available for sale.
-- Damaged quantity.
-- Quantity pending receipt.
+\- Current quantity.
 
-## FR-INV-002 — Update Inventory
+\- Quantity reserved for orders.
+
+\- Quantity available for sale.
+
+\- Damaged quantity.
+
+\- Quantity pending receipt.
+
+**## FR-INV-002 — Update Inventory**
 
 Inventory must be updated when any of the following events occur:
 
-- Stock receipt.
-- Sale.
-- Order placement.
-- Order cancellation.
-- Returned goods.
-- Stock transfer.
-- Recording of damaged goods.
+\- Stock receipt.
 
-## FR-INV-003 — Prevent Overselling
+\- Sale.
+
+\- Order placement.
+
+\- Order cancellation.
+
+\- Returned goods.
+
+\- Stock transfer.
+
+\- Recording of damaged goods.
+
+**## FR-INV-003 — Prevent Overselling**
 
 The system must never allow sales that exceed the quantity available for sale.
 
----
+**---**
 
-# 5.11. Store Management
+**# 5.11. Store Management**
 
-## FR-STORE-001 — View Store Inventory
+**## FR-STORE-001 — View Store Inventory**
 
 Authorized users can view inventory for each store.
 
-## FR-STORE-002 — Stocktaking
+**## FR-STORE-002 — Stocktaking**
 
 The system must support recording stocktaking activities.
 
-## FR-STORE-003 — Receive Stock
+**## FR-STORE-003 — Receive Stock**
 
 The system must support recording received stock.
 
-## FR-STORE-004 — Issue Stock
+**## FR-STORE-004 — Issue Stock**
 
 The system must support recording issued stock.
 
-## FR-STORE-005 — Transfer Stock
+**## FR-STORE-005 — Transfer Stock**
 
 The system must support transferring stock between stores/warehouses.
 
-## FR-STORE-006 — Receive Transferred Stock
+**## FR-STORE-006 — Receive Transferred Stock**
 
 The receiving store can record the receipt of transferred stock.
 
-## FR-STORE-007 — Inventory History
+**## FR-STORE-007 — Inventory History**
 
 The system must store and allow users to track inventory change history.
 
----
+**---**
 
-# 5.12. Promotions
+**# 5.12. Promotions**
 
-## FR-PROMO-001 — Percentage-Based Promotions
+**## FR-PROMO-001 — Percentage-Based Promotions**
 
 The system supports percentage discounts.
 
-## FR-PROMO-002 — Fixed-Amount Promotions
+**## FR-PROMO-002 — Fixed-Amount Promotions**
 
 The system supports discounts of a fixed monetary amount.
 
-## FR-PROMO-003 — Discount Codes
+**## FR-PROMO-003 — Discount Codes**
 
 The system supports discount codes.
 
-## FR-PROMO-004 — Free Shipping
+**## FR-PROMO-004 — Free Shipping**
 
 The system supports free-shipping promotions.
 
-## FR-PROMO-005 — Flash Sales
+**## FR-PROMO-005 — Flash Sales**
 
 The system supports Flash Sale campaigns.
 
-## FR-PROMO-006 — Category-Based Promotions
+**## FR-PROMO-006 — Category-Based Promotions**
 
 The system supports promotions for specific book categories.
 
-## FR-PROMO-007 — Validate Promotion Conditions
+**## FR-PROMO-007 — Validate Promotion Conditions**
 
 Promotions must be validated against:
 
-- Products.
-- Order value.
-- Validity period.
-- Number of uses.
+\- Products.
+
+\- Order value.
+
+\- Validity period.
+
+\- Number of uses.
 
 Expired promotions must not be applied.
 
----
+**---**
 
-# 5.13. Product Reviews
+**# 5.13. Product Reviews**
 
-## FR-REVIEW-001 — Star Ratings
+**## FR-REVIEW-001 — Star Ratings**
 
 Customers can rate products from:
 
-**1 to 5 stars.**
+**\*\*1 to 5 stars.\*\***
 
-## FR-REVIEW-002 — Written Reviews
+**## FR-REVIEW-002 — Written Reviews**
 
 Customers can write comments about products.
 
-## FR-REVIEW-003 — Review Eligibility Check
+**## FR-REVIEW-003 — Review Eligibility Check**
 
 Book Shop may require that only Customers who have purchased a product can review it.
 
-## FR-REVIEW-004 — Moderation
+**## FR-REVIEW-004 — Moderation**
 
 Administrators, Store Managers, and Employees can:
 
-- View reviews.
-- Moderate reviews.
-- Hide reviews that violate policy.
+\- View reviews.
 
----
+\- Moderate reviews.
 
-# 5.14. Notifications
+\- Hide reviews that violate policy.
 
-## FR-NOTI-001 — Event Notifications
+**---**
+
+**# 5.14. Notifications**
+
+**## FR-NOTI-001 — Event Notifications**
 
 The system must support notifying Customers about important events, including:
 
-- Account registration.
-- Order placement.
-- Payment.
-- Order confirmation.
-- Shipping.
-- Order cancellation.
-- Refund.
-- Promotions.
+\- Account registration.
 
-**Notification channels:** In-app notifications and email.
+\- Order placement.
 
----
+\- Payment.
 
-# 5.15. Chatbot
+\- Order confirmation.
 
-## FR-CHAT-001 — Search for Books
+\- Shipping.
 
-The chatbot must help Customers search for books.
+\- Order cancellation.
 
-## FR-CHAT-002 — Recommend Books
+\- Refund.
 
-The chatbot must be able to recommend books.
+\- Promotions.
 
-## FR-CHAT-003 — Answer Product-Related Questions
+**\*\*Notification channels:\*\*** In-app notifications and email.
 
-The chatbot must support answering questions related to products.
+**---**
 
-## FR-CHAT-004 — Future Expansion
+**# 5.15. Business Reporting**
 
-The system may be expanded into a personalized book recommendation system.
-
-Personalized recommendations are not a mandatory requirement for the initial version.
-
----
-
-# 5.16. Business Reporting
-
-## FR-REPORT-001 — Revenue Reports
+**## FR-REPORT-001 — Revenue Reports**
 
 The system must provide revenue information by:
 
-- Day.
-- Week.
-- Month.
-- Quarter.
-- Year.
-- Store.
-- Product.
-- Category.
+\- Day.
 
-The system may export order reports to CSV files and email reports daily at **08:00 AM**. Reports must be sent only to the Administrator.
+\- Week.
 
-## FR-REPORT-002 — Order Reports
+\- Month.
 
-The system must provide information about:
+\- Quarter.
 
-- New orders.
-- Orders being processed.
-- Completed orders.
-- Cancelled orders.
+\- Year.
 
-## FR-REPORT-003 — Product and Inventory Reports
+\- Store.
+
+\- Product.
+
+\- Category.
+
+The system may export order reports to CSV files and email reports daily at **\*\*08:00 AM\*\***. Reports must be sent only to the Administrator.
+
+**## FR-REPORT-002 — Order Reports**
 
 The system must provide information about:
 
-- Books with low stock.
-- Out-of-stock books.
-- Best-selling books.
-- Slow-moving books.
+\- New orders.
 
-## FR-REPORT-004 — Customer Reports
+\- Orders being processed.
+
+\- Completed orders.
+
+\- Cancelled orders.
+
+**## FR-REPORT-003 — Product and Inventory Reports**
 
 The system must provide information about:
 
-- New customers.
-- Returning customers.
-- Purchase frequency.
+\- Books with low stock.
 
----
+\- Out-of-stock books.
 
-# 6. BUSINESS REQUIREMENTS AND BUSINESS RULES
+\- Best-selling books.
 
-| ID     | Business Rule                                                          | System Requirement                                                        |
-| ------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| BR-001 | The selling price must not be less than 0.                             | The system must reject a selling price below 0.                           |
-| BR-002 | Orders must not exceed the quantity available for sale.                | The system must validate the available quantity.                          |
-| BR-003 | Expired promotions cannot be applied.                                  | The system must validate the promotion's validity period.                 |
-| BR-004 | Users must not redeem more points than they currently have.            | If the system supports points, it must validate the user's point balance. |
-| BR-005 | Reviews must comply with the applicable policy.                        | The system must enforce the review policy.                                |
-| BR-006 | An order can only be cancelled when the applicable conditions are met. | The system must validate the order status and cancellation policy.        |
-| BR-007 | Refunds must comply with the return policy.                            | The system must validate refund eligibility.                              |
-| BR-008 | Users may only perform tasks appropriate to their responsibilities.    | The system must enforce authorization.                                    |
-| BR-009 | The total amount must be clearly determined before an order is placed. | Checkout must display the total amount.                                   |
-| BR-010 | Orders cannot be cancelled while they are being shipped.               | The system must reject cancellation attempts during shipping.             |
+\- Slow-moving books.
+
+**## FR-REPORT-004 — Customer Reports**
+
+The system must provide information about:
+
+\- New customers.
+
+\- Returning customers.
+
+\- Purchase frequency.
+
+**---**
+
+**# 6. BUSINESS REQUIREMENTS AND BUSINESS RULES**
+
+\| ID     | Business Rule                                                          | System Requirement                                                        |
+
+\| ------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+
+\| BR-001 | The selling price must not be less than 0.                             | The system must reject a selling price below 0.                           |
+
+\| BR-002 | Orders must not exceed the quantity available for sale.                | The system must validate the available quantity.                          |
+
+\| BR-003 | Expired promotions cannot be applied.                                  | The system must validate the promotion's validity period.                 |
+
+\| BR-004 | Users must not redeem more points than they currently have.            | If the system supports points, it must validate the user's point balance. |
+
+\| BR-005 | Reviews must comply with the applicable policy.                        | The system must enforce the review policy.                                |
+
+\| BR-006 | An order can only be cancelled when the applicable conditions are met. | The system must validate the order status and cancellation policy.        |
+
+\| BR-007 | Refunds must comply with the return policy.                            | The system must validate refund eligibility.                              |
+
+\| BR-008 | Users may only perform tasks appropriate to their responsibilities.    | The system must enforce authorization.                                    |
+
+\| BR-009 | The total amount must be clearly determined before an order is placed. | Checkout must display the total amount.                                   |
+
+\| BR-010 | Orders cannot be cancelled while they are being shipped.               | The system must reject cancellation attempts during shipping.             |
 
 The business rules above are derived from the BRD.
 
-> **Note:** BR-004 regarding reward points appears in the BRD, but the functional scope does not describe a Loyalty/Points system. This requirement must therefore be clarified before implementation.
+\> **\*\*Note:\*\*** BR-004 regarding reward points appears in the BRD, but the functional scope does not describe a Loyalty/Points system. This requirement must therefore be clarified before implementation.
 
----
+**---**
 
-# 7. NON-FUNCTIONAL REQUIREMENTS
+**# 7. NON-FUNCTIONAL REQUIREMENTS**
 
-The BRD does not specify concrete technical metrics for performance, load capacity, SLA, or technical security. Therefore, the requirements below are identified as **system requirements that need further clarification**, rather than assigning unsupported technical values.
+The BRD does not specify concrete technical metrics for performance, load capacity, SLA, or technical security. Therefore, the requirements below are identified as **\*\*system requirements that need further clarification\*\***, rather than assigning unsupported technical values.
 
-## NFR-001 — Performance
+**## NFR-001 — Performance**
 
 The system must provide response times appropriate for the online shopping experience.
 
-- The response time of a typical API request must not exceed **500 ms**.
-- The system must be able to handle at least **100 requests per second (RPS)** under normal load conditions.
-- The system must support at least **500 concurrent users** without becoming unavailable or experiencing severe performance degradation.
+\- The response time of a typical API request must not exceed **\*\*500 ms\*\***.
 
-## NFR-002 — Availability
+\- The system must be able to handle at least **\*\*100 requests per second (RPS)\*\*** under normal load conditions.
+
+\- The system must support at least **\*\*500 concurrent users\*\*** without becoming unavailable or experiencing severe performance degradation.
+
+**## NFR-002 — Availability**
 
 The system must provide an appropriate level of availability to support business operations.
 
-## NFR-003 — Scalability
+**## NFR-003 — Scalability**
 
 The system must be scalable as the number of the following increases:
 
-- Customers.
-- Products.
-- Orders.
-- Stores.
+\- Customers.
 
-## NFR-004 — Security
+\- Products.
+
+\- Orders.
+
+\- Stores.
+
+**## NFR-004 — Security**
 
 The system must protect:
 
-- Account information.
-- Personal information.
-- Shipping addresses.
-- Order-related information.
-- Bank account information used for refunds.
+\- Account information.
 
-Specific technical security mechanisms: **TBD**.
+\- Personal information.
 
-## NFR-005 — Authorization
+\- Shipping addresses.
+
+\- Order-related information.
+
+\- Bank account information used for refunds.
+
+Specific technical security mechanisms: **\*\*TBD\*\***.
+
+**## NFR-005 — Authorization**
 
 Users may only access features and data that are appropriate to their assigned responsibilities.
 
-## NFR-006 — Data Integrity
+**## NFR-006 — Data Integrity**
 
 The system must ensure the consistency of:
 
-- Orders.
-- Inventory.
-- Payments.
-- Promotions.
-- Returns.
-- Refunds.
+\- Orders.
 
-## NFR-007 — Auditability
+\- Inventory.
+
+\- Payments.
+
+\- Promotions.
+
+\- Returns.
+
+\- Refunds.
+
+**## NFR-007 — Auditability**
 
 Important changes to inventory and administrative activities must be traceable.
 
-Audit log details: **TBD**.
+Audit log details: **\*\*TBD\*\***.
 
-## NFR-008 — Usability
+**## NFR-008 — Usability**
 
 The user interface must enable users to complete the book-purchasing process clearly and conveniently.
 
-## NFR-009 — Maintainability
+**## NFR-009 — Maintainability**
 
 The system must be maintainable and extensible in subsequent phases.
 
-## NFR-010 — Compatibility
+**## NFR-010 — Compatibility**
 
 The web platform must work on browsers supported by Book Shop.
 
----
+**---**
 
-# 8. DATA REQUIREMENTS
+**# 8. DATA REQUIREMENTS**
 
-## 8.1. Product
+**## 8.1. Product**
 
-| Field         | Description            | Required |
-| ------------- | ---------------------- | -------- |
-| Book ID       | Unique book identifier | Yes      |
-| Book Name     | Book title             | Yes      |
-| Author        | Author                 | No       |
-| Publisher     | Publisher              | Yes      |
-| Category      | Book category          | Yes      |
-| Description   | Book description       | No       |
-| Image         | Book image             | No       |
-| Selling Price | Selling price          | Yes      |
-| Status        | Sales status           | Yes      |
+\| Field         | Description            | Required |
 
-## 8.2. Customer
+\| ------------- | ---------------------- | -------- |
+
+\| Book ID       | Unique book identifier | Yes      |
+
+\| Book Name     | Book title             | Yes      |
+
+\| Author        | Author                 | No       |
+
+\| Publisher     | Publisher              | Yes      |
+
+\| Category      | Book category          | Yes      |
+
+\| Description   | Book description       | No       |
+
+\| Image         | Book image             | No       |
+
+\| Selling Price | Selling price          | Yes      |
+
+\| Status        | Sales status           | Yes      |
+
+**## 8.2. Customer**
 
 Customer information must support:
 
-- Account information.
-- Personal information.
-- Shipping addresses.
-- Purchase history.
+\- Account information.
 
-## 8.3. Order
+\- Personal information.
+
+\- Shipping addresses.
+
+\- Purchase history.
+
+**## 8.3. Order**
 
 At a minimum, an order must manage:
 
-- Order ID.
-- Customer.
-- Products.
-- Quantities.
-- Prices.
-- Promotions.
-- Total amount.
-- Shipping address.
-- Payment method.
-- Order status.
-- Shipping-related information.
-- Refund information, if applicable.
+\- Order ID.
 
-## 8.4. Inventory
+\- Customer.
+
+\- Products.
+
+\- Quantities.
+
+\- Prices.
+
+\- Promotions.
+
+\- Total amount.
+
+\- Shipping address.
+
+\- Payment method.
+
+\- Order status.
+
+\- Shipping-related information.
+
+\- Refund information, if applicable.
+
+**## 8.4. Inventory**
 
 Inventory must manage:
 
-- Current quantity.
-- Reserved quantity.
-- Available quantity.
-- Damaged quantity.
-- Quantity pending receipt.
-- Store/warehouse.
-- Change history.
+\- Current quantity.
 
-## 8.5. Review
+\- Reserved quantity.
+
+\- Available quantity.
+
+\- Damaged quantity.
+
+\- Quantity pending receipt.
+
+\- Store/warehouse.
+
+\- Change history.
+
+**## 8.5. Review**
 
 A review must contain at least:
 
-- Reviewer.
-- Product.
-- Star rating.
-- Review content.
-- Moderation status.
+\- Reviewer.
 
-## 8.6. Promotion
+\- Product.
+
+\- Star rating.
+
+\- Review content.
+
+\- Moderation status.
+
+**## 8.6. Promotion**
 
 A promotion must manage:
 
-- Promotion type.
-- Discount value.
-- Applicable products/categories.
-- Order conditions.
-- Validity period.
-- Number of uses.
+\- Promotion type.
 
----
+\- Discount value.
 
-# 9. BUSINESS PROCESSES AND STATES
+\- Applicable products/categories.
 
-# 9.1. Order Lifecycle
+\- Order conditions.
+
+\- Validity period.
+
+\- Number of uses.
+
+**---**
+
+**# 9. BUSINESS PROCESSES AND STATES**
+
+**# 9.1. Order Lifecycle**
 
 Minimum order statuses:
 
-```text
+\`\`\`text
+
 Pending Confirmation
-        ↓
+
+        ↓
+
 Shipping
-        ↓
+
+        ↓
+
 Completed
-```
+
+\`\`\`
 
 An order may also have the following status:
 
-```text
+\`\`\`text
+
 Cancelled
-```
+
+\`\`\`
 
 subject to the applicable business conditions.
 
-## 9.2. Order Cancellation Rule
+**## 9.2. Order Cancellation Rule**
 
 A Customer is allowed to cancel an order when:
 
-```text
+\`\`\`text
+
 Order Status != Shipping
+
 AND
+
 Cancellation Policy = Allowed
-```
+
+\`\`\`
 
 A Customer is not allowed to cancel an order when:
 
-```text
+\`\`\`text
+
 Order Status = Shipping
-```
 
-## 9.3. Return and Refund Lifecycle
+\`\`\`
 
-```text
+**## 9.3. Return and Refund Lifecycle**
+
+\`\`\`text
+
 Customer submits a request
-        ↓
+
+        ↓
+
 Book Shop reviews the request
-        ↓
-    ┌───┴───┐
-    ↓       ↓
- Approved  Rejected
-    ↓
+
+        ↓
+
+    ┌───┴───┐
+
+    ↓       ↓
+
+ Approved  Rejected
+
+    ↓
+
 Receive returned product
-    ↓
+
+    ↓
+
 Inspect product
-    ↓
+
+    ↓
+
 Issue refund
-    ↓
+
+    ↓
+
 Update order and product information
-```
 
----
+\`\`\`
 
-# 10. AUTHORIZATION AND ACCESS CONTROL
+**---**
+
+**# 10. AUTHORIZATION AND ACCESS CONTROL**
 
 The SRS-level permission matrix is as follows:
 
-| Feature              | Guest | Customer | Employee | Store Manager | Admin |
-| -------------------- | ----: | -------: | -------: | ------------: | ----: |
-| View books           |     ✓ |        ✓ |        ✓ |             ✓ |     ✓ |
-| Search books         |     ✓ |        ✓ |        ✓ |             ✓ |     ✓ |
-| Manage shopping cart |     - |        ✓ |        - |             - |     - |
-| Place orders         |     - |        ✓ |        - |             - |     - |
-| View own orders      |     - |        ✓ |        - |             - |     - |
-| Process orders       |     - |        - |        ✓ |           ✓\* |     ✓ |
-| Manage products      |     - |        - |        - |             - |     ✓ |
-| Manage inventory     |     - |        - |        - |             ✓ |     ✓ |
-| Manage stores        |     - |        - |        - |           ✓\* |     ✓ |
-| Manage promotions    |     - |        - |        - |             - |     ✓ |
-| Moderate reviews     |     - |        - |        - |             - |     ✓ |
-| Reports              |     - |        - |      TBD |           ✓\* |     ✓ |
-| Chatbot              |     - |        ✓ |        - |             - |     ✓ |
+\| Feature              | Guest | Customer | Employee | Store Manager | Admin |
 
-`*` Permissions must be restricted according to the assigned store and responsibilities.
+\| -------------------- | ----: | -------: | -------: | ------------: | ----: |
+
+\| View books           |     ✓ |        ✓ |        ✓ |             ✓ |     ✓ |
+
+\| Search books         |     ✓ |        ✓ |        ✓ |             ✓ |     ✓ |
+
+\| Manage shopping cart |     - |        ✓ |        - |             - |     - |
+
+\| Place orders         |     - |        ✓ |        - |             - |     - |
+
+\| View own orders      |     - |        ✓ |        - |             - |     - |
+
+\| Process orders       |     - |        - |        ✓ |           ✓\\\* |     ✓ |
+
+\| Manage products      |     - |        - |        - |             - |     ✓ |
+
+\| Manage inventory     |     - |        - |        - |             ✓ |     ✓ |
+
+\| Manage stores        |     - |        - |        - |           ✓\\\* |     ✓ |
+
+\| Manage promotions    |     - |        - |        - |             - |     ✓ |
+
+\| Moderate reviews     |     - |        - |        - |             - |     ✓ |
+
+\| Reports              |     - |        - |      TBD |           ✓\\\* |     ✓ |
+
+\`\*\` Permissions must be restricted according to the assigned store and responsibilities.
 
 General principle:
 
-> Users may only perform tasks that are appropriate to the responsibilities assigned to them.
+\> Users may only perform tasks that are appropriate to the responsibilities assigned to them.
 
 This corresponds to BR-008 in the BRD.
 
----
+**---**
 
-# 11. USER INTERFACE AND USER EXPERIENCE REQUIREMENTS
+**# 11. USER INTERFACE AND USER EXPERIENCE REQUIREMENTS**
 
-## 11.1. Customer-facing Pages
+**## 11.1. Customer-facing Pages**
 
 The system should provide the following groups of screens:
 
-### Public
+**### Public**
 
-- Home.
-- Book Listing.
-- Search Results.
-- Book Details.
-- Sign In.
-- Registration.
+\- Home.
 
-### Customer
+\- Book Listing.
 
-- Profile.
-- Address Management.
-- Shopping Cart.
-- Checkout.
-- Order History.
-- Order Details.
-- Return/Refund Request.
-- Reviews.
-- Notifications.
-- Chatbot.
+\- Search Results.
 
-### Back Office
+\- Book Details.
 
-- Dashboard.
-- Product Management.
-- Category Management.
-- Order Management.
-- Inventory Management.
-- Store Management.
-- Promotion Management.
-- Review Moderation.
-- Business Reports.
+\- Sign In.
 
-## 11.2. Checkout
+\- Registration.
+
+**### Customer**
+
+\- Profile.
+
+\- Address Management.
+
+\- Shopping Cart.
+
+\- Checkout.
+
+\- Order History.
+
+\- Order Details.
+
+\- Return/Refund Request.
+
+\- Reviews.
+
+\- Notifications.
+
+**### Back Office**
+
+\- Dashboard.
+
+\- Product Management.
+
+\- Category Management.
+
+\- Order Management.
+
+\- Inventory Management.
+
+\- Store Management.
+
+\- Promotion Management.
+
+\- Review Moderation.
+
+\- Business Reports.
+
+**## 11.2. Checkout**
 
 The checkout page must clearly display:
 
-- Products.
-- Quantities.
-- Address.
-- Payment method.
-- Promotions.
-- Total amount.
-- Order confirmation button.
+\- Products.
+
+\- Quantities.
+
+\- Address.
+
+\- Payment method.
+
+\- Promotions.
+
+\- Total amount.
+
+\- Order confirmation button.
 
 The total amount must be clearly determined before the Customer places the order.
 
----
+**---**
 
-# 12. INTEGRATION REQUIREMENTS
+**# 12. INTEGRATION REQUIREMENTS**
 
-## 12.1. Third-party Shipping Provider
+**## 12.1. Third-party Shipping Provider**
 
 The system interacts with a third-party shipping provider.
 
 In the initial version:
 
-- Book Shop hands the order over to the third party.
-- The third party performs the shipping.
-- The Customer pays upon delivery.
-- Book Shop receives delivery-status information.
-- An Employee confirms successful delivery in the system.
+\- Book Shop hands the order over to the third party.
 
-Book Shop **does not manage shipping operations** within the scope of the initial version.
+\- The third party performs the shipping.
 
-## 12.2. Payment Integration
+\- The Customer pays upon delivery.
+
+\- Book Shop receives delivery-status information.
+
+\- An Employee confirms successful delivery in the system.
+
+Book Shop **\*\*does not manage shipping operations\*\*** within the scope of the initial version.
+
+**## 12.2. Payment Integration**
 
 An online payment gateway is not required in Version 1.0.
 
 Payment method:
 
-**COD**
+**\*\*COD\*\***
 
-## 12.3. Notification Integration
+**## 12.3. Notification Integration**
 
 The system supports sending notifications by email.
 
-## 12.4. Chatbot
+**---**
 
-The chatbot is a component that helps Customers to:
+**# 13. REPORTING REQUIREMENTS**
 
-- Search for books.
-- Get book recommendations.
-- Receive answers to product-related questions.
-
----
-
-# 13. REPORTING REQUIREMENTS
-
-## 13.1. Revenue Report
+**## 13.1. Revenue Report**
 
 Filters:
 
-- Date.
-- Store.
-- Product.
-- Category.
+\- Date.
+
+\- Store.
+
+\- Product.
+
+\- Category.
 
 Time periods:
 
-- Day.
-- Week.
-- Month.
-- Quarter.
-- Year.
+\- Day.
 
-## 13.2. Order Report
+\- Week.
 
-Metrics:
+\- Month.
 
-- New Orders.
-- Processing Orders.
-- Completed Orders.
-- Cancelled Orders.
+\- Quarter.
 
-## 13.3. Inventory Report
+\- Year.
+
+**## 13.2. Order Report**
 
 Metrics:
 
-- Low-stock Books.
-- Out-of-stock Books.
-- Best-selling Books.
-- Slow-moving Books.
+\- New Orders.
 
-## 13.4. Customer Report
+\- Processing Orders.
+
+\- Completed Orders.
+
+\- Cancelled Orders.
+
+**## 13.3. Inventory Report**
 
 Metrics:
 
-- New Customers.
-- Returning Customers.
-- Purchase Frequency.
+\- Low-stock Books.
 
----
+\- Out-of-stock Books.
 
-# 14. ACCEPTANCE CRITERIA
+\- Best-selling Books.
+
+\- Slow-moving Books.
+
+**## 13.4. Customer Report**
+
+Metrics:
+
+\- New Customers.
+
+\- Returning Customers.
+
+\- Purchase Frequency.
+
+**---**
+
+**# 14. ACCEPTANCE CRITERIA**
 
 The system is considered to satisfy this SRS when the following core requirements pass testing:
 
-### AC-001 — Search
+**### AC-001 — Search**
 
 Customers and Guests can search for books.
 
-### AC-002 — Product Details
+**### AC-002 — Product Details**
 
 Users can view complete book information.
 
-### AC-003 — Shopping Cart
+**### AC-003 — Shopping Cart**
 
 Customers can:
 
-- Add books.
-- Change quantities.
-- Remove books.
-- View the total amount.
+\- Add books.
 
-### AC-004 — Order
+\- Change quantities.
+
+\- Remove books.
+
+\- View the total amount.
+
+**### AC-004 — Order**
 
 Customers can successfully create an order.
 
-### AC-005 — Inventory Validation
+**### AC-005 — Inventory Validation**
 
 The system does not allow orders that exceed the quantity available for sale.
 
-### AC-006 — Payment
+**### AC-006 — Payment**
 
 Customers can select COD.
 
-### AC-007 — Order Tracking
+**### AC-007 — Order Tracking**
 
 Customers can track order statuses.
 
-### AC-008 — Order Cancellation
+**### AC-008 — Order Cancellation**
 
 Customers cannot cancel an order while it is being shipped.
 
-### AC-009 — Product Management
+**### AC-009 — Product Management**
 
 Administrators can manage products.
 
-### AC-010 — Order Management
+**### AC-010 — Order Management**
 
 Authorized Employees can process orders.
 
-### AC-011 — Inventory Management
+**### AC-011 — Inventory Management**
 
 Book Shop can track inventory.
 
-### AC-012 — Authorization
+**### AC-012 — Authorization**
 
 Users cannot access features outside their permissions.
 
-### AC-013 — Reporting
+**### AC-013 — Reporting**
 
 Management can view the required reports.
 
-### AC-014 — Reviews
+**### AC-014 — Reviews**
 
 Customers can submit reviews in accordance with the applicable policy.
 
-### AC-015 — Promotions
+**### AC-015 — Promotions**
 
 The system does not apply expired promotions.
 
-### AC-016 — Returns and Refunds
+**### AC-016 — Returns and Refunds**
 
 The system supports the return-request and refund process in accordance with policy.
 
 These criteria are derived from the acceptance criteria in the BRD.
 
----
+**---**
 
-# 15. TRACEABILITY MATRIX
+**# 15. TRACEABILITY MATRIX**
 
-| BRD Requirement    | SRS Requirement               | Module        |
-| ------------------ | ----------------------------- | ------------- |
-| Account Management | FR-ACC-001 → FR-ACC-007       | Account       |
-| Book Management    | FR-PROD-001 → FR-PROD-005     | Product       |
-| Search             | FR-SEARCH-001 → FR-SEARCH-003 | Search        |
-| Book Details       | FR-PROD-006 → FR-PROD-008     | Product       |
-| Shopping Cart      | FR-CART-001 → FR-CART-005     | Cart          |
-| Order Placement    | FR-ORDER-001 → FR-ORDER-005   | Order         |
-| Payment            | FR-PAY-001 → FR-PAY-003       | Payment       |
-| Order Management   | FR-ORDER-006 → FR-ORDER-011   | Order         |
-| Returns            | FR-RETURN-001 → FR-RETURN-006 | Return/Refund |
-| Inventory          | FR-INV-001 → FR-INV-003       | Inventory     |
-| Stores             | FR-STORE-001 → FR-STORE-007   | Store         |
-| Promotions         | FR-PROMO-001 → FR-PROMO-007   | Promotion     |
-| Reviews            | FR-REVIEW-001 → FR-REVIEW-004 | Review        |
-| Notifications      | FR-NOTI-001                   | Notification  |
-| Chatbot            | FR-CHAT-001 → FR-CHAT-004     | Chatbot       |
-| Reporting          | FR-REPORT-001 → FR-REPORT-004 | Reporting     |
+\| BRD Requirement    | SRS Requirement               | Module        |
 
----
+\| ------------------ | ----------------------------- | ------------- |
 
-# 16. OPEN ISSUES AND CLARIFICATIONS
+\| Account Management | FR-ACC-001 → FR-ACC-007       | Account       |
 
-The BRD has defined the business scope in considerable detail. However, the following issues must be clarified before proceeding to technical design.
+\| Book Management    | FR-PROD-001 → FR-PROD-005     | Product       |
 
-## 16.1. Chatbot
+\| Search             | FR-SEARCH-001 → FR-SEARCH-003 | Search        |
 
-The following points need to be determined:
+\| Book Details       | FR-PROD-006 → FR-PROD-008     | Product       |
 
-- Does the chatbot only answer questions about books, or can it also access order information?
-- Can the chatbot perform order-placement operations?
-- Is conversation history stored?
-- Can conversations be transferred to a customer support employee?
+\| Shopping Cart      | FR-CART-001 → FR-CART-005     | Cart          |
 
----
+\| Order Placement    | FR-ORDER-001 → FR-ORDER-005   | Order         |
 
-# 17. OUT OF SCOPE
+\| Payment            | FR-PAY-001 → FR-PAY-003       | Payment       |
+
+\| Order Management   | FR-ORDER-006 → FR-ORDER-011   | Order         |
+
+\| Returns            | FR-RETURN-001 → FR-RETURN-006 | Return/Refund |
+
+\| Inventory          | FR-INV-001 → FR-INV-003       | Inventory     |
+
+\| Stores             | FR-STORE-001 → FR-STORE-007   | Store         |
+
+\| Promotions         | FR-PROMO-001 → FR-PROMO-007   | Promotion     |
+
+\| Reviews            | FR-REVIEW-001 → FR-REVIEW-004 | Review        |
+
+\| Notifications      | FR-NOTI-001                   | Notification  |
+
+\| Reporting          | FR-REPORT-001 → FR-REPORT-004 | Reporting     |
+
+**---**
+
+**# 16. OUT OF SCOPE**
 
 The following features are not included in Version 1.0:
 
-1. Third-party marketplace.
-2. Livestream shopping.
-3. Book rental.
-4. Advanced ERP/accounting.
-5. A dedicated mobile application.
-6. Internal shipping management.
-7. Online bank payments.
-8. Other features not defined in the BRD.
+1\. Third-party marketplace.
+
+2\. Livestream shopping.
+
+3\. Book rental.
+
+4\. Advanced ERP/accounting.
+
+5\. A dedicated mobile application.
+
+6\. Internal shipping management.
+
+7\. Online bank payments.
+
+8\. Other features not defined in the BRD.
 
 These features may be considered in subsequent phases.
 
----
+**---**
 
-# 18. APPENDICES
+**# 17. APPENDICES**
 
-## 18.1. Glossary
+**## 18.1. Glossary**
 
-| Term                          | Definition                            |
-| ----------------------------- | ------------------------------------- |
-| BRD                           | Business Requirements Document        |
-| SRS                           | Software Requirements Specification   |
-| Guest                         | A user who is not signed in           |
-| Customer                      | A customer who has an account         |
-| Employee                      | A Book Shop employee                  |
-| Store Manager                 | A store manager                       |
-| Administrator                 | An administrator                      |
-| Product/Book                  | A book product                        |
-| Inventory                     | Stock on hand                         |
-| Available Quantity            | Quantity available for sale           |
-| Reserved Quantity             | Quantity reserved for an order        |
-| Promotion                     | A promotional campaign                |
-| COD                           | Cash on Delivery                      |
-| Review                        | A product review                      |
-| Order                         | A customer order                      |
-| Return                        | Return of a product                   |
-| Refund                        | Repayment of money                    |
-| Third-party Shipping Provider | An external shipping service provider |
+\| Term                          | Definition                            |
 
-## 18.2. Requirement ID Convention
+\| ----------------------------- | ------------------------------------- |
+
+\| BRD                           | Business Requirements Document        |
+
+\| SRS                           | Software Requirements Specification   |
+
+\| Guest                         | A user who is not signed in           |
+
+\| Customer                      | A customer who has an account         |
+
+\| Employee                      | A Book Shop employee                  |
+
+\| Store Manager                 | A store manager                       |
+
+\| Administrator                 | An administrator                      |
+
+\| Product/Book                  | A book product                        |
+
+\| Inventory                     | Stock on hand                         |
+
+\| Available Quantity            | Quantity available for sale           |
+
+\| Reserved Quantity             | Quantity reserved for an order        |
+
+\| Promotion                     | A promotional campaign                |
+
+\| COD                           | Cash on Delivery                      |
+
+\| Review                        | A product review                      |
+
+\| Order                         | A customer order                      |
+
+\| Return                        | Return of a product                   |
+
+\| Refund                        | Repayment of money                    |
+
+\| Third-party Shipping Provider | An external shipping service provider |
+
+**## 18.2. Requirement ID Convention**
 
 Requirement IDs follow the conventions below:
 
-```text
-FR-ACC      Account
-FR-PROD     Product
-FR-SEARCH   Search
-FR-CART     Cart
-FR-ORDER    Order
-FR-PAY      Payment
-FR-RETURN   Return/Refund
-FR-INV      Inventory
-FR-STORE    Store
-FR-PROMO    Promotion
-FR-REVIEW   Review
-FR-NOTI     Notification
-FR-CHAT     Chatbot
-FR-REPORT   Reporting
-NFR         Non-functional Requirement
-BR          Business Rule
-AC          Acceptance Criteria
-```
+\`\`\`text
 
-## 18.3. Requirement Priority
+FR-ACC      Account
+
+FR-PROD     Product
+
+FR-SEARCH   Search
+
+FR-CART     Cart
+
+FR-ORDER    Order
+
+FR-PAY      Payment
+
+FR-RETURN   Return/Refund
+
+FR-INV      Inventory
+
+FR-STORE    Store
+
+FR-PROMO    Promotion
+
+FR-REVIEW   Review
+
+FR-NOTI     Notification
+
+FR-REPORT   Reporting
+
+NFR         Non-functional Requirement
+
+BR          Business Rule
+
+AC          Acceptance Criteria
+
+\`\`\`
+
+**## 18.3. Requirement Priority**
 
 The following convention may be used:
 
-| Priority    | Meaning                                       |
-| ----------- | --------------------------------------------- |
-| Must Have   | Required for the system to operate            |
-| Should Have | Important, but may be postponed               |
-| Could Have  | May be implemented if resources are available |
-| Won't Have  | Not included in the current version           |
+\| Priority    | Meaning                                       |
+
+\| ----------- | --------------------------------------------- |
+
+\| Must Have   | Required for the system to operate            |
+
+\| Should Have | Important, but may be postponed               |
+
+\| Could Have  | May be implemented if resources are available |
+
+\| Won't Have  | Not included in the current version           |
 
 For Version 1.0, core features such as:
 
-- Product.
-- Search.
-- Cart.
-- Order.
-- COD.
-- Inventory.
-- Order Tracking.
-- Authorization.
-- Reporting.
+\- Product.
+
+\- Search.
+
+\- Cart.
+
+\- Order.
+
+\- COD.
+
+\- Inventory.
+
+\- Order Tracking.
+
+\- Authorization.
+
+\- Reporting.
 
 are considered the main functional areas based on the BRD acceptance criteria.
 
----
+**---**
 
-# DOCUMENT CONTROL
+**# DOCUMENT CONTROL**
 
-| Item          | Value                               |
-| ------------- | ----------------------------------- |
-| Document      | Software Requirements Specification |
-| Project       | Book Shop                           |
-| Version       | 1.0                                 |
-| Status        | Draft for Review                    |
-| Based On      | Business Requirements Document v1.0 |
-| Owner         | Founder & CEO — Book Shop           |
-| Prepared By   | Business Analysis                   |
-| Reviewers     | TBD                                 |
-| Approval Date | TBD                                 |
+\| Item          | Value                               |
 
----
+\| ------------- | ----------------------------------- |
 
-# CONCLUSION
+\| Document      | Software Requirements Specification |
+
+\| Project       | Book Shop                           |
+
+\| Version       | 1.0                                 |
+
+\| Status        | Draft for Review                    |
+
+\| Based On      | Business Requirements Document v1.0 |
+
+\| Owner         | Founder & CEO — Book Shop           |
+
+\| Prepared By   | Business Analysis                   |
+
+\| Reviewers     | TBD                                 |
+
+\| Approval Date | TBD                                 |
+
+**---**
+
+**# CONCLUSION**
 
 This SRS translates Book Shop's business requirements into functional requirements, non-functional requirements, business rules, access permissions, business processes, data requirements, acceptance criteria, and traceability.
 
-This SRS **does not replace architecture or technical design documents** for defining topics such as:
+This SRS **\*\*does not replace architecture or technical design documents\*\*** for defining topics such as:
 
-- Technologies.
-- Database engine.
-- System architecture.
-- API endpoints.
-- Frameworks.
-- Infrastructure.
-- Deployment.
-- Detailed technical security.
+\- Technologies.
+
+\- Database engine.
+
+\- System architecture.
+
+\- API endpoints.
+
+\- Frameworks.
+
+\- Infrastructure.
+
+\- Deployment.
+
+\- Detailed technical security.
 
 These topics will be defined in the corresponding technical documents during the next phase.
 
-**End of Document**
+**\*\*End of Document\*\***

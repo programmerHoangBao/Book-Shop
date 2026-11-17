@@ -55,8 +55,7 @@ The Use Case Document covers the following modules:
 12. Promotion Management
 13. Product Review
 14. Notification
-15. Customer Chatbot
-16. Business Reporting
+15. Business Reporting
 
 These modules correspond to the functional scope defined in the SRS.
 
@@ -66,15 +65,15 @@ These modules correspond to the functional scope defined in the SRS.
 
 ## 3.1. Actor Overview
 
-| Actor                         | Description                   | Main Responsibilities                                                                |
-| ----------------------------- | ----------------------------- | ------------------------------------------------------------------------------------ |
-| Guest                         | Unauthenticated user          | Browse, search, filter, and discover books                                           |
-| Customer                      | Registered customer           | Purchase books; manage their account and orders; submit reviews; and use the chatbot |
-| Employee                      | Staff member                  | Process, confirm, and update orders                                                  |
-| Store Manager                 | Store manager                 | Manage inventory and assigned store operations                                       |
-| Administrator                 | Administrator                 | Manage the entire system and reports                                                 |
-| Third-party Shipping Provider | Third-party shipping provider | Ship orders and provide delivery status updates                                      |
-| Email Service                 | Email service                 | Send email notifications                                                             |
+| Actor                         | Description                   | Main Responsibilities                                               |
+| ----------------------------- | ----------------------------- | ------------------------------------------------------------------- |
+| Guest                         | Unauthenticated user          | Browse, search, filter, and discover books                          |
+| Customer                      | Registered customer           | Purchase books; manage their account and orders; and submit reviews |
+| Employee                      | Staff member                  | Process, confirm, and update orders                                 |
+| Store Manager                 | Store manager                 | Manage inventory and assigned store operations                      |
+| Administrator                 | Administrator                 | Manage the entire system and reports                                |
+| Third-party Shipping Provider | Third-party shipping provider | Ship orders and provide delivery status updates                     |
+| Email Service                 | Email service                 | Send email notifications                                            |
 
 The SRS identifies Guest, Customer, Employee, Store Manager, and Administrator as the primary user groups.
 
@@ -152,8 +151,6 @@ flowchart LR
 
         Notification["Notification"]
 
-        Chatbot["Customer Chatbot"]
-
         Report["Business Reporting"]
 
     end
@@ -171,7 +168,6 @@ flowchart LR
     Customer --> Return
     Customer --> Review
     Customer --> Notification
-    Customer --> Chatbot
 
     Employee --> Order
     Employee --> Return
@@ -191,7 +187,6 @@ flowchart LR
     Admin --> Promotion
     Admin --> Review
     Admin --> Report
-    Admin --> Chatbot
 
     Order --> Shipping
     Shipping --> Order
@@ -1296,37 +1291,7 @@ The SRS requires notifications for registration, order placement, payment, order
 
 ---
 
-# 37. CUSTOMER CHATBOT
-
-```mermaid
-flowchart LR
-
-    Customer["👤 Customer"]
-
-    subgraph CHATBOT["CUSTOMER CHATBOT"]
-        Search(("Find Books"))
-        Recommend(("Suggest Books"))
-        ProductQA(("Answer Product Questions"))
-    end
-
-    Customer --> Search
-    Customer --> Recommend
-    Customer --> ProductQA
-```
-
-## Use Cases
-
-| ID          | Use Case                 | Actor    |
-| ----------- | ------------------------ | -------- |
-| UC-CHAT-001 | Find Books               | Customer |
-| UC-CHAT-002 | Suggest Books            | Customer |
-| UC-CHAT-003 | Answer Product Questions | Customer |
-
-Personalized recommendation is **not mandatory for version 1.0**.
-
----
-
-# 38. BUSINESS REPORTING
+# 37. BUSINESS REPORTING
 
 ```mermaid
 flowchart LR
@@ -1398,7 +1363,7 @@ These report types are defined in FR-REPORT-001 through FR-REPORT-004.
 
 ---
 
-# 39. CROSS-MODULE USE CASE RELATIONSHIPS
+# 38. CROSS-MODULE USE CASE RELATIONSHIPS
 
 ## 39.1. Order Relationship
 
@@ -1488,7 +1453,7 @@ flowchart TD
 
 ---
 
-# 40. AUTHORIZATION MODEL
+# 39. AUTHORIZATION MODEL
 
 Authorization is not an independent Use Case; it is a **cross-cutting business behavior** that applies to Use Cases requiring permission.
 
@@ -1538,7 +1503,7 @@ This permission matrix is based on the authorization matrix in the SRS.
 
 ---
 
-# 41. COMPLETE CUSTOMER JOURNEY
+# 40. COMPLETE CUSTOMER JOURNEY
 
 The most important Customer Use Case flow:
 
@@ -1625,7 +1590,7 @@ flowchart TD
 
 ---
 
-# 42. COMPLETE ADMIN JOURNEY
+# 41. COMPLETE ADMIN JOURNEY
 
 ```mermaid
 flowchart TD
@@ -1663,7 +1628,7 @@ The Administrator can manage all activities permitted by Book Shop, including us
 
 ---
 
-# 43. COMPLETE EMPLOYEE JOURNEY
+# 42. COMPLETE EMPLOYEE JOURNEY
 
 ```mermaid
 flowchart TD
@@ -1692,7 +1657,7 @@ flowchart TD
 
 ---
 
-# 44. COMPLETE STORE MANAGER JOURNEY
+# 43. COMPLETE STORE MANAGER JOURNEY
 
 ```mermaid
 flowchart TD
@@ -1729,7 +1694,7 @@ flowchart TD
 
 ---
 
-# 45. USE CASE TRACEABILITY MATRIX
+# 44. USE CASE TRACEABILITY MATRIX
 
 | Use Case                                  | SRS Requirement |
 | ----------------------------------------- | --------------- |
@@ -1799,9 +1764,6 @@ flowchart TD
 | UC-REVIEW-003 Check Review Eligibility    | FR-REVIEW-003   |
 | UC-REVIEW-004 Moderate Review             | FR-REVIEW-004   |
 | UC-NOTI-001 Send Notification             | FR-NOTI-001     |
-| UC-CHAT-001 Find Books                    | FR-CHAT-001     |
-| UC-CHAT-002 Suggest Books                 | FR-CHAT-002     |
-| UC-CHAT-003 Answer Product Questions      | FR-CHAT-003     |
 | UC-REPORT-001 Revenue Report              | FR-REPORT-001   |
 | UC-REPORT-002 Order Report                | FR-REPORT-002   |
 | UC-REPORT-003 Inventory Report            | FR-REPORT-003   |
@@ -1811,7 +1773,7 @@ These requirement groups are consistent with the Traceability Matrix in the SRS.
 
 ---
 
-# 46. BUSINESS RULE TRACEABILITY
+# 45. BUSINESS RULE TRACEABILITY
 
 | Rule                                           | Affected Use Cases            |
 | ---------------------------------------------- | ----------------------------- |
@@ -1830,7 +1792,7 @@ BR-004 concerning loyalty points does not yet have a corresponding module in the
 
 ---
 
-# 47. OUT OF SCOPE USE CASES
+# 46. OUT OF SCOPE USE CASES
 
 The following Use Cases are **not included in the Version 1.0 Use Case Model**:
 
@@ -1849,22 +1811,11 @@ These items are outside the scope of Version 1.0 according to the SRS.
 
 ---
 
-# 48. OPEN QUESTIONS
+# 47. OPEN QUESTIONS
 
 The following issues must be confirmed before proceeding to the Functional Specification / Technical Design.
 
-## OQ-001 — Chatbot
-
-The following points need to be determined:
-
-- Does the chatbot only answer questions about books, or can it also access Orders?
-- Can the chatbot place orders?
-- Is conversation history stored?
-- Can conversations be transferred to customer support staff?
-
-The SRS also marks these issues as requiring clarification.
-
-## OQ-002 — Review Eligibility
+## OQ-001 — Review Eligibility
 
 The policy needs to be determined:
 
@@ -1876,13 +1827,13 @@ Is the Customer allowed to submit a review?
 
 or are all Customers allowed to submit reviews?
 
-## OQ-003 — Cancellation Policy
+## OQ-002 — Cancellation Policy
 
 The exact statuses in which Customers/Employees are allowed to cancel orders must be determined.
 
 The SRS only explicitly establishes that Customers **cannot cancel an Order while it is being shipped**.
 
-## OQ-004 — Refund
+## OQ-003 — Refund
 
 The following points need to be determined:
 
@@ -1891,11 +1842,11 @@ The following points need to be determined:
 - Are refunds to bank accounts processed manually or through the system?
 - Does the system only record the refund, or does it execute the transaction directly?
 
-## OQ-005 — Reporting Permission
+## OQ-004 — Reporting Permission
 
 Some Employee reporting permissions in the SRS are currently marked as TBD. Therefore, the specific report types that Employees may view must be determined.
 
-## OQ-006 — Loyalty / Points
+## OQ-005 — Loyalty / Points
 
 The BRD mentions reward points, but the SRS does not yet include a Loyalty module.
 
@@ -1909,7 +1860,7 @@ Loyalty / Point
 
 ---
 
-# 49. USE CASE MODEL — SUMMARY
+# 48. USE CASE MODEL — SUMMARY
 
 The Book Shop Use Case Model can be viewed through five main Actor groups:
 
@@ -1934,7 +1885,6 @@ flowchart TB
     Promotion["Promotion"]
     Review["Review"]
     Notification["Notification"]
-    Chatbot["Chatbot"]
     Report["Reporting"]
 
     Guest --> Account
@@ -1950,7 +1900,6 @@ flowchart TB
     Customer --> Return
     Customer --> Review
     Customer --> Notification
-    Customer --> Chatbot
 
     Employee --> Order
     Employee --> Return
@@ -1970,12 +1919,11 @@ flowchart TB
     Admin --> Promotion
     Admin --> Review
     Admin --> Report
-    Admin --> Chatbot
 ```
 
 ---
 
-# 50. CONCLUSION
+# 49. CONCLUSION
 
 The Use Case Document translates the Functional Requirements in the SRS into a model of interactions between Actors and the system.
 
